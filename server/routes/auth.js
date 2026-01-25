@@ -23,13 +23,25 @@ router.post('/register', async (req, res) => {
   try {
     const { email, password, fullName } = req.body;
 
+    console.log('Registration attempt:', { email, fullName, hasPassword: !!password });
+
     // Validation
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
+    if (!fullName || fullName.trim() === '') {
+      return res.status(400).json({ error: 'Full name is required' });
+    }
+
     if (password.length < 6) {
       return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
     }
 
     // Check if user exists
@@ -42,10 +54,11 @@ router.post('/register', async (req, res) => {
     const user = new User({
       email: email.toLowerCase(),
       password,
-      fullName: fullName || ''
+      fullName: fullName.trim()
     });
 
     await user.save();
+    console.log('User created successfully:', user.email);
 
     // Generate token
     const token = generateToken(user._id);
@@ -60,7 +73,19 @@ router.post('/register', async (req, res) => {
     });
   } catch (error) {
     console.error('Register error:', error);
-    res.status(500).json({ error: 'Server error during registration' });
+    
+    // Handle duplicate key error
+    if (error.code === 11000) {
+      return res.status(400).json({ error: 'User already exists with this email' });
+    }
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ error: messages.join(', ') });
+    }
+    
+    res.status(500).json({ error: 'Server error during registration. Please try again.' });
   }
 });
 
