@@ -167,6 +167,7 @@ router.post('/search', auth, async (req, res) => {
     }
 
     const filters = parseNaturalLanguageQuery(query);
+    console.log('🔍 NLP Filters:', JSON.stringify(filters, null, 2));
 
     // Build MongoDB query
     const dbQuery = { userId: req.userId };
@@ -175,7 +176,14 @@ router.post('/search', auth, async (req, res) => {
     if (filters.minAmount) dbQuery.amount = { ...dbQuery.amount, $gte: filters.minAmount };
     if (filters.maxAmount) dbQuery.amount = { ...dbQuery.amount, $lte: filters.maxAmount };
     
-    if (filters.timePeriod) {
+    // Use startDate and endDate if provided (for year-based queries)
+    if (filters.startDate && filters.endDate) {
+      dbQuery.date = { 
+        $gte: filters.startDate, 
+        $lte: filters.endDate 
+      };
+    } else if (filters.timePeriod) {
+      // Fallback to old time period logic
       const now = new Date();
       let startDate;
 
@@ -183,14 +191,15 @@ router.post('/search', auth, async (req, res) => {
         case 'today':
           startDate = new Date(now.setHours(0, 0, 0, 0));
           break;
+        case 'yesterday':
+          startDate = new Date(now.setDate(now.getDate() - 1));
+          startDate.setHours(0, 0, 0, 0);
+          break;
         case 'week':
           startDate = new Date(now.setDate(now.getDate() - 7));
           break;
         case 'month':
           startDate = new Date(now.setMonth(now.getMonth() - 1));
-          break;
-        case 'year':
-          startDate = new Date(now.setFullYear(now.getFullYear() - 1));
           break;
       }
 
@@ -199,11 +208,29 @@ router.post('/search', auth, async (req, res) => {
       }
     }
 
+    // Search in description if keywords provided AND no category specified
+    // If category is specified, description keywords are ignored to avoid over-filtering
+    if (filters.descriptionKeywords.length > 0 && !filters.category) {
+      dbQuery.$or = filters.descriptionKeywords.map(keyword => ({
+        $or: [
+          { description: { $regex: keyword, $options: 'i' } },
+          { category: { $regex: keyword, $options: 'i' } }
+        ]
+      }));
+    }
+
+    console.log('🔍 MongoDB Query:', JSON.stringify(dbQuery, null, 2));
+
     const expenses = await Expense.find(dbQuery).sort({ date: -1 });
+
+    // Calculate total
+    const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
     res.json({
       query,
       count: expenses.length,
+      total: Math.round(total * 100) / 100,
+      filters: filters.timePeriod || filters.category || 'custom',
       results: expenses
     });
   } catch (error) {

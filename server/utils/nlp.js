@@ -1,26 +1,133 @@
-// Natural Language Processing utilities
+// Natural Language Processing utilities for expense tracking
 
+/**
+ * Parse natural language query for expense search
+ * Handles: categories, amounts, dates, years, months, descriptions
+ */
 function parseNaturalLanguageQuery(query) {
-  const lowerQuery = query.toLowerCase();
+  const lowerQuery = query.toLowerCase().trim();
   
   const filters = {
     category: null,
     minAmount: null,
     maxAmount: null,
     timePeriod: null,
-    descriptionKeywords: []
+    startDate: null,
+    endDate: null,
+    descriptionKeywords: [],
+    year: null,
+    month: null
   };
 
   try {
-    // Extract category
+    console.log('🔍 Parsing query:', query);
+
+    // ===== YEAR EXTRACTION =====
+    const yearMatch = lowerQuery.match(/\b(20\d{2})\b/);
+    if (yearMatch) {
+      const year = parseInt(yearMatch[1]);
+      filters.year = year;
+      
+      const monthNames = {
+        'january': 0, 'jan': 0,
+        'february': 1, 'feb': 1,
+        'march': 2, 'mar': 2,
+        'april': 3, 'apr': 3,
+        'may': 4,
+        'june': 5, 'jun': 5,
+        'july': 6, 'jul': 6,
+        'august': 7, 'aug': 7,
+        'september': 8, 'sep': 8, 'sept': 8,
+        'october': 9, 'oct': 9,
+        'november': 10, 'nov': 10,
+        'december': 11, 'dec': 11
+      };
+
+      let monthFound = false;
+      for (const [monthName, monthIndex] of Object.entries(monthNames)) {
+        if (lowerQuery.includes(monthName)) {
+          filters.month = monthIndex;
+          filters.startDate = new Date(year, monthIndex, 1);
+          filters.endDate = new Date(year, monthIndex + 1, 0, 23, 59, 59);
+          filters.timePeriod = `${monthName} ${year}`;
+          monthFound = true;
+          break;
+        }
+      }
+
+      if (!monthFound) {
+        filters.startDate = new Date(year, 0, 1);
+        filters.endDate = new Date(year, 11, 31, 23, 59, 59);
+        filters.timePeriod = `year ${year}`;
+      }
+    }
+
+    // ===== RELATIVE TIME PERIODS =====
+    if (!filters.startDate && !filters.endDate) {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+
+      if (lowerQuery.includes('last year')) {
+        const lastYear = currentYear - 1;
+        filters.year = lastYear;
+        filters.startDate = new Date(lastYear, 0, 1);
+        filters.endDate = new Date(lastYear, 11, 31, 23, 59, 59);
+        filters.timePeriod = 'last year';
+      }
+      else if (lowerQuery.includes('this year')) {
+        filters.year = currentYear;
+        filters.startDate = new Date(currentYear, 0, 1);
+        filters.endDate = new Date();
+        filters.timePeriod = 'this year';
+      }
+      else if (lowerQuery.includes('last month')) {
+        const lastMonth = currentMonth - 1;
+        const lastMonthYear = lastMonth < 0 ? currentYear - 1 : currentYear;
+        const lastMonthIndex = lastMonth < 0 ? 11 : lastMonth;
+        
+        filters.startDate = new Date(lastMonthYear, lastMonthIndex, 1);
+        filters.endDate = new Date(lastMonthYear, lastMonthIndex + 1, 0, 23, 59, 59);
+        filters.timePeriod = 'last month';
+      }
+      else if (lowerQuery.includes('this month')) {
+        filters.startDate = new Date(currentYear, currentMonth, 1);
+        filters.endDate = new Date();
+        filters.timePeriod = 'this month';
+      }
+      else if (lowerQuery.includes('last week')) {
+        filters.startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        filters.endDate = new Date();
+        filters.timePeriod = 'last week';
+      }
+      else if (lowerQuery.includes('this week') || lowerQuery.includes('week')) {
+        filters.startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        filters.endDate = new Date();
+        filters.timePeriod = 'this week';
+      }
+      else if (lowerQuery.includes('today')) {
+        filters.startDate = new Date(now.setHours(0, 0, 0, 0));
+        filters.endDate = new Date();
+        filters.timePeriod = 'today';
+      }
+      else if (lowerQuery.includes('yesterday')) {
+        const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        filters.startDate = new Date(yesterday.setHours(0, 0, 0, 0));
+        filters.endDate = new Date(yesterday.setHours(23, 59, 59, 999));
+        filters.timePeriod = 'yesterday';
+      }
+    }
+
+    // ===== CATEGORY EXTRACTION =====
     const categoryKeywords = {
-      'Food': ['food', 'restaurant', 'grocery', 'eat', 'dining', 'lunch', 'dinner', 'breakfast'],
-      'Travel': ['travel', 'flight', 'taxi', 'uber', 'hotel', 'trip', 'transport'],
-      'Shopping': ['shop', 'shopping', 'mall', 'store', 'clothes', 'fashion'],
-      'Bills': ['bill', 'electricity', 'water', 'internet', 'utility', 'rent'],
-      'Entertainment': ['movie', 'cinema', 'game', 'entertainment', 'concert', 'show'],
-      'Healthcare': ['health', 'medical', 'doctor', 'hospital', 'medicine', 'pharmacy'],
-      'Education': ['education', 'school', 'course', 'book', 'tuition', 'class']
+      'Food': ['food', 'restaurant', 'grocery', 'groceries', 'eat', 'eating', 'dining', 'lunch', 'dinner', 'breakfast', 'meal', 'snack'],
+      'Travel': ['travel', 'flight', 'flights', 'hotel', 'hotels', 'trip', 'vacation', 'holiday'],
+      'Transport': ['transport', 'transportation', 'taxi', 'uber', 'ola', 'bus', 'train', 'metro', 'petrol', 'fuel', 'gas'],
+      'Shopping': ['shop', 'shopping', 'mall', 'store', 'clothes', 'clothing', 'fashion', 'purchase'],
+      'Bills': ['bill', 'bills', 'electricity', 'water', 'internet', 'utility', 'utilities', 'rent'],
+      'Entertainment': ['movie', 'movies', 'cinema', 'game', 'games', 'entertainment', 'concert', 'show', 'netflix', 'spotify'],
+      'Healthcare': ['health', 'healthcare', 'medical', 'doctor', 'hospital', 'medicine', 'pharmacy', 'clinic'],
+      'Education': ['education', 'school', 'college', 'university', 'course', 'courses', 'book', 'books', 'tuition', 'class', 'classes']
     };
 
     for (const [category, keywords] of Object.entries(categoryKeywords)) {
@@ -30,70 +137,284 @@ function parseNaturalLanguageQuery(query) {
       }
     }
 
-    // Extract amount range
+    // ===== AMOUNT EXTRACTION =====
     const amountPatterns = [
-      { pattern: /over\s*[₹$]?\s*(\d+)/i, type: 'min' },
-      { pattern: /more than\s*[₹$]?\s*(\d+)/i, type: 'min' },
-      { pattern: /above\s*[₹$]?\s*(\d+)/i, type: 'min' },
-      { pattern: /under\s*[₹$]?\s*(\d+)/i, type: 'max' },
-      { pattern: /less than\s*[₹$]?\s*(\d+)/i, type: 'max' },
-      { pattern: /below\s*[₹$]?\s*(\d+)/i, type: 'max' },
-      { pattern: /between\s*[₹$]?\s*(\d+)\s*and\s*[₹$]?\s*(\d+)/i, type: 'range' }
+      { pattern: /over\s*[₹$]?\s*([\d,]+)/i, type: 'min' },
+      { pattern: /more\s+than\s*[₹$]?\s*([\d,]+)/i, type: 'min' },
+      { pattern: /above\s*[₹$]?\s*([\d,]+)/i, type: 'min' },
+      { pattern: /greater\s+than\s*[₹$]?\s*([\d,]+)/i, type: 'min' },
+      { pattern: /under\s*[₹$]?\s*([\d,]+)/i, type: 'max' },
+      { pattern: /less\s+than\s*[₹$]?\s*([\d,]+)/i, type: 'max' },
+      { pattern: /below\s*[₹$]?\s*([\d,]+)/i, type: 'max' },
+      { pattern: /between\s*[₹$]?\s*([\d,]+)\s*and\s*[₹$]?\s*([\d,]+)/i, type: 'range' }
     ];
 
     for (const { pattern, type } of amountPatterns) {
       const match = lowerQuery.match(pattern);
       if (match) {
         if (type === 'min') {
-          filters.minAmount = parseFloat(match[1]);
+          filters.minAmount = parseFloat(match[1].replace(/,/g, ''));
         } else if (type === 'max') {
-          filters.maxAmount = parseFloat(match[1]);
+          filters.maxAmount = parseFloat(match[1].replace(/,/g, ''));
         } else if (type === 'range') {
-          filters.minAmount = parseFloat(match[1]);
-          filters.maxAmount = parseFloat(match[2]);
+          filters.minAmount = parseFloat(match[1].replace(/,/g, ''));
+          filters.maxAmount = parseFloat(match[2].replace(/,/g, ''));
         }
         break;
       }
     }
 
-    // Extract time period
-    const timeKeywords = {
-      'today': ['today'],
-      'yesterday': ['yesterday'],
-      'week': ['week', 'last week', 'this week', '7 days'],
-      'month': ['month', 'last month', 'this month', '30 days'],
-      'year': ['year', 'last year', 'this year']
-    };
-
-    for (const [period, keywords] of Object.entries(timeKeywords)) {
-      if (keywords.some(keyword => lowerQuery.includes(keyword))) {
-        filters.timePeriod = period;
-        break;
-      }
-    }
-
-    // Extract description keywords
+    // ===== DESCRIPTION KEYWORDS =====
     const commonWords = new Set([
-      'show', 'find', 'list', 'expense', 'expenses', 'spending', 'spent',
+      'show', 'find', 'list', 'get', 'fetch', 'display', 'search',
+      'expense', 'expenses', 'spending', 'spent', 'total', 'all',
       'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-      'of', 'with', 'by', 'from', 'up', 'about', 'into', 'through', 'during'
+      'of', 'with', 'by', 'from', 'up', 'about', 'into', 'through', 'during',
+      'last', 'this', 'year', 'month', 'week', 'day', 'my', 'me', 'i',
+      'what', 'when', 'where', 'how', 'much', 'many', 'did', 'was', 'were',
+      'matching', 'related', 'regarding',
+      // Add category names to avoid duplication
+      'food', 'travel', 'transport', 'shopping', 'bills', 'entertainment', 
+      'healthcare', 'education', 'restaurant', 'grocery', 'flight', 'hotel',
+      'taxi', 'uber', 'mall', 'store', 'movie', 'cinema', 'doctor', 'hospital'
     ]);
 
     const words = lowerQuery.split(/\s+/);
     for (const word of words) {
       const cleanWord = word.replace(/[^\w]/g, '');
-      if (cleanWord.length > 3 && !commonWords.has(cleanWord)) {
+      if (cleanWord.length > 3 && 
+          !commonWords.has(cleanWord) && 
+          !/^\d+$/.test(cleanWord) &&
+          !/^20\d{2}$/.test(cleanWord)) {
         filters.descriptionKeywords.push(cleanWord);
       }
     }
 
+    console.log('✅ Parsed filters:', JSON.stringify(filters, null, 2));
+
   } catch (error) {
-    console.error('Error parsing query:', error);
+    console.error('❌ Error parsing query:', error);
   }
 
   return filters;
 }
 
+/**
+ * Parse finance-specific queries for chatbot
+ */
+function parseFinanceQuery(query, expenses, budgets, goals) {
+  const lowerQuery = query.toLowerCase();
+  const result = {
+    canAnswerDirectly: false,
+    directAnswer: null,
+    fallbackAnswer: null,
+    relevantData: null
+  };
+
+  if (expenses.length === 0) {
+    result.canAnswerDirectly = true;
+    result.directAnswer = "📊 You haven't added any expenses yet. Start tracking your expenses to get personalized insights!";
+    return result;
+  }
+
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  
+  const startOfMonth = new Date(currentYear, currentMonth, 1);
+  const startOfWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  
+  const lastMonthIndex = currentMonth - 1;
+  const lastMonthYear = lastMonthIndex < 0 ? currentYear - 1 : currentYear;
+  const lastMonthMonth = lastMonthIndex < 0 ? 11 : lastMonthIndex;
+  const startOfLastMonth = new Date(lastMonthYear, lastMonthMonth, 1);
+  const endOfLastMonth = new Date(lastMonthYear, lastMonthMonth + 1, 0, 23, 59, 59);
+
+  const spendingMatch = lowerQuery.match(/how much.*spend.*on\s+(\w+)/i) || 
+                        lowerQuery.match(/(\w+)\s+spending/i) ||
+                        lowerQuery.match(/spent.*on\s+(\w+)/i);
+  
+  if (spendingMatch) {
+    const categoryQuery = spendingMatch[1].toLowerCase();
+    const categoryMap = {
+      'food': 'Food',
+      'travel': 'Travel',
+      'shopping': 'Shopping',
+      'bills': 'Bills',
+      'entertainment': 'Entertainment',
+      'healthcare': 'Healthcare',
+      'education': 'Education',
+      'transport': 'Transport',
+      'transportation': 'Transport'
+    };
+    
+    const category = categoryMap[categoryQuery];
+    
+    if (category) {
+      let filteredExpenses = expenses.filter(exp => exp.category === category);
+      let timePeriod = 'total';
+      
+      if (lowerQuery.includes('last month')) {
+        filteredExpenses = filteredExpenses.filter(exp => {
+          const expDate = new Date(exp.date);
+          return expDate >= startOfLastMonth && expDate <= endOfLastMonth;
+        });
+        timePeriod = 'last month';
+      } else if (lowerQuery.includes('this month')) {
+        filteredExpenses = filteredExpenses.filter(exp => {
+          const expDate = new Date(exp.date);
+          return expDate >= startOfMonth;
+        });
+        timePeriod = 'this month';
+      } else if (lowerQuery.includes('this week') || lowerQuery.includes('last week')) {
+        filteredExpenses = filteredExpenses.filter(exp => {
+          const expDate = new Date(exp.date);
+          return expDate >= startOfWeek;
+        });
+        timePeriod = 'this week';
+      }
+      
+      const total = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+      const count = filteredExpenses.length;
+      
+      result.canAnswerDirectly = true;
+      
+      if (count === 0) {
+        result.directAnswer = `📊 You haven't spent anything on ${category} ${timePeriod}.`;
+      } else {
+        result.directAnswer = `💰 You spent ₹${total.toFixed(2)} on ${category} ${timePeriod}.\n\n📊 That's across ${count} transaction${count !== 1 ? 's' : ''}.`;
+        
+        if (count > 0) {
+          const avg = total / count;
+          result.directAnswer += `\n📈 Average: ₹${avg.toFixed(2)} per transaction.`;
+        }
+      }
+      
+      return result;
+    }
+  }
+
+  const affordMatch = lowerQuery.match(/can i afford.*?[₹$]?\s*([\d,]+)/i) ||
+                      lowerQuery.match(/afford.*?[₹$]?\s*([\d,]+)/i);
+  
+  if (affordMatch) {
+    const amount = parseFloat(affordMatch[1].replace(/,/g, ''));
+    const affordability = analyzeAffordability(amount, expenses, budgets);
+    
+    result.canAnswerDirectly = true;
+    result.directAnswer = affordability;
+    return result;
+  }
+
+  if (lowerQuery.includes('top') && (lowerQuery.includes('categor') || lowerQuery.includes('spending'))) {
+    const categoryTotals = {};
+    expenses.forEach(exp => {
+      categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
+    });
+    
+    const sorted = Object.entries(categoryTotals)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+    
+    result.canAnswerDirectly = true;
+    result.directAnswer = '📊 Your Top Spending Categories:\n\n' + 
+      sorted.map(([cat, amt], idx) => 
+        `${idx + 1}. ${cat}: ₹${amt.toFixed(2)}`
+      ).join('\n');
+    
+    return result;
+  }
+
+  if (lowerQuery.includes('recent') || lowerQuery.includes('latest')) {
+    const recent = expenses.slice(0, 5);
+    
+    result.canAnswerDirectly = true;
+    result.directAnswer = '📝 Your Recent Expenses:\n\n' +
+      recent.map(exp => 
+        `• ${new Date(exp.date).toLocaleDateString()}: ${exp.category} - ₹${exp.amount.toFixed(2)}\n  ${exp.description || 'No description'}`
+      ).join('\n\n');
+    
+    return result;
+  }
+
+  if (lowerQuery.includes('total') && lowerQuery.includes('month')) {
+    const monthExpenses = expenses.filter(exp => new Date(exp.date) >= startOfMonth);
+    const total = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    
+    result.canAnswerDirectly = true;
+    result.directAnswer = `💰 Your total spending this month: ₹${total.toFixed(2)}\n\n📊 Across ${monthExpenses.length} transactions.`;
+    return result;
+  }
+
+  result.relevantData = `Query Type: General financial question\nUser has ${expenses.length} expenses recorded.`;
+  
+  return result;
+}
+
+function analyzeAffordability(amount, expenses, budgets) {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const startOfMonth = new Date(currentYear, currentMonth, 1);
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const daysRemaining = daysInMonth - now.getDate();
+  
+  const monthExpenses = expenses.filter(exp => new Date(exp.date) >= startOfMonth);
+  const monthTotal = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+  
+  const daysPassed = now.getDate();
+  const avgDailySpending = monthTotal / daysPassed;
+  const projectedMonthSpending = avgDailySpending * daysInMonth;
+  
+  const totalBudget = budgets.reduce((sum, b) => sum + b.amount, 0);
+  
+  let response = `💰 Affordability Analysis for ₹${amount.toFixed(2)}:\n\n`;
+  
+  if (totalBudget > 0) {
+    const remainingBudget = totalBudget - monthTotal;
+    const afterPurchase = remainingBudget - amount;
+    const dailyBudgetAfter = afterPurchase / daysRemaining;
+    
+    if (afterPurchase > 0) {
+      response += `✅ YES, you can afford it!\n\n`;
+      response += `📊 Current Status:\n`;
+      response += `• Monthly Budget: ₹${totalBudget.toFixed(2)}\n`;
+      response += `• Spent So Far: ₹${monthTotal.toFixed(2)}\n`;
+      response += `• Remaining: ₹${remainingBudget.toFixed(2)}\n\n`;
+      response += `💡 After Purchase:\n`;
+      response += `• You'll have ₹${afterPurchase.toFixed(2)} left\n`;
+      response += `• Daily budget: ₹${dailyBudgetAfter.toFixed(2)} for ${daysRemaining} days\n`;
+      
+      if (dailyBudgetAfter < avgDailySpending) {
+        response += `\n⚠️ Note: You'll need to reduce daily spending to ₹${dailyBudgetAfter.toFixed(2)} (currently ₹${avgDailySpending.toFixed(2)})`;
+      }
+    } else {
+      response += `❌ NOT RECOMMENDED\n\n`;
+      response += `📊 Current Status:\n`;
+      response += `• Monthly Budget: ₹${totalBudget.toFixed(2)}\n`;
+      response += `• Spent So Far: ₹${monthTotal.toFixed(2)}\n`;
+      response += `• Remaining: ₹${remainingBudget.toFixed(2)}\n\n`;
+      response += `⚠️ This purchase would exceed your budget by ₹${Math.abs(afterPurchase).toFixed(2)}\n\n`;
+      response += `💡 Suggestion: Wait until next month or adjust your budget.`;
+    }
+  } else {
+    response += `📊 This Month:\n`;
+    response += `• Spent: ₹${monthTotal.toFixed(2)}\n`;
+    response += `• Projected: ₹${projectedMonthSpending.toFixed(2)}\n`;
+    response += `• After Purchase: ₹${(monthTotal + amount).toFixed(2)}\n\n`;
+    
+    if (amount > avgDailySpending * 5) {
+      response += `⚠️ This is a significant purchase (${(amount / avgDailySpending).toFixed(1)}x your daily average).\n\n`;
+    }
+    
+    response += `💡 Tip: Set monthly budgets to get better affordability insights!`;
+  }
+  
+  return response;
+}
+
 module.exports = {
-  parseNaturalLanguageQuery
+  parseNaturalLanguageQuery,
+  parseFinanceQuery,
+  analyzeAffordability
 };

@@ -1,16 +1,26 @@
-import React, { useState, useEffect } from 'react'
-import { Sparkles, RefreshCw, TrendingUp, Lightbulb } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { Sparkles, RefreshCw, TrendingUp, Lightbulb, Send, Bot, User } from 'lucide-react'
 import { analyticsService } from '../services/analyticsService'
 import toast from 'react-hot-toast'
+import api from '../services/api'
 
 const AIAssistant = () => {
   const [suggestions, setSuggestions] = useState('')
   const [loading, setLoading] = useState(false)
   const [score, setScore] = useState(null)
+  const [chatMessages, setChatMessages] = useState([])
+  const [userInput, setUserInput] = useState('')
+  const [chatLoading, setChatLoading] = useState(false)
+  const chatEndRef = useRef(null)
 
   useEffect(() => {
     loadSuggestions()
     loadScore()
+    // Add welcome message
+    setChatMessages([{
+      role: 'assistant',
+      content: '👋 Hi! I\'m your AI Finance Assistant. Ask me anything about your expenses!\n\nTry asking:\n• "How much did I spend on food last month?"\n• "Can I afford a ₹5,000 phone this month?"\n• "What are my top spending categories?"\n• "Show me my recent expenses"'
+    }])
   }, [])
 
   const loadSuggestions = async (type = 'general') => {
@@ -68,6 +78,41 @@ const AIAssistant = () => {
     )
   }
 
+  const handleChatSubmit = async (e) => {
+    e.preventDefault()
+    if (!userInput.trim()) return
+
+    const userMessage = userInput.trim()
+    setUserInput('')
+    
+    // Add user message to chat
+    setChatMessages(prev => [...prev, { role: 'user', content: userMessage }])
+    setChatLoading(true)
+
+    try {
+      const response = await api.post('/ai/chat', { message: userMessage })
+
+      // Add AI response to chat
+      setChatMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: response.data.response 
+      }])
+    } catch (error) {
+      console.error('Chat error:', error)
+      setChatMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: '❌ Sorry, I encountered an error. Please try again.' 
+      }])
+      toast.error('Failed to get response')
+    } finally {
+      setChatLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [chatMessages])
+
   const formatSuggestions = (text) => {
     // Split by lines and format
     const lines = text.split('\n')
@@ -110,6 +155,97 @@ const AIAssistant = () => {
 
   return (
     <div className="space-y-6">
+      {/* Conversational Finance Bot */}
+      <div className="card">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <Bot className="w-6 h-6 text-primary" />
+            Chat with AI Finance Bot
+          </h2>
+        </div>
+
+        {/* Chat Messages */}
+        <div className="bg-gray-50 rounded-lg p-4 h-96 overflow-y-auto mb-4 space-y-4">
+          {chatMessages.map((msg, idx) => (
+            <div key={idx} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              {msg.role === 'assistant' && (
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                  <Bot className="w-5 h-5 text-white" />
+                </div>
+              )}
+              <div className={`max-w-[80%] rounded-lg p-3 ${
+                msg.role === 'user' 
+                  ? 'bg-primary text-white' 
+                  : 'bg-white border border-gray-200'
+              }`}>
+                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+              </div>
+              {msg.role === 'user' && (
+                <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
+                  <User className="w-5 h-5 text-gray-600" />
+                </div>
+              )}
+            </div>
+          ))}
+          {chatLoading && (
+            <div className="flex gap-3 justify-start">
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <Bot className="w-5 h-5 text-white" />
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-3">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={chatEndRef} />
+        </div>
+
+        {/* Chat Input */}
+        <form onSubmit={handleChatSubmit} className="flex gap-2">
+          <input
+            type="text"
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
+            placeholder="Ask me anything about your expenses..."
+            className="input flex-1"
+            disabled={chatLoading}
+          />
+          <button 
+            type="submit" 
+            className="btn btn-primary"
+            disabled={chatLoading || !userInput.trim()}
+          >
+            <Send className="w-5 h-5" />
+          </button>
+        </form>
+
+        {/* Quick Questions */}
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            onClick={() => setUserInput("How much did I spend on food last month?")}
+            className="text-xs px-3 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200"
+          >
+            Food spending last month?
+          </button>
+          <button
+            onClick={() => setUserInput("Can I afford a ₹5,000 phone this month?")}
+            className="text-xs px-3 py-1 bg-green-100 text-green-700 rounded-full hover:bg-green-200"
+          >
+            Can I afford ₹5,000?
+          </button>
+          <button
+            onClick={() => setUserInput("What are my top spending categories?")}
+            className="text-xs px-3 py-1 bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200"
+          >
+            Top categories?
+          </button>
+        </div>
+      </div>
+
       {/* Financial Health Score */}
       {score && (
         <div className="card bg-gradient-to-br from-primary to-primary-dark text-white">

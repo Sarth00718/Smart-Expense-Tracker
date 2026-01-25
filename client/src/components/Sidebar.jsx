@@ -11,7 +11,9 @@ import {
   Wallet,
   ChevronLeft,
   Calendar,
-  Camera
+  Camera,
+  AlertTriangle,
+  Zap
 } from 'lucide-react'
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -24,6 +26,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { path: '/dashboard/goals', icon: Target, label: 'Goals' },
     { path: '/dashboard/analytics', icon: TrendingUp, label: 'Analytics' },
     { path: '/dashboard/ai', icon: Sparkles, label: 'AI Assistant' },
+    { path: '/dashboard/anomalies', icon: AlertTriangle, label: 'Anomaly Detection', badge: 'AI' },
+    { path: '/dashboard/budget-optimizer', icon: Zap, label: 'Budget Optimizer', badge: 'AI' },
     { path: '/dashboard/achievements', icon: Trophy, label: 'Achievements' },
   ]
 

@@ -2,8 +2,143 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const Expense = require('../models/Expense');
+const Budget = require('../models/Budget');
+const Goal = require('../models/Goal');
 const auth = require('../middleware/auth');
 const { calculateSpendingScore } = require('../utils/analytics');
+const { parseFinanceQuery, analyzeAffordability } = require('../utils/nlp');
+
+// @route   POST /api/ai/chat
+// @desc    Conversational AI Finance Bot
+// @access  Private
+router.post('/chat', auth, async (req, res) => {
+  try {
+    const { message } = req.body;
+    
+    if (!message || !message.trim()) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+
+    // Fetch user's financial data
+    const expenses = await Expense.find({ userId: req.userId }).sort({ date: -1 });
+    const budgets = await Budget.find({ userId: req.userId });
+    const goals = await Goal.find({ userId: req.userId });
+
+    // Parse the query using NLP
+    const queryData = parseFinanceQuery(message, expenses, budgets, goals);
+
+    // Check if we can answer with rule-based logic
+    if (queryData.canAnswerDirectly) {
+      return res.json({ response: queryData.directAnswer });
+    }
+
+    // Use LLM for complex queries
+    const apiKey = process.env.GROQ_API_KEY;
+    
+    if (!apiKey) {
+      // Fallback to rule-based response
+      return res.json({ response: queryData.fallbackAnswer || 'I need more data to answer that. Please add more expenses!' });
+    }
+
+    // Prepare context for LLM
+    const context = buildFinancialContext(expenses, budgets, goals, queryData);
+    
+    const prompt = `You are a helpful personal finance assistant. Answer the user's question based on their financial data.
+
+USER QUESTION: "${message}"
+
+FINANCIAL DATA:
+${context}
+
+Provide a clear, concise, and helpful answer. Use ₹ for currency. Be friendly and actionable.`;
+
+    const response = await axios.post(
+      'https://api.groq.com/openai/v1/chat/completions',
+      {
+        model: 'llama-3.1-8b-instant',
+        messages: [
+          { role: 'system', content: 'You are a helpful personal finance assistant. Provide clear, concise answers with specific numbers and actionable advice.' },
+          { role: 'user', content: prompt }
+        ],
+        max_tokens: 400,
+        temperature: 0.7
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 30000
+      }
+    );
+
+    const aiResponse = response.data.choices[0].message.content;
+    res.json({ response: aiResponse });
+
+  } catch (error) {
+    console.error('Chat error:', error.message);
+    res.status(500).json({ 
+      response: '❌ Sorry, I encountered an error. Please try again or rephrase your question.' 
+    });
+  }
+});
+
+// Helper function to build financial context
+function buildFinancialContext(expenses, budgets, goals, queryData) {
+  let context = '';
+
+  // Total expenses
+  const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  context += `Total Expenses: ₹${total.toFixed(2)}\n`;
+  context += `Number of Transactions: ${expenses.length}\n\n`;
+
+  // Category breakdown
+  const categoryTotals = {};
+  expenses.forEach(exp => {
+    categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
+  });
+  
+  context += 'CATEGORY BREAKDOWN:\n';
+  Object.entries(categoryTotals)
+    .sort((a, b) => b[1] - a[1])
+    .forEach(([cat, amt]) => {
+      context += `- ${cat}: ₹${amt.toFixed(2)}\n`;
+    });
+
+  // Recent expenses (last 10)
+  if (expenses.length > 0) {
+    context += '\nRECENT EXPENSES:\n';
+    expenses.slice(0, 10).forEach(exp => {
+      context += `- ${exp.date.toISOString().split('T')[0]}: ${exp.category} - ₹${exp.amount.toFixed(2)} (${exp.description || 'No description'})\n`;
+    });
+  }
+
+  // Budgets
+  if (budgets.length > 0) {
+    context += '\nBUDGETS:\n';
+    budgets.forEach(budget => {
+      const spent = categoryTotals[budget.category] || 0;
+      const remaining = budget.amount - spent;
+      context += `- ${budget.category}: Budget ₹${budget.amount}, Spent ₹${spent.toFixed(2)}, Remaining ₹${remaining.toFixed(2)}\n`;
+    });
+  }
+
+  // Goals
+  if (goals.length > 0) {
+    context += '\nSAVINGS GOALS:\n';
+    goals.forEach(goal => {
+      const progress = (goal.currentAmount / goal.targetAmount) * 100;
+      context += `- ${goal.name}: ₹${goal.currentAmount} / ₹${goal.targetAmount} (${progress.toFixed(0)}%)\n`;
+    });
+  }
+
+  // Query-specific data
+  if (queryData.relevantData) {
+    context += `\n${queryData.relevantData}\n`;
+  }
+
+  return context;
+}
 
 // @route   GET /api/ai/suggestions
 // @desc    Get AI-powered financial suggestions

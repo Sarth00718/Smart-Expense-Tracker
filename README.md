@@ -11,10 +11,16 @@ A comprehensive full-stack expense tracking application built with MongoDB, Expr
 - **Dashboard Analytics**: Comprehensive spending statistics and visualizations
 
 ### 🤖 AI-Powered Features
+- **Conversational Finance Bot**: ChatGPT-like interface to ask questions about your finances
+  - "How much did I spend on food last month?"
+  - "Can I afford a ₹5,000 phone this month?"
+  - "What are my top spending categories?"
+  - "Show me my recent expenses"
 - **Smart Suggestions**: AI-powered saving tips based on spending patterns
 - **Behavioral Analysis**: Detect spending patterns and impulse buying
 - **Future Predictions**: Predict future expenses based on historical data
 - **Spending Score**: Financial health scoring system
+- **Affordability Analysis**: Get instant answers on whether you can afford purchases
 
 ### 📊 Advanced Analytics
 - **Calendar Heatmap**: Visual spending patterns by date
@@ -28,6 +34,34 @@ A comprehensive full-stack expense tracking application built with MongoDB, Expr
 - **Data Export**: Export data to Excel format
 - **Google OAuth**: Social login integration
 - **Responsive Design**: Mobile-first, fully responsive UI
+
+## 🤖 Conversational Finance Bot
+
+The app includes a ChatGPT-like AI assistant that understands natural language queries about your finances.
+
+### Example Questions You Can Ask:
+
+**Spending Queries:**
+- "How much did I spend on food last month?"
+- "What did I spend on shopping this week?"
+- "Show me my travel expenses"
+
+**Affordability Analysis:**
+- "Can I afford a ₹5,000 phone this month?"
+- "Can I buy a ₹2,000 gadget?"
+- "Should I make a ₹10,000 purchase?"
+
+**Analytics:**
+- "What are my top spending categories?"
+- "Show me my recent expenses"
+- "What's my total spending this month?"
+
+### How It Works:
+
+1. **Rule-Based Engine**: For common queries, the bot uses fast NLP pattern matching
+2. **LLM Integration**: For complex questions, it uses Groq's Llama 3.1 model
+3. **Context-Aware**: Analyzes your actual expense data, budgets, and goals
+4. **Instant Responses**: Get answers in seconds with specific numbers and actionable advice
 
 ## 🚀 Quick Start
 
@@ -144,7 +178,8 @@ expense-tracker-mern/
 - `GET /api/analytics/score` - Spending score
 
 ### AI
-- `GET /api/ai/suggestions` - AI-powered suggestions
+- `GET /api/ai/suggestions` - Get AI financial suggestions
+- `POST /api/ai/chat` - Chat with AI Finance Bot (conversational interface)
 
 ### Achievements
 - `GET /api/achievements` - Get user achievements
@@ -203,6 +238,28 @@ NODE_ENV=production node server/server.js
 - **API Caching**: Response caching for frequent operations
 - **Code Splitting**: Reduced initial bundle size
 
+## 🚀 Deployment
+
+### Deploy to Production
+
+#### Backend (Render.com)
+1. Push code to GitHub
+2. Go to [Render.com](https://render.com)
+3. Create new Web Service
+4. Set Root Directory: `server`
+5. Add environment variables (see `render.yaml`)
+6. Deploy and copy backend URL
+
+#### Frontend (Vercel)
+1. Go to [Vercel](https://vercel.com)
+2. Import your GitHub repository
+3. Set Root Directory: `client`
+4. Add environment variable:
+   - `VITE_API_URL=https://your-backend-url.onrender.com/api`
+5. Deploy
+
+See `VERCEL-DEPLOYMENT.md` for detailed instructions.
+
 ## 🐛 Troubleshooting
 
 ### Common Issues
@@ -218,6 +275,16 @@ NODE_ENV=production node server/server.js
 3. **AI Suggestions Not Working**
    - Add valid GROQ_API_KEY to .env
    - Check API key credits
+
+4. **Vercel Deployment Error**
+   - Set Root Directory to `client` in Vercel dashboard
+   - Ensure VITE_API_URL is set in environment variables
+   - Deploy backend first before frontend
+
+5. **Network Error on Login**
+   - Backend not running or not deployed
+   - Check VITE_API_URL points to correct backend
+   - Verify CORS settings in backend
 
 ## 📄 License
 
