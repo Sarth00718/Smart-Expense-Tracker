@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Camera, Upload, Scan, X, CheckCircle } from 'lucide-react'
-import axios from 'axios'
 import toast from 'react-hot-toast'
 import { useExpense } from '../context/ExpenseContext'
+import { receiptService } from '../services/receiptService'
 
 const ReceiptScanner = () => {
   const { addExpense } = useExpense()
@@ -49,22 +49,12 @@ const ReceiptScanner = () => {
 
     try {
       setScanning(true)
-      const token = localStorage.getItem('token')
       
       const formDataToSend = new FormData()
       formDataToSend.append('receipt', selectedFile)
       formDataToSend.append('categoryHint', formData.category)
 
-      const response = await axios.post(
-        'http://localhost:5000/api/receipts/scan',
-        formDataToSend,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        }
-      )
+      const response = await receiptService.scan(formDataToSend)
 
       const data = response.data
       setExtractedData(data)
@@ -241,6 +231,7 @@ const ReceiptScanner = () => {
                 >
                   <option value="Food">Food</option>
                   <option value="Travel">Travel</option>
+                  <option value="Transport">Transport</option>
                   <option value="Shopping">Shopping</option>
                   <option value="Bills">Bills</option>
                   <option value="Entertainment">Entertainment</option>

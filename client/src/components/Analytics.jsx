@@ -190,7 +190,14 @@ const Analytics = () => {
           <div className="space-y-3">
             {patterns.map((pattern, index) => (
               <div key={index} className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-gray-700">{pattern}</p>
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">{pattern.type === 'weekend_splurging' ? '🎉' : pattern.type === 'impulse_buying' ? '🛍️' : '📊'}</span>
+                  <div>
+                    <p className="font-semibold text-gray-900">{pattern.description}</p>
+                    <p className="text-sm text-gray-600 mt-1">Impact: {pattern.impact}</p>
+                    <p className="text-sm text-blue-700 mt-1">💡 {pattern.suggestion}</p>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -206,10 +213,10 @@ const Analytics = () => {
           <div className="h-64 mb-6">
             <Line 
               data={{
-                labels: predictions.map((pred, idx) => pred.month || `Month ${idx + 1}`),
+                labels: predictions.map(pred => pred.month || 'N/A'),
                 datasets: [{
                   label: 'Predicted Spending',
-                  data: predictions.map(pred => pred.predicted_amount || 0),
+                  data: predictions.map(pred => pred.predictedAmount || 0),
                   borderColor: '#7c3aed',
                   backgroundColor: 'rgba(124, 58, 237, 0.1)',
                   tension: 0.4,
@@ -240,9 +247,11 @@ const Analytics = () => {
                   {pred.month || `Month ${index + 1}`}
                 </p>
                 <p className="text-2xl font-bold text-purple-900">
-                  ₹{pred.predicted_amount?.toFixed(2) || '0.00'}
+                  ₹{pred.predictedAmount?.toFixed(2) || '0.00'}
                 </p>
-                <p className="text-xs text-purple-600 mt-1">Predicted spending</p>
+                <p className="text-xs text-purple-600 mt-1">
+                  Confidence: {pred.confidence || 'low'}
+                </p>
               </div>
             ))}
           </div>

@@ -113,9 +113,9 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Update last login
+    // Update last login (skip validation for existing users)
     user.lastLogin = new Date();
-    await user.save();
+    await user.save({ validateBeforeSave: false });
 
     // Generate token
     const token = generateToken(user._id);
@@ -167,12 +167,12 @@ router.post('/google', async (req, res) => {
       });
       await user.save();
     } else {
-      // Update user info
+      // Update user info (skip validation for existing users)
       user.googleId = googleId;
       user.fullName = name || user.fullName;
       user.picture = picture || user.picture;
       user.lastLogin = new Date();
-      await user.save();
+      await user.save({ validateBeforeSave: false });
     }
 
     // Generate JWT token

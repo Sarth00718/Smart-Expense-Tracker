@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'
-import axios from 'axios'
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth } from 'date-fns'
+import { analyticsService } from '../services/analyticsService'
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns'
+import toast from 'react-hot-toast'
 
 const SpendingHeatmap = () => {
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [heatmapData, setHeatmapData] = useState({})
+  const [heatmapData, setHeatmapData] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [maxAmount, setMaxAmount] = useState(0)
 
   useEffect(() => {
     loadHeatmapData()
@@ -16,29 +16,20 @@ const SpendingHeatmap = () => {
   const loadHeatmapData = async () => {
     try {
       setLoading(true)
-      const token = localStorage.getItem('token')
       const year = currentDate.getFullYear()
       const month = currentDate.getMonth() + 1
 
-      const response = await axios.get(
-        `http://localhost:5000/api/analytics/heatmap?year=${year}&month=${month}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-
-      const data = response.data
-      setHeatmapData(data)
-
-      // Calculate max amount for color intensity
-      const amounts = Object.values(data).map(d => d.total || 0)
-      setMaxAmount(Math.max(...amounts, 1))
+      const response = await analyticsService.getHeatmap(year, month)
+      setHeatmapData(response.data)
     } catch (error) {
       console.error('Error loading heatmap:', error)
+      toast.error('Failed to load heatmap data')
     } finally {
       setLoading(false)
     }
   }
 
-  const getIntensityColor = (amount) => {
+  const getIntensityColor = (amount, maxAmount) => {
     if (!amount || amount === 0) return 'bg-gray-100'
     
     const intensity = Math.min((amount / maxAmount) * 100, 100)
@@ -50,16 +41,6 @@ const SpendingHeatmap = () => {
     return 'bg-green-400'
   }
 
-  const getDaysInMonth = () => {
-    const start = startOfMonth(currentDate)
-    const end = endOfMonth(currentDate)
-    return eachDayOfInterval({ start, end })
-  }
-
-  const getStartingDayOfWeek = () => {
-    return getDay(startOfMonth(currentDate))
-  }
-
   const previousMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))
   }
@@ -68,8 +49,6 @@ const SpendingHeatmap = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))
   }
 
-  const days = getDaysInMonth()
-  const startingDay = getStartingDayOfWeek()
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
   if (loading) {
@@ -79,6 +58,26 @@ const SpendingHeatmap = () => {
       </div>
     )
   }
+
+  if (!heatmapData || !heatmapData.heatmap) {
+    return (
+      <div className="card">
+        <p className="text-center text-gray-500">No heatmap data available</p>
+      </div>
+    )
+  }
+
+  // Calculate totals from heatmap data
+  const totalAmount = heatmapData.heatmap.flat()
+    .filter(day => day.day !== null)
+    .reduce((sum, day) => sum + (day.amount || 0), 0)
+
+  const totalCount = heatmapData.heatmap.flat()
+    .filter(day => day.day !== null && day.hasData)
+    .length
+
+  const daysInMonth = heatmapData.heatmap.flat()
+    .filter(day => day.day !== null).length
 
   return (
     <div className="space-y-6">
@@ -93,7 +92,7 @@ const SpendingHeatmap = () => {
               <ChevronLeft className="w-5 h-5" />
             </button>
             <span className="font-semibold text-lg min-w-[150px] text-center">
-              {format(currentDate, 'MMMM yyyy')}
+              {heatmapData.monthName} {heatmapData.year}
             </span>
             <button onClick={nextMonth} className="btn btn-secondary p-2">
               <ChevronRight className="w-5 h-5" />
@@ -112,45 +111,44 @@ const SpendingHeatmap = () => {
             ))}
           </div>
 
-          {/* Calendar days */}
-          <div className="grid grid-cols-7 gap-2">
-            {/* Empty cells for days before month starts */}
-            {Array.from({ length: startingDay }).map((_, index) => (
-              <div key={`empty-${index}`} className="aspect-square" />
-            ))}
+          {/* Calendar weeks */}
+          <div className="space-y-2">
+            {heatmapData.heatmap.map((week, weekIndex) => (
+              <div key={weekIndex} className="grid grid-cols-7 gap-2">
+                {week.map((dayData, dayIndex) => {
+                  if (dayData.day === null) {
+                    return <div key={`empty-${weekIndex}-${dayIndex}`} className="aspect-square" />
+                  }
 
-            {/* Actual days */}
-            {days.map(day => {
-              const dateKey = format(day, 'yyyy-MM-dd')
-              const dayData = heatmapData[dateKey] || { total: 0, count: 0 }
-              const intensityColor = getIntensityColor(dayData.total)
+                  const intensityColor = getIntensityColor(dayData.amount, heatmapData.maxAmount)
+                  const dateObj = new Date(heatmapData.year, heatmapData.month - 1, dayData.day)
 
-              return (
-                <div
-                  key={dateKey}
-                  className={`aspect-square rounded-lg ${intensityColor} flex flex-col items-center justify-center cursor-pointer hover:ring-2 hover:ring-primary transition-all group relative`}
-                  title={`${format(day, 'MMM dd')}: ₹${dayData.total.toFixed(2)} (${dayData.count} expenses)`}
-                >
-                  <span className="text-sm font-semibold text-gray-800">
-                    {format(day, 'd')}
-                  </span>
-                  {dayData.count > 0 && (
-                    <span className="text-xs text-gray-700">
-                      ₹{dayData.total.toFixed(0)}
-                    </span>
-                  )}
-                  
-                  {/* Tooltip */}
-                  <div className="absolute bottom-full mb-2 hidden group-hover:block z-10">
-                    <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
-                      {format(day, 'MMM dd')}: ₹{dayData.total.toFixed(2)}
-                      <br />
-                      {dayData.count} expense{dayData.count !== 1 ? 's' : ''}
+                  return (
+                    <div
+                      key={`day-${dayData.day}`}
+                      className={`aspect-square rounded-lg ${intensityColor} flex flex-col items-center justify-center cursor-pointer hover:ring-2 hover:ring-primary transition-all group relative`}
+                      title={`${format(dateObj, 'MMM dd')}: ₹${dayData.amount.toFixed(2)}`}
+                    >
+                      <span className="text-sm font-semibold text-gray-800">
+                        {dayData.day}
+                      </span>
+                      {dayData.hasData && (
+                        <span className="text-xs text-gray-700">
+                          ₹{dayData.amount.toFixed(0)}
+                        </span>
+                      )}
+                      
+                      {/* Tooltip */}
+                      <div className="absolute bottom-full mb-2 hidden group-hover:block z-10">
+                        <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+                          {format(dateObj, 'MMM dd')}: ₹{dayData.amount.toFixed(2)}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              )
-            })}
+                  )
+                })}
+              </div>
+            ))}
           </div>
         </div>
 
@@ -173,19 +171,19 @@ const SpendingHeatmap = () => {
           <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-sm text-blue-600 font-semibold">Total This Month</p>
             <p className="text-2xl font-bold text-blue-900">
-              ₹{Object.values(heatmapData).reduce((sum, d) => sum + (d.total || 0), 0).toFixed(2)}
+              ₹{totalAmount.toFixed(2)}
             </p>
           </div>
           <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-            <p className="text-sm text-purple-600 font-semibold">Total Expenses</p>
+            <p className="text-sm text-purple-600 font-semibold">Days with Expenses</p>
             <p className="text-2xl font-bold text-purple-900">
-              {Object.values(heatmapData).reduce((sum, d) => sum + (d.count || 0), 0)}
+              {totalCount}
             </p>
           </div>
           <div className="p-4 bg-green-50 rounded-lg border border-green-200">
             <p className="text-sm text-green-600 font-semibold">Daily Average</p>
             <p className="text-2xl font-bold text-green-900">
-              ₹{(Object.values(heatmapData).reduce((sum, d) => sum + (d.total || 0), 0) / days.length).toFixed(2)}
+              ₹{(totalAmount / daysInMonth).toFixed(2)}
             </p>
           </div>
         </div>

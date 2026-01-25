@@ -111,6 +111,7 @@ const Budgets = () => {
                   <option value="">Select Category</option>
                   <option value="Food">Food</option>
                   <option value="Travel">Travel</option>
+                  <option value="Transport">Transport</option>
                   <option value="Shopping">Shopping</option>
                   <option value="Bills">Bills</option>
                   <option value="Entertainment">Entertainment</option>

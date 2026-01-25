@@ -6,21 +6,30 @@ function calculateSpendingScore(expenses) {
   }
 
   try {
-    const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-    const count = expenses.length;
+    // Ensure all expenses have valid amounts
+    const validExpenses = expenses.filter(exp => exp && typeof exp.amount === 'number' && !isNaN(exp.amount));
+    
+    if (validExpenses.length === 0) {
+      return 80;
+    }
+
+    const total = validExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const count = validExpenses.length;
     const avgAmount = count > 0 ? total / count : 0;
 
     // Analyze categories
     const categoryTotals = {};
-    expenses.forEach(exp => {
-      categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
+    validExpenses.forEach(exp => {
+      if (exp.category) {
+        categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
+      }
     });
 
     let score = 70; // Base score
 
     // 1. Spending consistency
     if (count > 1) {
-      const amounts = expenses.map(exp => exp.amount);
+      const amounts = validExpenses.map(exp => exp.amount);
       const mean = amounts.reduce((a, b) => a + b, 0) / amounts.length;
       const variance = amounts.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / amounts.length;
       const stdDev = Math.sqrt(variance);
@@ -43,14 +52,14 @@ function calculateSpendingScore(expenses) {
     // 3. Recent spending patterns
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const recentExpenses = expenses.filter(exp => new Date(exp.date) >= sevenDaysAgo);
+    const recentExpenses = validExpenses.filter(exp => exp.date && new Date(exp.date) >= sevenDaysAgo);
 
     if (recentExpenses.length > 10) {
       score -= 8; // Too many transactions
     }
 
     // 4. High-value expenses
-    const highValue = expenses.filter(exp => exp.amount > 5000).length;
+    const highValue = validExpenses.filter(exp => exp.amount > 5000).length;
     if (highValue > 3) {
       score -= 7;
     }

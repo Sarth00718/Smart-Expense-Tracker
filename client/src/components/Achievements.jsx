@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Trophy, Award, Star, Zap } from 'lucide-react'
-import axios from 'axios'
+import { analyticsService } from '../services/analyticsService'
 import { format } from 'date-fns'
 
 const Achievements = () => {
@@ -16,10 +16,7 @@ const Achievements = () => {
   const loadAchievements = async () => {
     try {
       setLoading(true)
-      const token = localStorage.getItem('token')
-      const response = await axios.get('http://localhost:5000/api/achievements', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await analyticsService.getAchievements()
       setAchievements(response.data.earned || [])
     } catch (error) {
       console.error('Error loading achievements:', error)
@@ -30,10 +27,7 @@ const Achievements = () => {
 
   const loadScore = async () => {
     try {
-      const token = localStorage.getItem('token')
-      const response = await axios.get('http://localhost:5000/api/analytics/score', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await analyticsService.getScore()
       setScore(response.data)
     } catch (error) {
       console.error('Error loading score:', error)

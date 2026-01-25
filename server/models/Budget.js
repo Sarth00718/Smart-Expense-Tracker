@@ -10,7 +10,7 @@ const budgetSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['Food', 'Travel', 'Shopping', 'Bills', 'Entertainment', 'Healthcare', 'Education', 'Other']
+    enum: ['Food', 'Travel', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Healthcare', 'Education', 'Other']
   },
   monthlyBudget: {
     type: Number,

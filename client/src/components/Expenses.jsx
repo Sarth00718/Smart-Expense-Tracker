@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react'
 import { useExpense } from '../context/ExpenseContext'
-import { Trash2, Calendar, Edit2, X, Download, Trash, Search, Filter, ArrowUpDown } from 'lucide-react'
+import { expenseService } from '../services/expenseService'
+import { Trash2, Calendar, Edit2, X, Download, Trash, Search, ArrowUpDown } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 import * as XLSX from 'xlsx'
-import axios from 'axios'
 
 const Expenses = () => {
   const { expenses, deleteExpense, updateExpense, loading, fetchExpenses } = useExpense()
@@ -38,13 +38,7 @@ const Expenses = () => {
     if (window.confirm('⚠️ Are you sure you want to delete ALL expenses? This action cannot be undone!')) {
       if (window.confirm('This will permanently delete all your expense data. Are you absolutely sure?')) {
         try {
-          const token = localStorage.getItem('token')
-          const deletePromises = expenses.map(exp => 
-            axios.delete(`http://localhost:5000/api/expenses/${exp._id}`, {
-              headers: { Authorization: `Bearer ${token}` }
-            })
-          )
-          await Promise.all(deletePromises)
+          await expenseService.deleteAll()
           await fetchExpenses()
           toast.success('All expenses cleared successfully')
         } catch (error) {
@@ -84,12 +78,7 @@ const Expenses = () => {
     }
 
     try {
-      const token = localStorage.getItem('token')
-      const response = await axios.post(
-        'http://localhost:5000/api/expenses/search',
-        { query: nlQuery },
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
+      const response = await expenseService.search(nlQuery)
       setNlResults(response.data)
       toast.success(`Found ${response.data.count} matching expenses`)
     } catch (error) {
@@ -133,6 +122,7 @@ const Expenses = () => {
     const classes = {
       Food: 'badge-food',
       Travel: 'badge-travel',
+      Transport: 'badge-travel',
       Shopping: 'badge-shopping',
       Bills: 'badge-bills',
       Entertainment: 'badge-entertainment',
@@ -361,6 +351,7 @@ const Expenses = () => {
                             >
                               <option value="Food">Food</option>
                               <option value="Travel">Travel</option>
+                              <option value="Transport">Transport</option>
                               <option value="Shopping">Shopping</option>
                               <option value="Bills">Bills</option>
                               <option value="Entertainment">Entertainment</option>

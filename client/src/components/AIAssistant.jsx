@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Sparkles, RefreshCw, TrendingUp, Lightbulb } from 'lucide-react'
-import axios from 'axios'
+import { analyticsService } from '../services/analyticsService'
 import toast from 'react-hot-toast'
 
 const AIAssistant = () => {
@@ -16,10 +16,7 @@ const AIAssistant = () => {
   const loadSuggestions = async (type = 'general') => {
     try {
       setLoading(true)
-      const token = localStorage.getItem('token')
-      const response = await axios.get(`http://localhost:5000/api/ai/suggestions?type=${type}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await analyticsService.getAISuggestions()
       setSuggestions(response.data.suggestions || 'No suggestions available')
     } catch (error) {
       console.error('Error loading suggestions:', error)
@@ -31,10 +28,7 @@ const AIAssistant = () => {
 
   const loadScore = async () => {
     try {
-      const token = localStorage.getItem('token')
-      const response = await axios.get('http://localhost:5000/api/analytics/score', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await analyticsService.getScore()
       setScore(response.data)
     } catch (error) {
       console.error('Error loading score:', error)

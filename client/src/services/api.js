@@ -25,11 +25,27 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Handle network errors
+    if (!error.response) {
+      console.error('Network error:', error.message)
+      return Promise.reject(new Error('Network error. Please check your connection.'))
+    }
+
+    // Handle specific status codes
+    const status = error.response.status
+    
+    if (status === 401) {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       window.location.href = '/login'
+    } else if (status === 403) {
+      console.error('Access forbidden')
+    } else if (status === 404) {
+      console.error('Resource not found')
+    } else if (status >= 500) {
+      console.error('Server error:', error.response.data)
     }
+    
     return Promise.reject(error)
   }
 )

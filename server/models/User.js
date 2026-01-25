@@ -17,10 +17,8 @@ const userSchema = new mongoose.Schema({
   },
   fullName: {
     type: String,
-    required: function() {
-      return !this.googleId; // Full name required only if not Google OAuth
-    },
-    trim: true
+    trim: true,
+    default: ''
   },
   picture: {
     type: String

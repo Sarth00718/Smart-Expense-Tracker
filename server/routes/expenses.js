@@ -3,58 +3,10 @@ const router = express.Router();
 const Expense = require('../models/Expense');
 const auth = require('../middleware/auth');
 const { checkAndAwardAchievements } = require('../utils/achievements');
+const { parseNaturalLanguageQuery } = require('../utils/nlp');
 
-// @route   POST /api/expenses
-// @desc    Add new expense
-// @access  Private
-router.post('/', auth, async (req, res) => {
-  try {
-    const { date, category, amount, description, isRecurring } = req.body;
-
-    // Validation
-    if (!date || !category || !amount) {
-      return res.status(400).json({ error: 'Date, category, and amount are required' });
-    }
-
-    if (amount <= 0) {
-      return res.status(400).json({ error: 'Amount must be positive' });
-    }
-
-    const expense = new Expense({
-      userId: req.userId,
-      date: new Date(date),
-      category,
-      amount: parseFloat(amount),
-      description: description || '',
-      isRecurring: isRecurring || false
-    });
-
-    await expense.save();
-
-    // Check for achievements
-    await checkAndAwardAchievements(req.userId);
-
-    res.status(201).json(expense);
-  } catch (error) {
-    console.error('Add expense error:', error);
-    res.status(500).json({ error: 'Failed to add expense' });
-  }
-});
-
-// @route   GET /api/expenses
-// @desc    Get all expenses for user
-// @access  Private
-router.get('/', auth, async (req, res) => {
-  try {
-    const expenses = await Expense.find({ userId: req.userId })
-      .sort({ date: -1, createdAt: -1 });
-
-    res.json(expenses);
-  } catch (error) {
-    console.error('Get expenses error:', error);
-    res.status(500).json({ error: 'Failed to fetch expenses' });
-  }
-});
+// IMPORTANT: Specific routes MUST come before parameterized routes like /:id
+// Otherwise Express will match "filter" as an ID parameter
 
 // @route   GET /api/expenses/filter
 // @desc    Filter expenses
@@ -203,73 +155,6 @@ router.get('/recent/:limit', auth, async (req, res) => {
   }
 });
 
-// @route   PUT /api/expenses/:id
-// @desc    Update expense
-// @access  Private
-router.put('/:id', auth, async (req, res) => {
-  try {
-    const { date, category, amount, description, isRecurring } = req.body;
-
-    const expense = await Expense.findOne({ _id: req.params.id, userId: req.userId });
-
-    if (!expense) {
-      return res.status(404).json({ error: 'Expense not found' });
-    }
-
-    // Update fields
-    if (date) expense.date = new Date(date);
-    if (category) expense.category = category;
-    if (amount) expense.amount = parseFloat(amount);
-    if (description !== undefined) expense.description = description;
-    if (isRecurring !== undefined) expense.isRecurring = isRecurring;
-
-    await expense.save();
-
-    res.json(expense);
-  } catch (error) {
-    console.error('Update expense error:', error);
-    res.status(500).json({ error: 'Failed to update expense' });
-  }
-});
-
-// @route   DELETE /api/expenses/:id
-// @desc    Delete expense
-// @access  Private
-router.delete('/:id', auth, async (req, res) => {
-  try {
-    const expense = await Expense.findOneAndDelete({ 
-      _id: req.params.id, 
-      userId: req.userId 
-    });
-
-    if (!expense) {
-      return res.status(404).json({ error: 'Expense not found' });
-    }
-
-    res.json({ message: 'Expense deleted successfully' });
-  } catch (error) {
-    console.error('Delete expense error:', error);
-    res.status(500).json({ error: 'Failed to delete expense' });
-  }
-});
-
-// @route   DELETE /api/expenses
-// @desc    Delete all expenses for user
-// @access  Private
-router.delete('/', auth, async (req, res) => {
-  try {
-    const result = await Expense.deleteMany({ userId: req.userId });
-    
-    res.json({ 
-      message: 'All expenses deleted successfully',
-      deletedCount: result.deletedCount
-    });
-  } catch (error) {
-    console.error('Delete all expenses error:', error);
-    res.status(500).json({ error: 'Failed to delete expenses' });
-  }
-});
-
 // @route   POST /api/expenses/search
 // @desc    Natural language search
 // @access  Private
@@ -281,7 +166,6 @@ router.post('/search', auth, async (req, res) => {
       return res.status(400).json({ error: 'Query is required' });
     }
 
-    const { parseNaturalLanguageQuery } = require('../utils/nlp');
     const filters = parseNaturalLanguageQuery(query);
 
     // Build MongoDB query
@@ -325,6 +209,139 @@ router.post('/search', auth, async (req, res) => {
   } catch (error) {
     console.error('Search error:', error);
     res.status(500).json({ error: 'Search failed' });
+  }
+});
+
+// @route   POST /api/expenses
+// @desc    Add new expense
+// @access  Private
+router.post('/', auth, async (req, res) => {
+  try {
+    const { date, category, amount, description, isRecurring } = req.body;
+
+    // Validation
+    if (!date || !category || !amount) {
+      return res.status(400).json({ error: 'Date, category, and amount are required' });
+    }
+
+    if (amount <= 0) {
+      return res.status(400).json({ error: 'Amount must be positive' });
+    }
+
+    if (amount > 999999999) {
+      return res.status(400).json({ error: 'Amount is too large' });
+    }
+
+    const expense = new Expense({
+      userId: req.userId,
+      date: new Date(date),
+      category,
+      amount: parseFloat(amount),
+      description: description || '',
+      isRecurring: isRecurring || false
+    });
+
+    await expense.save();
+
+    // Check for achievements
+    await checkAndAwardAchievements(req.userId);
+
+    res.status(201).json(expense);
+  } catch (error) {
+    console.error('Add expense error:', error);
+    res.status(500).json({ error: 'Failed to add expense' });
+  }
+});
+
+// @route   GET /api/expenses
+// @desc    Get all expenses for user
+// @access  Private
+router.get('/', auth, async (req, res) => {
+  try {
+    const expenses = await Expense.find({ userId: req.userId })
+      .sort({ date: -1, createdAt: -1 });
+
+    res.json(expenses);
+  } catch (error) {
+    console.error('Get expenses error:', error);
+    res.status(500).json({ error: 'Failed to fetch expenses' });
+  }
+});
+
+// @route   DELETE /api/expenses
+// @desc    Delete all expenses for user (DANGEROUS - requires confirmation)
+// @access  Private
+router.delete('/', auth, async (req, res) => {
+  try {
+    const result = await Expense.deleteMany({ userId: req.userId });
+    
+    console.log(`User ${req.userId} deleted all expenses (${result.deletedCount} items)`);
+    
+    res.json({ 
+      message: 'All expenses deleted successfully',
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    console.error('Delete all expenses error:', error);
+    res.status(500).json({ error: 'Failed to delete expenses' });
+  }
+});
+
+// @route   PUT /api/expenses/:id
+// @desc    Update expense
+// @access  Private
+router.put('/:id', auth, async (req, res) => {
+  try {
+    const { date, category, amount, description, isRecurring } = req.body;
+
+    const expense = await Expense.findOne({ _id: req.params.id, userId: req.userId });
+
+    if (!expense) {
+      return res.status(404).json({ error: 'Expense not found' });
+    }
+
+    // Update fields
+    if (date) expense.date = new Date(date);
+    if (category) expense.category = category;
+    if (amount !== undefined) {
+      if (amount <= 0) {
+        return res.status(400).json({ error: 'Amount must be positive' });
+      }
+      if (amount > 999999999) {
+        return res.status(400).json({ error: 'Amount is too large' });
+      }
+      expense.amount = parseFloat(amount);
+    }
+    if (description !== undefined) expense.description = description;
+    if (isRecurring !== undefined) expense.isRecurring = isRecurring;
+
+    await expense.save();
+
+    res.json(expense);
+  } catch (error) {
+    console.error('Update expense error:', error);
+    res.status(500).json({ error: 'Failed to update expense' });
+  }
+});
+
+// @route   DELETE /api/expenses/:id
+// @desc    Delete expense
+// @access  Private
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    const expense = await Expense.findOneAndDelete({ 
+      _id: req.params.id, 
+      userId: req.userId 
+    });
+
+    if (!expense) {
+      return res.status(404).json({ error: 'Expense not found' });
+    }
+
+    res.json({ message: 'Expense deleted successfully' });
+  } catch (error) {
+    console.error('Delete expense error:', error);
+    res.status(500).json({ error: 'Failed to delete expense' });
   }
 });
 
