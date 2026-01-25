@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
-import { Wallet, Mail, Lock, User, UserPlus, AlertCircle } from 'lucide-react'
+import { Wallet, Mail, Lock, User, UserPlus, AlertCircle, Eye, EyeOff } from 'lucide-react'
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -13,6 +13,8 @@ const Register = () => {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const { register } = useAuth()
   const navigate = useNavigate()
 
@@ -25,6 +27,12 @@ const Register = () => {
     setError('')
 
     // Validation
+    if (!formData.fullName.trim()) {
+      setError('Full name is required')
+      toast.error('Full name is required')
+      return
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match')
       toast.error('Passwords do not match')
@@ -93,6 +101,7 @@ const Register = () => {
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleChange}
+                  required
                   placeholder="John Doe"
                   className="input pl-11"
                 />
@@ -127,15 +136,26 @@ const Register = () => {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   required
                   placeholder="Min. 6 characters"
-                  className="input pl-11"
+                  className="input pl-11 pr-11"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
               </div>
             </div>
 
@@ -147,15 +167,26 @@ const Register = () => {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   id="confirmPassword"
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
                   placeholder="Confirm your password"
-                  className="input pl-11"
+                  className="input pl-11 pr-11"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
               </div>
             </div>
 
