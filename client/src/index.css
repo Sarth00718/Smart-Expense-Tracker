@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply box-border;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-400 rounded;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary;
+  }
+}
+
+@layer components {
+  /* Loading Spinner */
+  .spinner {
+    @apply inline-block w-5 h-5 border-[3px] border-primary/30 border-t-primary rounded-full animate-spin;
+  }
+
+  .spinner-small {
+    @apply inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin;
+  }
+
+  /* Card */
+  .card {
+    @apply bg-white rounded-xl shadow-card p-6;
+  }
+
+  /* Button Base */
+  .btn {
+    @apply px-4 py-2 rounded-lg font-semibold transition-all duration-200 inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-primary-dark hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-primary border-2 border-primary hover:bg-primary hover:text-white;
+  }
+
+  .btn-success {
+    @apply bg-success text-white hover:bg-green-600;
+  }
+
+  .btn-danger {
+    @apply bg-danger text-white hover:bg-red-600;
+  }
+
+  /* Form Input */
+  .input {
+    @apply w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .badge-food {
+    @apply bg-orange-100 text-orange-700;
+  }
+
+  .badge-travel {
+    @apply bg-blue-100 text-blue-700;
+  }
+
+  .badge-shopping {
+    @apply bg-pink-100 text-pink-700;
+  }
+
+  .badge-bills {
+    @apply bg-purple-100 text-purple-700;
+  }
+
+  .badge-entertainment {
+    @apply bg-indigo-100 text-indigo-700;
+  }
+
+  .badge-healthcare {
+    @apply bg-red-100 text-red-700;
+  }
+
+  .badge-education {
+    @apply bg-green-100 text-green-700;
+  }
+
+  .badge-other {
+    @apply bg-gray-100 text-gray-700;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
