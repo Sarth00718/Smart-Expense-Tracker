@@ -23,9 +23,12 @@ export const ExpenseProvider = ({ children }) => {
     try {
       setLoading(true)
       const response = await expenseService.getAll()
-      setExpenses(response.data)
+      // Handle both old format (array) and new format (object with data property)
+      const expenseData = response.data.data || response.data
+      setExpenses(Array.isArray(expenseData) ? expenseData : [])
     } catch (error) {
       console.error('Error loading expenses:', error)
+      setExpenses([])
     } finally {
       setLoading(false)
     }

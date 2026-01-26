@@ -20,12 +20,19 @@ if (missingEnvVars.length > 0) {
 // Import routes
 const authRoutes = require('./routes/auth');
 const expenseRoutes = require('./routes/expenses');
+const incomeRoutes = require('./routes/income');
 const budgetRoutes = require('./routes/budgets');
 const goalRoutes = require('./routes/goals');
 const analyticsRoutes = require('./routes/analytics');
 const aiRoutes = require('./routes/ai');
 const achievementRoutes = require('./routes/achievements');
 const receiptRoutes = require('./routes/receipts');
+const budgetRecommendationsRoutes = require('./routes/budgetRecommendations');
+const healthRoutes = require('./routes/health');
+const reportsRoutes = require('./routes/reports');
+
+// Import rate limiters
+const { authLimiter, aiLimiter, apiLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
 
@@ -59,15 +66,19 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/expense-t
 .then(() => console.log('✅ MongoDB Connected'))
 .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/expenses', expenseRoutes);
-app.use('/api/budgets', budgetRoutes);
-app.use('/api/goals', goalRoutes);
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/ai', aiRoutes);
-app.use('/api/achievements', achievementRoutes);
-app.use('/api/receipts', receiptRoutes);
+// Routes with rate limiting
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/expenses', apiLimiter, expenseRoutes);
+app.use('/api/income', apiLimiter, incomeRoutes);
+app.use('/api/budgets', apiLimiter, budgetRoutes);
+app.use('/api/goals', apiLimiter, goalRoutes);
+app.use('/api/analytics', apiLimiter, analyticsRoutes);
+app.use('/api/ai', aiLimiter, aiRoutes);
+app.use('/api/achievements', apiLimiter, achievementRoutes);
+app.use('/api/receipts', apiLimiter, receiptRoutes);
+app.use('/api/budget-recommendations', aiLimiter, budgetRecommendationsRoutes);
+app.use('/api/health', healthRoutes);
+app.use('/api/reports', apiLimiter, reportsRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

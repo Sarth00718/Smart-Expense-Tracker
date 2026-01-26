@@ -154,45 +154,45 @@ const AIAssistant = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Conversational Finance Bot */}
       <div className="card">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Bot className="w-6 h-6 text-primary" />
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold flex items-center gap-2">
+            <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             Chat with AI Finance Bot
           </h2>
         </div>
 
         {/* Chat Messages */}
-        <div className="bg-gray-50 rounded-lg p-4 h-96 overflow-y-auto mb-4 space-y-4">
+        <div className="bg-gray-50 rounded-lg p-3 sm:p-4 h-64 sm:h-80 lg:h-96 overflow-y-auto mb-4 space-y-3 sm:space-y-4">
           {chatMessages.map((msg, idx) => (
-            <div key={idx} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div key={idx} className={`flex gap-2 sm:gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               {msg.role === 'assistant' && (
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                  <Bot className="w-5 h-5 text-white" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                  <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
               )}
-              <div className={`max-w-[80%] rounded-lg p-3 ${
+              <div className={`max-w-[85%] sm:max-w-[80%] rounded-lg p-2 sm:p-3 ${
                 msg.role === 'user' 
                   ? 'bg-primary text-white' 
                   : 'bg-white border border-gray-200'
               }`}>
-                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                <p className="text-xs sm:text-sm whitespace-pre-wrap">{msg.content}</p>
               </div>
               {msg.role === 'user' && (
-                <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
-                  <User className="w-5 h-5 text-gray-600" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
+                  <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
                 </div>
               )}
             </div>
           ))}
           {chatLoading && (
-            <div className="flex gap-3 justify-start">
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                <Bot className="w-5 h-5 text-white" />
+            <div className="flex gap-2 sm:gap-3 justify-start">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <div className="bg-white border border-gray-200 rounded-lg p-3">
+              <div className="bg-white border border-gray-200 rounded-lg p-2 sm:p-3">
                 <div className="flex gap-1">
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -210,36 +210,36 @@ const AIAssistant = () => {
             type="text"
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
-            placeholder="Ask me anything about your expenses..."
-            className="input flex-1"
+            placeholder="Ask me anything..."
+            className="input flex-1 text-sm sm:text-base"
             disabled={chatLoading}
           />
           <button 
             type="submit" 
-            className="btn btn-primary"
+            className="btn btn-primary px-3 sm:px-4"
             disabled={chatLoading || !userInput.trim()}
           >
-            <Send className="w-5 h-5" />
+            <Send className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </form>
 
         {/* Quick Questions */}
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-3 sm:mt-4 flex flex-wrap gap-2">
           <button
             onClick={() => setUserInput("How much did I spend on food last month?")}
-            className="text-xs px-3 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200"
+            className="text-xs px-2 sm:px-3 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200"
           >
-            Food spending last month?
+            Food spending?
           </button>
           <button
             onClick={() => setUserInput("Can I afford a ₹5,000 phone this month?")}
-            className="text-xs px-3 py-1 bg-green-100 text-green-700 rounded-full hover:bg-green-200"
+            className="text-xs px-2 sm:px-3 py-1 bg-green-100 text-green-700 rounded-full hover:bg-green-200"
           >
-            Can I afford ₹5,000?
+            Afford ₹5,000?
           </button>
           <button
             onClick={() => setUserInput("What are my top spending categories?")}
-            className="text-xs px-3 py-1 bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200"
+            className="text-xs px-2 sm:px-3 py-1 bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200"
           >
             Top categories?
           </button>
@@ -250,14 +250,34 @@ const AIAssistant = () => {
       {score && (
         <div className="card bg-gradient-to-br from-primary to-primary-dark text-white">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold flex items-center gap-2">
-              <TrendingUp className="w-6 h-6" />
+            <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
               Financial Health Score
             </h3>
           </div>
-          <div className="flex items-center gap-6">
-            <div className="relative w-32 h-32">
+          <div className="flex items-center gap-4 sm:gap-6">
+            <div className="relative w-24 h-24 sm:w-32 sm:h-32">
               <svg className="w-full h-full transform -rotate-90">
+                <circle
+                  cx="48"
+                  cy="48"
+                  r="42"
+                  stroke="rgba(255,255,255,0.2)"
+                  strokeWidth="10"
+                  fill="none"
+                  className="sm:hidden"
+                />
+                <circle
+                  cx="48"
+                  cy="48"
+                  r="42"
+                  stroke="white"
+                  strokeWidth="10"
+                  fill="none"
+                  strokeDasharray={`${(score.score / 100) * 263.89} 263.89`}
+                  strokeLinecap="round"
+                  className="sm:hidden"
+                />
                 <circle
                   cx="64"
                   cy="64"
@@ -265,6 +285,7 @@ const AIAssistant = () => {
                   stroke="rgba(255,255,255,0.2)"
                   strokeWidth="12"
                   fill="none"
+                  className="hidden sm:block"
                 />
                 <circle
                   cx="64"
@@ -275,15 +296,16 @@ const AIAssistant = () => {
                   fill="none"
                   strokeDasharray={`${(score.score / 100) * 351.86} 351.86`}
                   strokeLinecap="round"
+                  className="hidden sm:block"
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-4xl font-bold">{score.score}</span>
+                <span className="text-2xl sm:text-4xl font-bold">{score.score}</span>
               </div>
             </div>
             <div>
-              <p className="text-2xl font-bold mb-1">{score.rating}</p>
-              <p className="text-white/80">out of {score.maxScore}</p>
+              <p className="text-xl sm:text-2xl font-bold mb-1">{score.rating}</p>
+              <p className="text-white/80 text-sm sm:text-base">out of {score.maxScore}</p>
             </div>
           </div>
         </div>
@@ -291,37 +313,40 @@ const AIAssistant = () => {
 
       {/* AI Suggestions */}
       <div className="card">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-primary" />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             AI Financial Assistant
           </h2>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             <button
               onClick={handleBudgetTips}
               disabled={loading}
-              className="btn btn-secondary"
+              className="flex-1 sm:flex-none btn btn-secondary text-xs sm:text-sm"
               title="Get Budget Tips"
             >
-              <TrendingUp className="w-5 h-5" />
-              Budget Tips
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">Budget Tips</span>
+              <span className="sm:hidden">Budget</span>
             </button>
             <button
               onClick={handleSpendingForecast}
               disabled={loading}
-              className="btn btn-secondary"
+              className="flex-1 sm:flex-none btn btn-secondary text-xs sm:text-sm"
               title="Get Spending Forecast"
             >
-              <Lightbulb className="w-5 h-5" />
-              Forecast
+              <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">Forecast</span>
+              <span className="sm:inline">Forecast</span>
             </button>
             <button
               onClick={handleRefresh}
               disabled={loading}
-              className="btn btn-secondary"
+              className="flex-1 sm:flex-none btn btn-secondary text-xs sm:text-sm"
+              title="Refresh Suggestions"
             >
-              <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
+              <RefreshCw className={`w-4 h-4 sm:w-5 sm:h-5 ${loading ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Refresh</span>
             </button>
           </div>
         </div>
@@ -329,14 +354,14 @@ const AIAssistant = () => {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12">
             <div className="spinner mb-4"></div>
-            <p className="text-gray-500">Analyzing your expenses...</p>
+            <p className="text-gray-500 text-sm sm:text-base">Analyzing your expenses...</p>
           </div>
         ) : (
           <div className="prose max-w-none">
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg">
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 sm:p-6 rounded-lg">
               <div className="flex items-start gap-3 mb-4">
-                <Lightbulb className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
-                <div className="flex-1">
+                <Lightbulb className="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0 mt-1" />
+                <div className="flex-1 text-sm sm:text-base">
                   {formatSuggestions(suggestions)}
                 </div>
               </div>
@@ -345,9 +370,9 @@ const AIAssistant = () => {
         )}
 
         {/* Tips */}
-        <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <h4 className="font-semibold text-yellow-800 mb-2">💡 Pro Tips</h4>
-          <ul className="text-sm text-yellow-700 space-y-1">
+        <div className="mt-6 p-3 sm:p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <h4 className="font-semibold text-yellow-800 mb-2 text-sm sm:text-base">💡 Pro Tips</h4>
+          <ul className="text-xs sm:text-sm text-yellow-700 space-y-1">
             <li>• Track expenses daily for better insights</li>
             <li>• Set realistic budgets for each category</li>
             <li>• Review your spending patterns weekly</li>

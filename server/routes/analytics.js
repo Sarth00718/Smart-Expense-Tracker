@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Expense = require('../models/Expense');
+const Income = require('../models/Income');
 const Budget = require('../models/Budget');
 const Goal = require('../models/Goal');
 const Achievement = require('../models/Achievement');
@@ -13,7 +14,7 @@ const {
 } = require('../utils/analytics');
 
 // @route   GET /api/analytics/dashboard
-// @desc    Get dashboard statistics
+// @desc    Get dashboard statistics (includes income + expenses)
 // @access  Private
 router.get('/dashboard', auth, async (req, res) => {
   try {
@@ -22,24 +23,47 @@ router.get('/dashboard', auth, async (req, res) => {
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     // Total expenses
-    const totalResult = await Expense.aggregate([
+    const totalExpensesResult = await Expense.aggregate([
       { $match: { userId: req.userId } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
-    const totalExpenses = totalResult[0]?.total || 0;
+    const totalExpenses = totalExpensesResult[0]?.total || 0;
+
+    // Total income
+    const totalIncomeResult = await Income.aggregate([
+      { $match: { userId: req.userId } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+    const totalIncome = totalIncomeResult[0]?.total || 0;
 
     // Month expenses
-    const monthResult = await Expense.aggregate([
+    const monthExpensesResult = await Expense.aggregate([
       { $match: { userId: req.userId, date: { $gte: startOfMonth } } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
-    const monthExpenses = monthResult[0]?.total || 0;
+    const monthExpenses = monthExpensesResult[0]?.total || 0;
+
+    // Month income
+    const monthIncomeResult = await Income.aggregate([
+      { $match: { userId: req.userId, date: { $gte: startOfMonth } } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+    const monthIncome = monthIncomeResult[0]?.total || 0;
+
+    // Net balance
+    const netBalance = totalIncome - totalExpenses;
+    const monthNetBalance = monthIncome - monthExpenses;
 
     // Category count
     const categories = await Expense.distinct('category', { userId: req.userId });
 
     // Recent count (last 7 days)
-    const recentCount = await Expense.countDocuments({
+    const recentExpenseCount = await Expense.countDocuments({
+      userId: req.userId,
+      date: { $gte: sevenDaysAgo }
+    });
+
+    const recentIncomeCount = await Income.countDocuments({
       userId: req.userId,
       date: { $gte: sevenDaysAgo }
     });
@@ -55,9 +79,14 @@ router.get('/dashboard', auth, async (req, res) => {
 
     res.json({
       totalExpenses: Math.round(totalExpenses * 100) / 100,
+      totalIncome: Math.round(totalIncome * 100) / 100,
+      netBalance: Math.round(netBalance * 100) / 100,
       monthExpenses: Math.round(monthExpenses * 100) / 100,
+      monthIncome: Math.round(monthIncome * 100) / 100,
+      monthNetBalance: Math.round(monthNetBalance * 100) / 100,
       categoryCount: categories.length,
-      recentCount,
+      recentExpenseCount,
+      recentIncomeCount,
       budgetCount,
       goalsCount,
       achievementsCount

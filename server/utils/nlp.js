@@ -202,7 +202,7 @@ function parseNaturalLanguageQuery(query) {
 /**
  * Parse finance-specific queries for chatbot
  */
-function parseFinanceQuery(query, expenses, budgets, goals) {
+function parseFinanceQuery(query, expenses, incomes, budgets, goals) {
   const lowerQuery = query.toLowerCase();
   const result = {
     canAnswerDirectly: false,
@@ -211,9 +211,9 @@ function parseFinanceQuery(query, expenses, budgets, goals) {
     relevantData: null
   };
 
-  if (expenses.length === 0) {
+  if (expenses.length === 0 && incomes.length === 0) {
     result.canAnswerDirectly = true;
-    result.directAnswer = "📊 You haven't added any expenses yet. Start tracking your expenses to get personalized insights!";
+    result.directAnswer = "📊 You haven't added any financial data yet. Start tracking your income and expenses to get personalized insights!";
     return result;
   }
 
@@ -229,6 +229,17 @@ function parseFinanceQuery(query, expenses, budgets, goals) {
   const lastMonthMonth = lastMonthIndex < 0 ? 11 : lastMonthIndex;
   const startOfLastMonth = new Date(lastMonthYear, lastMonthMonth, 1);
   const endOfLastMonth = new Date(lastMonthYear, lastMonthMonth + 1, 0, 23, 59, 59);
+
+  // Net balance query
+  if (lowerQuery.includes('net balance') || lowerQuery.includes('balance') || lowerQuery.includes('net worth')) {
+    const totalIncome = incomes.reduce((sum, inc) => sum + inc.amount, 0);
+    const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const netBalance = totalIncome - totalExpenses;
+
+    result.canAnswerDirectly = true;
+    result.directAnswer = `💰 Your Net Balance: ₹${netBalance.toFixed(2)}\n\n📊 Breakdown:\n• Total Income: ₹${totalIncome.toFixed(2)}\n• Total Expenses: ₹${totalExpenses.toFixed(2)}\n\n${netBalance >= 0 ? '✅ You\'re in the positive!' : '⚠️ You\'re spending more than earning.'}`;
+    return result;
+  }
 
   const spendingMatch = lowerQuery.match(/how much.*spend.*on\s+(\w+)/i) || 
                         lowerQuery.match(/(\w+)\s+spending/i) ||
@@ -299,7 +310,7 @@ function parseFinanceQuery(query, expenses, budgets, goals) {
   
   if (affordMatch) {
     const amount = parseFloat(affordMatch[1].replace(/,/g, ''));
-    const affordability = analyzeAffordability(amount, expenses, budgets);
+    const affordability = analyzeAffordability(amount, expenses, incomes, budgets);
     
     result.canAnswerDirectly = true;
     result.directAnswer = affordability;
@@ -339,19 +350,21 @@ function parseFinanceQuery(query, expenses, budgets, goals) {
 
   if (lowerQuery.includes('total') && lowerQuery.includes('month')) {
     const monthExpenses = expenses.filter(exp => new Date(exp.date) >= startOfMonth);
-    const total = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const monthIncome = incomes.filter(inc => new Date(inc.date) >= startOfMonth);
+    const totalExp = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const totalInc = monthIncome.reduce((sum, inc) => sum + inc.amount, 0);
     
     result.canAnswerDirectly = true;
-    result.directAnswer = `💰 Your total spending this month: ₹${total.toFixed(2)}\n\n📊 Across ${monthExpenses.length} transactions.`;
+    result.directAnswer = `💰 This Month's Summary:\n\n• Income: ₹${totalInc.toFixed(2)}\n• Expenses: ₹${totalExp.toFixed(2)}\n• Net: ₹${(totalInc - totalExp).toFixed(2)}\n\n📊 Transactions: ${monthExpenses.length} expenses, ${monthIncome.length} income`;
     return result;
   }
 
-  result.relevantData = `Query Type: General financial question\nUser has ${expenses.length} expenses recorded.`;
+  result.relevantData = `Query Type: General financial question\nUser has ${expenses.length} expenses and ${incomes.length} income records.`;
   
   return result;
 }
 
-function analyzeAffordability(amount, expenses, budgets) {
+function analyzeAffordability(amount, expenses, incomes, budgets) {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth();
@@ -360,54 +373,54 @@ function analyzeAffordability(amount, expenses, budgets) {
   const daysRemaining = daysInMonth - now.getDate();
   
   const monthExpenses = expenses.filter(exp => new Date(exp.date) >= startOfMonth);
-  const monthTotal = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const monthIncome = incomes.filter(inc => new Date(inc.date) >= startOfMonth);
+  
+  const monthExpenseTotal = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const monthIncomeTotal = monthIncome.reduce((sum, inc) => sum + inc.amount, 0);
+  
+  const currentBalance = monthIncomeTotal - monthExpenseTotal;
   
   const daysPassed = now.getDate();
-  const avgDailySpending = monthTotal / daysPassed;
+  const avgDailySpending = monthExpenseTotal / daysPassed;
   const projectedMonthSpending = avgDailySpending * daysInMonth;
   
-  const totalBudget = budgets.reduce((sum, b) => sum + b.amount, 0);
+  const totalBudget = budgets.reduce((sum, b) => sum + b.monthlyBudget, 0);
   
   let response = `💰 Affordability Analysis for ₹${amount.toFixed(2)}:\n\n`;
   
-  if (totalBudget > 0) {
-    const remainingBudget = totalBudget - monthTotal;
-    const afterPurchase = remainingBudget - amount;
-    const dailyBudgetAfter = afterPurchase / daysRemaining;
+  // Income-based analysis
+  response += `📊 Current Month Status:\n`;
+  response += `• Income: ₹${monthIncomeTotal.toFixed(2)}\n`;
+  response += `• Expenses: ₹${monthExpenseTotal.toFixed(2)}\n`;
+  response += `• Current Balance: ₹${currentBalance.toFixed(2)}\n`;
+  response += `• Days Remaining: ${daysRemaining}\n\n`;
+  
+  const afterPurchase = currentBalance - amount;
+  const dailyBudgetAfter = daysRemaining > 0 ? afterPurchase / daysRemaining : 0;
+  
+  if (afterPurchase > 0) {
+    response += `✅ YES, you can afford it!\n\n`;
+    response += `💡 After Purchase:\n`;
+    response += `• Remaining Balance: ₹${afterPurchase.toFixed(2)}\n`;
+    response += `• Daily Budget: ₹${dailyBudgetAfter.toFixed(2)} for ${daysRemaining} days\n`;
     
-    if (afterPurchase > 0) {
-      response += `✅ YES, you can afford it!\n\n`;
-      response += `📊 Current Status:\n`;
-      response += `• Monthly Budget: ₹${totalBudget.toFixed(2)}\n`;
-      response += `• Spent So Far: ₹${monthTotal.toFixed(2)}\n`;
-      response += `• Remaining: ₹${remainingBudget.toFixed(2)}\n\n`;
-      response += `💡 After Purchase:\n`;
-      response += `• You'll have ₹${afterPurchase.toFixed(2)} left\n`;
-      response += `• Daily budget: ₹${dailyBudgetAfter.toFixed(2)} for ${daysRemaining} days\n`;
-      
-      if (dailyBudgetAfter < avgDailySpending) {
-        response += `\n⚠️ Note: You'll need to reduce daily spending to ₹${dailyBudgetAfter.toFixed(2)} (currently ₹${avgDailySpending.toFixed(2)})`;
-      }
-    } else {
-      response += `❌ NOT RECOMMENDED\n\n`;
-      response += `📊 Current Status:\n`;
-      response += `• Monthly Budget: ₹${totalBudget.toFixed(2)}\n`;
-      response += `• Spent So Far: ₹${monthTotal.toFixed(2)}\n`;
-      response += `• Remaining: ₹${remainingBudget.toFixed(2)}\n\n`;
-      response += `⚠️ This purchase would exceed your budget by ₹${Math.abs(afterPurchase).toFixed(2)}\n\n`;
-      response += `💡 Suggestion: Wait until next month or adjust your budget.`;
+    if (dailyBudgetAfter < avgDailySpending) {
+      response += `\n⚠️ Note: You'll need to reduce daily spending to ₹${dailyBudgetAfter.toFixed(2)} (currently ₹${avgDailySpending.toFixed(2)})`;
     }
   } else {
-    response += `📊 This Month:\n`;
-    response += `• Spent: ₹${monthTotal.toFixed(2)}\n`;
-    response += `• Projected: ₹${projectedMonthSpending.toFixed(2)}\n`;
-    response += `• After Purchase: ₹${(monthTotal + amount).toFixed(2)}\n\n`;
+    response += `❌ NOT RECOMMENDED\n\n`;
+    response += `⚠️ This purchase would exceed your current balance by ₹${Math.abs(afterPurchase).toFixed(2)}\n\n`;
     
-    if (amount > avgDailySpending * 5) {
-      response += `⚠️ This is a significant purchase (${(amount / avgDailySpending).toFixed(1)}x your daily average).\n\n`;
+    if (monthIncomeTotal > 0) {
+      const percentOfIncome = (amount / monthIncomeTotal) * 100;
+      response += `📊 This represents ${percentOfIncome.toFixed(1)}% of your monthly income.\n\n`;
     }
     
-    response += `💡 Tip: Set monthly budgets to get better affordability insights!`;
+    response += `💡 Suggestion: Wait until next month or consider a smaller amount.`;
+  }
+  
+  if (totalBudget > 0) {
+    response += `\n\n📋 Budget Status: ₹${(totalBudget - monthExpenseTotal).toFixed(2)} remaining of ₹${totalBudget.toFixed(2)} total budget`;
   }
   
   return response;

@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar'
 import Header from '../components/Header'
 import DashboardHome from '../components/DashboardHome'
 import Expenses from '../components/Expenses'
+import Income from '../components/Income'
 import Budgets from '../components/Budgets'
 import Goals from '../components/Goals'
 import AIAssistant from '../components/AIAssistant'
@@ -13,7 +14,7 @@ import SpendingHeatmap from '../components/SpendingHeatmap'
 import ReceiptScanner from '../components/ReceiptScanner'
 
 const Dashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false) // Default closed on mobile
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
@@ -21,15 +22,16 @@ const Dashboard = () => {
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden w-full">
         {/* Header */}
         <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto">
           <Routes>
             <Route path="/" element={<DashboardHome />} />
             <Route path="/expenses" element={<Expenses />} />
+            <Route path="/income" element={<Income />} />
             <Route path="/budgets" element={<Budgets />} />
             <Route path="/goals" element={<Goals />} />
             <Route path="/ai" element={<AIAssistant />} />

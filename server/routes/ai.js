@@ -2,11 +2,13 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const Expense = require('../models/Expense');
+const Income = require('../models/Income');
 const Budget = require('../models/Budget');
 const Goal = require('../models/Goal');
 const auth = require('../middleware/auth');
 const { calculateSpendingScore } = require('../utils/analytics');
 const { parseFinanceQuery, analyzeAffordability } = require('../utils/nlp');
+const { callGroqWithRetry } = require('../utils/llmRetry');
 
 // @route   POST /api/ai/chat
 // @desc    Conversational AI Finance Bot
@@ -21,6 +23,7 @@ router.post('/chat', auth, async (req, res) => {
 
     // Fetch user's financial data
     const expenses = await Expense.find({ userId: req.userId }).sort({ date: -1 });
+    const incomes = await Income.find({ userId: req.userId }).sort({ date: -1 });
     const budgets = await Budget.find({ userId: req.userId });
     const goals = await Goal.find({ userId: req.userId });
 
@@ -32,18 +35,12 @@ router.post('/chat', auth, async (req, res) => {
       return res.json({ response: queryData.directAnswer });
     }
 
-    // Use LLM for complex queries
-    const apiKey = process.env.GROQ_API_KEY;
-    
-    if (!apiKey) {
-      // Fallback to rule-based response
-      return res.json({ response: queryData.fallbackAnswer || 'I need more data to answer that. Please add more expenses!' });
-    }
-
-    // Prepare context for LLM
-    const context = buildFinancialContext(expenses, budgets, goals, queryData);
-    
-    const prompt = `You are a helpful personal finance assistant. Answer the user's question based on their financial data.
+    // Use LLM for complex queries with retry logic
+    try {
+      // Prepare context for LLM
+      const context = buildFinancialContext(expenses, incomes, budgets, goals, queryData);
+      
+      const prompt = `You are a helpful personal finance assistant. Answer the user's question based on their financial data.
 
 USER QUESTION: "${message}"
 
@@ -52,45 +49,58 @@ ${context}
 
 Provide a clear, concise, and helpful answer. Use ₹ for currency. Be friendly and actionable.`;
 
-    const response = await axios.post(
-      'https://api.groq.com/openai/v1/chat/completions',
-      {
-        model: 'llama-3.1-8b-instant',
-        messages: [
-          { role: 'system', content: 'You are a helpful personal finance assistant. Provide clear, concise answers with specific numbers and actionable advice.' },
-          { role: 'user', content: prompt }
-        ],
-        max_tokens: 400,
-        temperature: 0.7
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        timeout: 30000
-      }
-    );
+      const aiResponse = await callGroqWithRetry(
+        prompt,
+        'You are a helpful personal finance assistant. Provide clear, concise answers with specific numbers and actionable advice.',
+        { maxTokens: 400, temperature: 0.7 }
+      );
 
-    const aiResponse = response.data.choices[0].message.content;
-    res.json({ response: aiResponse });
+      res.json({ response: aiResponse });
+    } catch (llmError) {
+      // Fallback to rule-based response
+      console.error('LLM error:', llmError.message);
+      return res.json({ 
+        response: queryData.fallbackAnswer || 'I\'m having trouble processing your request right now. Please try asking about specific expenses, budgets, or financial goals.' 
+      });
+    }
 
   } catch (error) {
     console.error('Chat error:', error.message);
-    res.status(500).json({ 
-      response: '❌ Sorry, I encountered an error. Please try again or rephrase your question.' 
+    res.json({ 
+      response: '❌ Sorry, I encountered an error processing your request. Please try again or rephrase your question.' 
     });
   }
 });
 
 // Helper function to build financial context
-function buildFinancialContext(expenses, budgets, goals, queryData) {
+function buildFinancialContext(expenses, incomes, budgets, goals, queryData) {
   let context = '';
 
-  // Total expenses
-  const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-  context += `Total Expenses: ₹${total.toFixed(2)}\n`;
-  context += `Number of Transactions: ${expenses.length}\n\n`;
+  // Total expenses and income
+  const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const totalIncome = incomes.reduce((sum, inc) => sum + inc.amount, 0);
+  const netBalance = totalIncome - totalExpenses;
+
+  context += `Total Income: ₹${totalIncome.toFixed(2)}\n`;
+  context += `Total Expenses: ₹${totalExpenses.toFixed(2)}\n`;
+  context += `Net Balance: ₹${netBalance.toFixed(2)}\n`;
+  context += `Number of Transactions: ${expenses.length} expenses, ${incomes.length} income\n\n`;
+
+  // Income breakdown
+  if (incomes.length > 0) {
+    const sourceTotals = {};
+    incomes.forEach(inc => {
+      sourceTotals[inc.source] = (sourceTotals[inc.source] || 0) + inc.amount;
+    });
+    
+    context += 'INCOME SOURCES:\n';
+    Object.entries(sourceTotals)
+      .sort((a, b) => b[1] - a[1])
+      .forEach(([source, amt]) => {
+        context += `- ${source}: ₹${amt.toFixed(2)}\n`;
+      });
+    context += '\n';
+  }
 
   // Category breakdown
   const categoryTotals = {};
@@ -98,7 +108,7 @@ function buildFinancialContext(expenses, budgets, goals, queryData) {
     categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
   });
   
-  context += 'CATEGORY BREAKDOWN:\n';
+  context += 'EXPENSE CATEGORIES:\n';
   Object.entries(categoryTotals)
     .sort((a, b) => b[1] - a[1])
     .forEach(([cat, amt]) => {
@@ -118,8 +128,8 @@ function buildFinancialContext(expenses, budgets, goals, queryData) {
     context += '\nBUDGETS:\n';
     budgets.forEach(budget => {
       const spent = categoryTotals[budget.category] || 0;
-      const remaining = budget.amount - spent;
-      context += `- ${budget.category}: Budget ₹${budget.amount}, Spent ₹${spent.toFixed(2)}, Remaining ₹${remaining.toFixed(2)}\n`;
+      const remaining = budget.monthlyBudget - spent;
+      context += `- ${budget.category}: Budget ₹${budget.monthlyBudget}, Spent ₹${spent.toFixed(2)}, Remaining ₹${remaining.toFixed(2)}\n`;
     });
   }
 

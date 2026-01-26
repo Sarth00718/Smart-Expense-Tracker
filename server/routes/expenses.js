@@ -281,14 +281,31 @@ router.post('/', auth, async (req, res) => {
 });
 
 // @route   GET /api/expenses
-// @desc    Get all expenses for user
+// @desc    Get all expenses for user with pagination
 // @access  Private
 router.get('/', auth, async (req, res) => {
   try {
-    const expenses = await Expense.find({ userId: req.userId })
-      .sort({ date: -1, createdAt: -1 });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
 
-    res.json(expenses);
+    const query = { userId: req.userId };
+
+    const total = await Expense.countDocuments(query);
+    const expenses = await Expense.find(query)
+      .sort({ date: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.json({
+      data: expenses,
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
     console.error('Get expenses error:', error);
     res.status(500).json({ error: 'Failed to fetch expenses' });
