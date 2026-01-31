@@ -34,7 +34,16 @@ const expenseSchema = new mongoose.Schema({
   },
   receiptImage: {
     type: String
-  }
+  },
+  paymentMode: {
+    type: String,
+    enum: ['Cash', 'Card', 'UPI', 'Net Banking', 'Wallet', 'Other'],
+    default: 'Cash'
+  },
+  tags: [{
+    type: String,
+    trim: true
+  }]
 }, {
   timestamps: true
 });

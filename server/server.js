@@ -30,6 +30,11 @@ const receiptRoutes = require('./routes/receipts');
 const budgetRecommendationsRoutes = require('./routes/budgetRecommendations');
 const healthRoutes = require('./routes/health');
 const reportsRoutes = require('./routes/reports');
+const voiceRoutes = require('./routes/voice');
+const twoFactorRoutes = require('./routes/twoFactor');
+const filtersRoutes = require('./routes/filters');
+const templatesRoutes = require('./routes/templates');
+const usersRoutes = require('./routes/users');
 
 // Import rate limiters
 const { authLimiter, aiLimiter, apiLimiter } = require('./middleware/rateLimiter');
@@ -79,6 +84,11 @@ app.use('/api/receipts', apiLimiter, receiptRoutes);
 app.use('/api/budget-recommendations', aiLimiter, budgetRecommendationsRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/reports', apiLimiter, reportsRoutes);
+app.use('/api/voice', apiLimiter, voiceRoutes);
+app.use('/api/2fa', apiLimiter, twoFactorRoutes);
+app.use('/api/filters', apiLimiter, filtersRoutes);
+app.use('/api/templates', apiLimiter, templatesRoutes);
+app.use('/api/users', apiLimiter, usersRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

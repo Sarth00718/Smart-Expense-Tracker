@@ -35,6 +35,40 @@ const userSchema = new mongoose.Schema({
   lastLogin: {
     type: Date,
     default: Date.now
+  },
+  // 2FA fields
+  twoFactorEnabled: {
+    type: Boolean,
+    default: false
+  },
+  twoFactorSecret: {
+    type: String,
+    select: false // Don't include in queries by default
+  },
+  twoFactorMethod: {
+    type: String,
+    enum: ['email', 'totp'],
+    default: 'email'
+  },
+  twoFactorBackupCodes: [{
+    code: String,
+    used: {
+      type: Boolean,
+      default: false
+    }
+  }],
+  // Theme preferences
+  preferences: {
+    theme: {
+      type: String,
+      enum: ['light', 'dark', 'auto'],
+      default: 'auto'
+    },
+    colorScheme: {
+      type: String,
+      enum: ['blue', 'green', 'purple', 'orange', 'pink'],
+      default: 'blue'
+    }
   }
 }, {
   timestamps: true
