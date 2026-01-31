@@ -13,7 +13,6 @@ import {
   Calendar,
   Camera,
   DollarSign,
-  FileText,
   Settings as SettingsIcon
 } from 'lucide-react'
 
@@ -23,7 +22,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { path: '/dashboard/receipt', icon: Camera, label: 'Receipt Scanner' },
     { path: '/dashboard/expenses', icon: Receipt, label: 'Expenses' },
     { path: '/dashboard/income', icon: DollarSign, label: 'Income' },
-    { path: '/dashboard/templates', icon: FileText, label: 'Templates' },
     { path: '/dashboard/heatmap', icon: Calendar, label: 'Spending Heatmap' },
     { path: '/dashboard/budgets', icon: PieChart, label: 'Budgets' },
     { path: '/dashboard/goals', icon: Target, label: 'Goals' },

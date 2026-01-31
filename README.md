@@ -46,13 +46,6 @@ A comprehensive MERN stack expense tracking application with AI-powered features
 - Real-time statistics
 - Pagination support
 
-#### 📝 Expense Templates
-- Reusable expense templates
-- One-click expense creation
-- Usage tracking and statistics
-- Template categories (Bills, Subscriptions, Travel)
-- Popular templates highlighted
-
 ---
 
 ## 🚀 Quick Start
@@ -126,8 +119,6 @@ db.expenses.createIndex({ userId: 1, amount: 1 })
 db.expenses.createIndex({ userId: 1, paymentMode: 1 })
 db.otps.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 })
 db.savedfilters.createIndex({ userId: 1, name: 1 }, { unique: true })
-db.expensetemplates.createIndex({ userId: 1, name: 1 }, { unique: true })
-db.expensetemplates.createIndex({ userId: 1, usageCount: -1 })
 ```
 
 ### Run the Application
@@ -159,7 +150,6 @@ smart-expense-tracker/
 │   │   │   ├── AdvancedSearch.jsx      # 🆕 Advanced search
 │   │   │   ├── Budgets.jsx
 │   │   │   ├── Expenses.jsx
-│   │   │   ├── ExpenseTemplates.jsx    # 🆕 Templates
 │   │   │   ├── Goals.jsx
 │   │   │   ├── Header.jsx
 │   │   │   ├── Income.jsx
@@ -196,7 +186,6 @@ smart-expense-tracker/
 │   │   ├── Achievement.js
 │   │   ├── Budget.js
 │   │   ├── Expense.js
-│   │   ├── ExpenseTemplate.js          # 🆕 Template model
 │   │   ├── Goal.js
 │   │   ├── Income.js
 │   │   ├── OTP.js                      # 🆕 OTP model
@@ -216,7 +205,6 @@ smart-expense-tracker/
 │   │   ├── income.js
 │   │   ├── receipts.js
 │   │   ├── reports.js
-│   │   ├── templates.js                # 🆕 Templates
 │   │   ├── twoFactor.js                # 🆕 2FA
 │   │   ├── users.js                    # 🆕 User preferences
 │   │   └── voice.js                    # 🆕 Voice input
@@ -349,15 +337,6 @@ smart-expense-tracker/
 - `PUT /api/filters/:id` - Update filter
 - `DELETE /api/filters/:id` - Delete filter
 
-### 🆕 Expense Templates
-- `GET /api/templates` - Get all templates
-- `POST /api/templates` - Create template
-- `GET /api/templates/:id` - Get template
-- `PUT /api/templates/:id` - Update template
-- `DELETE /api/templates/:id` - Delete template
-- `POST /api/templates/:id/use` - Use template
-- `GET /api/templates/stats/summary` - Template statistics
-
 For complete API documentation, see [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
 
 ---
@@ -402,22 +381,6 @@ For complete API documentation, see [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
 
 // Save filter as "Monthly Dining"
 // Load anytime with one click
-```
-
-### Expense Templates
-```javascript
-// Create template
-{
-  name: "Monthly Rent",
-  category: "Bills",
-  amount: 15000,
-  paymentMode: "Net Banking"
-}
-
-// Use template
-- Click "Use" button
-- Expense created instantly
-- Usage count increments
 ```
 
 ---
@@ -471,23 +434,6 @@ For complete API documentation, see [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
 }
 ```
 
-### ExpenseTemplate
-```javascript
-{
-  userId: ObjectId,
-  name: String,
-  category: String,
-  amount: Number,
-  description: String,
-  paymentMode: String,
-  tags: [String],
-  templateCategory: String,
-  isRecurring: Boolean,
-  usageCount: Number,
-  lastUsed: Date
-}
-```
-
 For complete schema documentation, see [ADVANCED_FEATURES_DOCUMENTATION.md](docs/ADVANCED_FEATURES_DOCUMENTATION.md)
 
 ---
@@ -511,7 +457,6 @@ npm test
 - [ ] 2FA setup and verification
 - [ ] Voice input expense creation
 - [ ] Advanced search with filters
-- [ ] Template creation and usage
 - [ ] Expense CRUD operations
 - [ ] Budget management
 - [ ] Goal tracking
@@ -529,7 +474,6 @@ npm test
 | Voice Input | ✅ | ⚠️ | ✅ | ✅ |
 | 2FA | ✅ | ✅ | ✅ | ✅ |
 | Search | ✅ | ✅ | ✅ | ✅ |
-| Templates | ✅ | ✅ | ✅ | ✅ |
 
 ✅ Full support | ⚠️ Limited support | ❌ Not supported
 
@@ -637,7 +581,6 @@ For more troubleshooting, see [INSTALL.md](docs/INSTALL.md)
 - ✨ Added Voice Input for Expenses
 - ✨ Added Two-Factor Authentication (Email OTP + TOTP)
 - ✨ Added Advanced Search & Filters (multi-criteria + saved filters)
-- ✨ Added Expense Templates (reusable templates)
 - 🔒 Enhanced security features
 - ⚡ Performance optimizations
 - 📚 Comprehensive documentation
@@ -734,7 +677,6 @@ If you find this project useful, please consider giving it a star on GitHub!
 ### For Users
 - Enable 2FA for enhanced security (Settings → Security)
 - Use voice input for quick expense entry (Expenses page)
-- Create templates for recurring expenses (Templates page)
 - Use advanced search to analyze spending (Expenses page)
 - Set realistic budgets and goals
 - Scan receipts for accurate tracking

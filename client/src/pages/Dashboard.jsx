@@ -12,7 +12,6 @@ import Analytics from '../components/Analytics'
 import Achievements from '../components/Achievements'
 import SpendingHeatmap from '../components/SpendingHeatmap'
 import ReceiptScanner from '../components/ReceiptScanner'
-import ExpenseTemplates from '../components/ExpenseTemplates'
 import Settings from '../components/Settings'
 
 const Dashboard = () => {
@@ -36,7 +35,6 @@ const Dashboard = () => {
             <Route path="/income" element={<Income />} />
             <Route path="/budgets" element={<Budgets />} />
             <Route path="/goals" element={<Goals />} />
-            <Route path="/templates" element={<ExpenseTemplates />} />
             <Route path="/ai" element={<AIAssistant />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/achievements" element={<Achievements />} />

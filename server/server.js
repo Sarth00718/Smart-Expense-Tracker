@@ -33,7 +33,6 @@ const reportsRoutes = require('./routes/reports');
 const voiceRoutes = require('./routes/voice');
 const twoFactorRoutes = require('./routes/twoFactor');
 const filtersRoutes = require('./routes/filters');
-const templatesRoutes = require('./routes/templates');
 const usersRoutes = require('./routes/users');
 
 // Import rate limiters
@@ -87,7 +86,6 @@ app.use('/api/reports', apiLimiter, reportsRoutes);
 app.use('/api/voice', apiLimiter, voiceRoutes);
 app.use('/api/2fa', apiLimiter, twoFactorRoutes);
 app.use('/api/filters', apiLimiter, filtersRoutes);
-app.use('/api/templates', apiLimiter, templatesRoutes);
 app.use('/api/users', apiLimiter, usersRoutes);
 
 // Root endpoint
