@@ -12,7 +12,9 @@ import {
   ChevronLeft,
   Calendar,
   Camera,
-  DollarSign
+  DollarSign,
+  FileText,
+  Settings as SettingsIcon
 } from 'lucide-react'
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -21,12 +23,14 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { path: '/dashboard/receipt', icon: Camera, label: 'Receipt Scanner' },
     { path: '/dashboard/expenses', icon: Receipt, label: 'Expenses' },
     { path: '/dashboard/income', icon: DollarSign, label: 'Income' },
+    { path: '/dashboard/templates', icon: FileText, label: 'Templates' },
     { path: '/dashboard/heatmap', icon: Calendar, label: 'Spending Heatmap' },
     { path: '/dashboard/budgets', icon: PieChart, label: 'Budgets' },
     { path: '/dashboard/goals', icon: Target, label: 'Goals' },
     { path: '/dashboard/analytics', icon: TrendingUp, label: 'Analytics' },
     { path: '/dashboard/ai', icon: Sparkles, label: 'AI Assistant' },
     { path: '/dashboard/achievements', icon: Trophy, label: 'Achievements' },
+    { path: '/dashboard/settings', icon: SettingsIcon, label: 'Settings' },
   ]
 
   return (
@@ -58,7 +62,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             onClick={() => setIsOpen(false)}
             className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-5 h-5 text-gray-700" />
           </button>
         </div>
 

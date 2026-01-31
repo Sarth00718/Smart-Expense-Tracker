@@ -39,13 +39,6 @@ A comprehensive MERN stack expense tracking application with AI-powered features
 - Secure OTP storage with expiration
 - Rate limiting protection
 
-#### 🌙 Dark Mode & Theme Enhancements
-- Auto/Light/Dark modes
-- 5 color schemes (Blue, Green, Purple, Orange, Pink)
-- Time-based automatic switching
-- System preference detection
-- Persistent user preferences
-
 #### 🔍 Advanced Search & Filters
 - Multi-criteria search (date, amount, category, payment mode)
 - Quick filter presets (today, last 7 days, this month)
@@ -171,16 +164,15 @@ smart-expense-tracker/
 │   │   │   ├── Header.jsx
 │   │   │   ├── Income.jsx
 │   │   │   ├── ReceiptScanner.jsx
+│   │   │   ├── Settings.jsx            # 🆕 Settings page
 │   │   │   ├── Sidebar.jsx
-│   │   │   ├── ThemeSettings.jsx       # 🆕 Theme settings
 │   │   │   ├── TwoFactorSetup.jsx      # 🆕 2FA setup
 │   │   │   ├── TwoFactorVerify.jsx     # 🆕 2FA verify
 │   │   │   └── VoiceExpenseInput.jsx   # 🆕 Voice input
 │   │   ├── context/            # React context
 │   │   │   ├── AuthContext.jsx
 │   │   │   ├── ExpenseContext.jsx
-│   │   │   ├── IncomeContext.jsx
-│   │   │   └── ThemeContext.jsx        # 🆕 Theme context
+│   │   │   └── IncomeContext.jsx
 │   │   ├── pages/              # Page components
 │   │   │   ├── Dashboard.jsx
 │   │   │   ├── Login.jsx
@@ -345,9 +337,9 @@ smart-expense-tracker/
 - `POST /api/2fa/disable` - Disable 2FA
 - `POST /api/2fa/regenerate-backup-codes` - Regenerate backup codes
 
-### 🆕 User Preferences
-- `GET /api/users/preferences` - Get theme preferences
-- `PATCH /api/users/preferences` - Update preferences
+### 🆕 User Settings
+- `GET /api/users/profile` - Get user profile
+- `PATCH /api/users/profile` - Update profile
 
 ### 🆕 Advanced Search
 - `POST /api/filters/search` - Advanced search
@@ -384,29 +376,19 @@ For complete API documentation, see [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
 ### 2FA Setup
 ```javascript
 // Email OTP
-1. Enable 2FA in settings
-2. Choose "Email OTP"
-3. Enter code from email
-4. Save backup codes
+1. Go to Settings → Security
+2. Click "Enable 2FA"
+3. Choose "Email OTP"
+4. Enter code from email
+5. Save backup codes
 
 // Google Authenticator
-1. Enable 2FA in settings
-2. Choose "Authenticator App"
-3. Scan QR code
-4. Enter 6-digit code
-5. Save backup codes
-```
-
-### Dark Mode
-```javascript
-// Auto mode (default)
-- 6 AM - 6 PM: Light mode
-- 6 PM - 6 AM: Dark mode
-- Also respects system preference
-
-// Manual override
-- Click theme toggle in header
-- Or go to Settings → Appearance
+1. Go to Settings → Security
+2. Click "Enable 2FA"
+3. Choose "Authenticator App"
+4. Scan QR code with Google Authenticator
+5. Enter 6-digit code
+6. Save backup codes
 ```
 
 ### Advanced Search
@@ -470,11 +452,7 @@ For complete API documentation, see [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
   twoFactorEnabled: Boolean,
   twoFactorSecret: String (encrypted),
   twoFactorMethod: 'email' | 'totp',
-  twoFactorBackupCodes: [{ code: String, used: Boolean }],
-  preferences: {
-    theme: 'light' | 'dark' | 'auto',
-    colorScheme: 'blue' | 'green' | 'purple' | 'orange' | 'pink'
-  }
+  twoFactorBackupCodes: [{ code: String, used: Boolean }]
 }
 ```
 
@@ -532,7 +510,6 @@ npm test
 - [ ] Google OAuth login
 - [ ] 2FA setup and verification
 - [ ] Voice input expense creation
-- [ ] Dark mode switching
 - [ ] Advanced search with filters
 - [ ] Template creation and usage
 - [ ] Expense CRUD operations
@@ -551,7 +528,6 @@ npm test
 | Core Features | ✅ | ✅ | ✅ | ✅ |
 | Voice Input | ✅ | ⚠️ | ✅ | ✅ |
 | 2FA | ✅ | ✅ | ✅ | ✅ |
-| Dark Mode | ✅ | ✅ | ✅ | ✅ |
 | Search | ✅ | ✅ | ✅ | ✅ |
 | Templates | ✅ | ✅ | ✅ | ✅ |
 
@@ -641,11 +617,6 @@ Solution: Ensure HTTPS in production, grant microphone permission, use Chrome/Sa
 Solution: Check server console (dev mode), verify SENDGRID_API_KEY, check spam folder
 ```
 
-**Theme not persisting**
-```
-Solution: Check ThemeProvider wraps App, clear browser cache, verify API connection
-```
-
 **MongoDB connection error**
 ```
 Solution: Verify MONGODB_URI in .env, check MongoDB is running, verify network
@@ -665,7 +636,6 @@ For more troubleshooting, see [INSTALL.md](docs/INSTALL.md)
 ### Version 2.0.0 (Current)
 - ✨ Added Voice Input for Expenses
 - ✨ Added Two-Factor Authentication (Email OTP + TOTP)
-- ✨ Added Dark Mode & Theme Enhancements (5 color schemes)
 - ✨ Added Advanced Search & Filters (multi-criteria + saved filters)
 - ✨ Added Expense Templates (reusable templates)
 - 🔒 Enhanced security features
@@ -762,10 +732,10 @@ If you find this project useful, please consider giving it a star on GitHub!
 ## 💡 Tips & Best Practices
 
 ### For Users
-- Enable 2FA for enhanced security
-- Use voice input for quick expense entry
-- Create templates for recurring expenses
-- Use advanced search to analyze spending
+- Enable 2FA for enhanced security (Settings → Security)
+- Use voice input for quick expense entry (Expenses page)
+- Create templates for recurring expenses (Templates page)
+- Use advanced search to analyze spending (Expenses page)
 - Set realistic budgets and goals
 - Scan receipts for accurate tracking
 - Check analytics regularly

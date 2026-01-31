@@ -18,7 +18,7 @@ const Header = ({ toggleSidebar }) => {
         onClick={toggleSidebar}
         className="p-2 hover:bg-gray-100 rounded-lg lg:hidden"
       >
-        <Menu className="w-6 h-6" />
+        <Menu className="w-6 h-6 text-gray-700" />
       </button>
 
       {/* Right: User Info */}

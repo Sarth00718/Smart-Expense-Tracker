@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react'
 import { useExpense } from '../context/ExpenseContext'
 import { expenseService } from '../services/expenseService'
-import { Trash2, Calendar, Edit2, X, Download, Trash, Search, ArrowUpDown } from 'lucide-react'
+import { Trash2, Calendar, Edit2, X, Download, Trash, Search, ArrowUpDown, Mic, Filter } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 import * as XLSX from 'xlsx'
+import VoiceExpenseInput from './VoiceExpenseInput'
+import AdvancedSearch from './AdvancedSearch'
 
 const Expenses = () => {
   const { expenses, deleteExpense, updateExpense, loading, fetchExpenses } = useExpense()
@@ -22,6 +24,9 @@ const Expenses = () => {
   const [showNLSearch, setShowNLSearch] = useState(false)
   const [nlQuery, setNlQuery] = useState('')
   const [nlResults, setNlResults] = useState(null)
+  const [showVoiceInput, setShowVoiceInput] = useState(false)
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false)
+  const [advancedSearchResults, setAdvancedSearchResults] = useState(null)
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
@@ -92,6 +97,22 @@ const Expenses = () => {
     setNlResults(null)
   }
 
+  const handleVoiceExpenseCreated = (expense) => {
+    fetchExpenses()
+    setShowVoiceInput(false)
+    toast.success('Expense created from voice input!')
+  }
+
+  const handleAdvancedSearch = (results) => {
+    setAdvancedSearchResults(results)
+    setShowAdvancedSearch(false)
+    toast.success(`Found ${results.expenses.length} expenses`)
+  }
+
+  const clearAdvancedSearch = () => {
+    setAdvancedSearchResults(null)
+  }
+
   const startEdit = (expense) => {
     setEditingExpense(expense._id)
     setEditForm({
@@ -135,7 +156,11 @@ const Expenses = () => {
 
   // Filter and sort expenses
   const filteredAndSortedExpenses = useMemo(() => {
-    let result = nlResults ? nlResults.results : [...expenses]
+    let result = advancedSearchResults 
+      ? advancedSearchResults.expenses 
+      : nlResults 
+        ? nlResults.results 
+        : [...expenses]
 
     // Apply time period filter
     if (filterPeriod !== 'all') {
@@ -179,7 +204,7 @@ const Expenses = () => {
     })
 
     return result
-  }, [expenses, nlResults, filterPeriod, searchQuery, sortBy, sortOrder])
+  }, [expenses, nlResults, advancedSearchResults, filterPeriod, searchQuery, sortBy, sortOrder])
 
   if (loading) {
     return (
@@ -193,6 +218,20 @@ const Expenses = () => {
     <div className="space-y-6">
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
+        <button 
+          onClick={() => setShowVoiceInput(true)} 
+          className="btn bg-purple-600 hover:bg-purple-700 text-white"
+        >
+          <Mic className="w-4 h-4" />
+          Voice Input
+        </button>
+        <button 
+          onClick={() => setShowAdvancedSearch(true)} 
+          className="btn bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          <Filter className="w-4 h-4" />
+          Advanced Search
+        </button>
         <button onClick={handleExportToExcel} className="btn btn-primary">
           <Download className="w-4 h-4" />
           Export to Excel
@@ -433,6 +472,65 @@ const Expenses = () => {
           </div>
         )}
       </div>
+
+      {/* Voice Input Modal */}
+      {showVoiceInput && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <VoiceExpenseInput
+            onExpenseCreated={handleVoiceExpenseCreated}
+            onClose={() => setShowVoiceInput(false)}
+          />
+        </div>
+      )}
+
+      {/* Advanced Search Modal */}
+      {showAdvancedSearch && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="my-8">
+            <AdvancedSearch
+              onSearch={handleAdvancedSearch}
+              onClose={() => setShowAdvancedSearch(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Advanced Search Results Banner */}
+      {advancedSearchResults && (
+        <div className="card bg-green-50 border-2 border-green-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-green-900 mb-1">Advanced Search Results</h3>
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div>
+                  <span className="text-green-700">Total: </span>
+                  <span className="font-semibold text-green-900">
+                    ₹{advancedSearchResults.stats.total.toFixed(2)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-green-700">Count: </span>
+                  <span className="font-semibold text-green-900">
+                    {advancedSearchResults.stats.count}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-green-700">Average: </span>
+                  <span className="font-semibold text-green-900">
+                    ₹{advancedSearchResults.stats.average.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={clearAdvancedSearch}
+              className="btn btn-secondary"
+            >
+              Clear Results
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
