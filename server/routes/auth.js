@@ -114,39 +114,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Check if 2FA is enabled
-    if (user.twoFactorEnabled) {
-      // Generate temporary token for 2FA verification
-      const tempToken = jwt.sign(
-        { userId: user._id, temp: true },
-        process.env.JWT_SECRET,
-        { expiresIn: '10m' }
-      );
-
-      // Send OTP if email-based 2FA
-      if (user.twoFactorMethod === 'email') {
-        const { otp, expiresAt } = await createOTP(user._id, user.email, 'login');
-        await sendOTPEmail(user.email, otp, 'login');
-
-        return res.json({
-          requires2FA: true,
-          method: 'email',
-          tempToken,
-          message: 'OTP sent to your email',
-          expiresAt,
-          // For development only
-          ...(process.env.NODE_ENV === 'development' && { devOTP: otp })
-        });
-      }
-
-      // TOTP-based 2FA
-      return res.json({
-        requires2FA: true,
-        method: 'totp',
-        tempToken,
-        message: 'Enter code from your authenticator app'
-      });
-    }
+    // 2FA has been disabled - skip 2FA check and proceed with login
 
     // Update last login (skip validation for existing users)
     user.lastLogin = new Date();

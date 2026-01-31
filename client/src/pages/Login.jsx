@@ -1,7 +1,6 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import TwoFactorVerify from '../components/TwoFactorVerify'
 import toast from 'react-hot-toast'
 import { Wallet, Mail, Lock, LogIn, AlertCircle, Eye, EyeOff } from 'lucide-react'
 
@@ -11,9 +10,6 @@ const Login = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [requires2FA, setRequires2FA] = useState(false)
-  const [tempToken, setTempToken] = useState(null)
-  const [twoFAMethod, setTwoFAMethod] = useState(null)
   const { login } = useAuth()
   const navigate = useNavigate()
 
@@ -23,18 +19,9 @@ const Login = () => {
     setLoading(true)
 
     try {
-      const response = await login(email, password)
-      
-      // Check if 2FA is required
-      if (response.requires2FA) {
-        setRequires2FA(true)
-        setTempToken(response.tempToken)
-        setTwoFAMethod(response.method)
-        toast.info('Please enter your 2FA code')
-      } else {
-        toast.success('Welcome back!')
-        navigate('/dashboard')
-      }
+      await login(email, password)
+      toast.success('Welcome back!')
+      navigate('/dashboard')
     } catch (err) {
       const errorMsg = err.response?.data?.error || 'Login failed'
       setError(errorMsg)
@@ -42,29 +29,6 @@ const Login = () => {
     } finally {
       setLoading(false)
     }
-  }
-
-  const handle2FASuccess = (data) => {
-    toast.success('Welcome back!')
-    navigate('/dashboard')
-  }
-
-  const handle2FACancel = () => {
-    setRequires2FA(false)
-    setTempToken(null)
-    setTwoFAMethod(null)
-  }
-
-  // Show 2FA verification screen if required
-  if (requires2FA) {
-    return (
-      <TwoFactorVerify
-        tempToken={tempToken}
-        method={twoFAMethod}
-        onSuccess={handle2FASuccess}
-        onCancel={handle2FACancel}
-      />
-    )
   }
 
   return (

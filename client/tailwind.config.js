@@ -12,6 +12,7 @@ export default {
           dark: '#3a0ca3',
           light: '#4cc9f0',
         },
+        'primary-dark': '#3a0ca3',
         success: '#10b981',
         danger: '#ef4444',
         warning: '#f59e0b',

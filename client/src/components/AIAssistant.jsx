@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { Sparkles, RefreshCw, TrendingUp, Lightbulb, Send, Bot, User } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Sparkles, RefreshCw, Lightbulb, Send, Bot, User } from 'lucide-react'
 import { analyticsService } from '../services/analyticsService'
 import toast from 'react-hot-toast'
 import api from '../services/api'
@@ -7,7 +7,6 @@ import api from '../services/api'
 const AIAssistant = () => {
   const [suggestions, setSuggestions] = useState('')
   const [loading, setLoading] = useState(false)
-  const [score, setScore] = useState(null)
   const [chatMessages, setChatMessages] = useState([])
   const [userInput, setUserInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
@@ -15,7 +14,6 @@ const AIAssistant = () => {
 
   useEffect(() => {
     loadSuggestions()
-    loadScore()
     // Add welcome message
     setChatMessages([{
       role: 'assistant',
@@ -33,15 +31,6 @@ const AIAssistant = () => {
       setSuggestions('Unable to load AI suggestions. Please try again later.')
     } finally {
       setLoading(false)
-    }
-  }
-
-  const loadScore = async () => {
-    try {
-      const response = await analyticsService.getScore()
-      setScore(response.data)
-    } catch (error) {
-      console.error('Error loading score:', error)
     }
   }
 
@@ -155,12 +144,21 @@ const AIAssistant = () => {
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      {/* Page Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+          <Bot className="w-7 h-7 sm:w-8 sm:h-8 text-primary" />
+          Chat with AI Finance Bot
+        </h1>
+        <p className="text-gray-600 text-sm sm:text-base">Get personalized financial insights and advice powered by AI</p>
+      </div>
+
       {/* Conversational Finance Bot */}
       <div className="card">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold flex items-center gap-2">
-            <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            Chat with AI Finance Bot
+          <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+            AI Chat Assistant
           </h2>
         </div>
 
@@ -246,71 +244,6 @@ const AIAssistant = () => {
         </div>
       </div>
 
-      {/* Financial Health Score */}
-      {score && (
-        <div className="card bg-gradient-to-br from-primary to-primary-dark text-white">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
-              Financial Health Score
-            </h3>
-          </div>
-          <div className="flex items-center gap-4 sm:gap-6">
-            <div className="relative w-24 h-24 sm:w-32 sm:h-32">
-              <svg className="w-full h-full transform -rotate-90">
-                <circle
-                  cx="48"
-                  cy="48"
-                  r="42"
-                  stroke="rgba(255,255,255,0.2)"
-                  strokeWidth="10"
-                  fill="none"
-                  className="sm:hidden"
-                />
-                <circle
-                  cx="48"
-                  cy="48"
-                  r="42"
-                  stroke="white"
-                  strokeWidth="10"
-                  fill="none"
-                  strokeDasharray={`${(score.score / 100) * 263.89} 263.89`}
-                  strokeLinecap="round"
-                  className="sm:hidden"
-                />
-                <circle
-                  cx="64"
-                  cy="64"
-                  r="56"
-                  stroke="rgba(255,255,255,0.2)"
-                  strokeWidth="12"
-                  fill="none"
-                  className="hidden sm:block"
-                />
-                <circle
-                  cx="64"
-                  cy="64"
-                  r="56"
-                  stroke="white"
-                  strokeWidth="12"
-                  fill="none"
-                  strokeDasharray={`${(score.score / 100) * 351.86} 351.86`}
-                  strokeLinecap="round"
-                  className="hidden sm:block"
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-2xl sm:text-4xl font-bold">{score.score}</span>
-              </div>
-            </div>
-            <div>
-              <p className="text-xl sm:text-2xl font-bold mb-1">{score.rating}</p>
-              <p className="text-white/80 text-sm sm:text-base">out of {score.maxScore}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* AI Suggestions */}
       <div className="card">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-6">
@@ -325,7 +258,7 @@ const AIAssistant = () => {
               className="flex-1 sm:flex-none btn btn-secondary text-xs sm:text-sm"
               title="Get Budget Tips"
             >
-              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5" />
               <span className="hidden sm:inline">Budget Tips</span>
               <span className="sm:hidden">Budget</span>
             </button>
@@ -335,7 +268,7 @@ const AIAssistant = () => {
               className="flex-1 sm:flex-none btn btn-secondary text-xs sm:text-sm"
               title="Get Spending Forecast"
             >
-              <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
               <span className="hidden sm:inline">Forecast</span>
               <span className="sm:inline">Forecast</span>
             </button>

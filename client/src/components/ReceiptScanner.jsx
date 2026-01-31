@@ -4,7 +4,7 @@ import toast from 'react-hot-toast'
 import { useExpense } from '../context/ExpenseContext'
 import { receiptService } from '../services/receiptService'
 
-const ReceiptScanner = () => {
+const ReceiptScanner = ({ onSuccess }) => {
   const { addExpense } = useExpense()
   const [selectedFile, setSelectedFile] = useState(null)
   const [preview, setPreview] = useState(null)
@@ -95,6 +95,11 @@ const ReceiptScanner = () => {
       })
 
       toast.success('Expense added successfully!')
+      
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess()
+      }
       
       // Reset form
       setSelectedFile(null)

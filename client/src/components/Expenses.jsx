@@ -1,12 +1,12 @@
-import React, { useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useExpense } from '../context/ExpenseContext'
 import { expenseService } from '../services/expenseService'
-import { Trash2, Calendar, Edit2, X, Download, Trash, Search, ArrowUpDown, Mic, Filter } from 'lucide-react'
+import { Trash2, Calendar, Edit2, X, Download, Trash, Search, ArrowUpDown, Filter, Repeat } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 import * as XLSX from 'xlsx'
-import VoiceExpenseInput from './VoiceExpenseInput'
 import AdvancedSearch from './AdvancedSearch'
+import RecurringExpenses from './RecurringExpenses'
 
 const Expenses = () => {
   const { expenses, deleteExpense, updateExpense, loading, fetchExpenses } = useExpense()
@@ -24,9 +24,9 @@ const Expenses = () => {
   const [showNLSearch, setShowNLSearch] = useState(false)
   const [nlQuery, setNlQuery] = useState('')
   const [nlResults, setNlResults] = useState(null)
-  const [showVoiceInput, setShowVoiceInput] = useState(false)
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false)
   const [advancedSearchResults, setAdvancedSearchResults] = useState(null)
+  const [showRecurring, setShowRecurring] = useState(false)
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
@@ -95,12 +95,6 @@ const Expenses = () => {
   const clearNLSearch = () => {
     setNlQuery('')
     setNlResults(null)
-  }
-
-  const handleVoiceExpenseCreated = (expense) => {
-    fetchExpenses()
-    setShowVoiceInput(false)
-    toast.success('Expense created from voice input!')
   }
 
   const handleAdvancedSearch = (results) => {
@@ -219,11 +213,11 @@ const Expenses = () => {
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
         <button 
-          onClick={() => setShowVoiceInput(true)} 
+          onClick={() => setShowRecurring(true)} 
           className="btn bg-purple-600 hover:bg-purple-700 text-white"
         >
-          <Mic className="w-4 h-4" />
-          Voice Input
+          <Repeat className="w-4 h-4" />
+          Recurring Expenses
         </button>
         <button 
           onClick={() => setShowAdvancedSearch(true)} 
@@ -370,9 +364,8 @@ const Expenses = () => {
               </thead>
               <tbody>
                 {filteredAndSortedExpenses.map((expense) => (
-                  <React.Fragment key={expense._id}>
-                    {editingExpense === expense._id ? (
-                      <tr className="border-b border-gray-100 bg-blue-50">
+                  editingExpense === expense._id ? (
+                    <tr key={expense._id} className="border-b border-gray-100 bg-blue-50">
                         <td colSpan="5" className="py-4 px-4">
                           <form onSubmit={handleUpdate} className="grid grid-cols-1 md:grid-cols-5 gap-3">
                             <input
@@ -430,7 +423,7 @@ const Expenses = () => {
                         </td>
                       </tr>
                     ) : (
-                      <tr className="border-b border-gray-100 hover:bg-gray-50">
+                      <tr key={expense._id} className="border-b border-gray-100 hover:bg-gray-50">
                         <td className="py-3 px-4 text-gray-600">
                           {format(new Date(expense.date), 'MMM dd, yyyy')}
                         </td>
@@ -464,24 +457,13 @@ const Expenses = () => {
                           </div>
                         </td>
                       </tr>
-                    )}
-                  </React.Fragment>
+                    )
                 ))}
               </tbody>
             </table>
           </div>
         )}
       </div>
-
-      {/* Voice Input Modal */}
-      {showVoiceInput && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <VoiceExpenseInput
-            onExpenseCreated={handleVoiceExpenseCreated}
-            onClose={() => setShowVoiceInput(false)}
-          />
-        </div>
-      )}
 
       {/* Advanced Search Modal */}
       {showAdvancedSearch && (
@@ -530,6 +512,11 @@ const Expenses = () => {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Recurring Expenses Modal */}
+      {showRecurring && (
+        <RecurringExpenses onClose={() => setShowRecurring(false)} />
       )}
     </div>
   )

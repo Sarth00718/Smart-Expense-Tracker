@@ -1,15 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Filter, X, Save, Calendar, DollarSign, Tag, CreditCard } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, Filter, X, Save, Calendar, DollarSign, Tag } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
-import { format } from 'date-fns';
 
 const AdvancedSearch = ({ onSearch, onClose }) => {
   const [filters, setFilters] = useState({
     dateRange: { start: '', end: '' },
     amountRange: { min: '', max: '' },
     categories: [],
-    paymentModes: [],
     tags: [],
     searchText: ''
   });
@@ -20,7 +18,6 @@ const AdvancedSearch = ({ onSearch, onClose }) => {
   const [isSearching, setIsSearching] = useState(false);
 
   const categories = ['Food', 'Travel', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Healthcare', 'Education', 'Other'];
-  const paymentModes = ['Cash', 'Card', 'UPI', 'Net Banking', 'Wallet', 'Other'];
 
   const quickFilters = [
     { label: 'Today', value: 'today' },
@@ -130,21 +127,20 @@ const AdvancedSearch = ({ onSearch, onClose }) => {
       dateRange: { start: '', end: '' },
       amountRange: { min: '', max: '' },
       categories: [],
-      paymentModes: [],
       tags: [],
       searchText: ''
     });
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-4xl mx-auto">
+    <div className="bg-white rounded-lg shadow-xl p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <Filter className="w-6 h-6 text-blue-600 mr-2" />
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Advanced Search</h2>
+          <h2 className="text-xl font-semibold text-gray-800">Advanced Search</h2>
         </div>
         {onClose && (
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <X className="w-6 h-6" />
           </button>
         )}
@@ -152,13 +148,13 @@ const AdvancedSearch = ({ onSearch, onClose }) => {
 
       {/* Quick Filters */}
       <div className="mb-6">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Quick Filters</h3>
+        <h3 className="text-sm font-medium text-gray-700 mb-3">Quick Filters</h3>
         <div className="flex flex-wrap gap-2">
           {quickFilters.map(qf => (
             <button
               key={qf.value}
               onClick={() => handleQuickFilter(qf.value)}
-              className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
+              className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium"
             >
               {qf.label}
             </button>
@@ -167,9 +163,9 @@ const AdvancedSearch = ({ onSearch, onClose }) => {
       </div>
 
       {/* Search Text */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          <Search className="w-4 h-4 inline mr-1" />
+      <div className="mb-5">
+        <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+          <Search className="w-4 h-4 mr-1.5" />
           Search Description
         </label>
         <input
@@ -177,14 +173,14 @@ const AdvancedSearch = ({ onSearch, onClose }) => {
           value={filters.searchText}
           onChange={(e) => handleFilterChange('searchText', e.target.value)}
           placeholder="Search in descriptions..."
-          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
         />
       </div>
 
       {/* Date Range */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          <Calendar className="w-4 h-4 inline mr-1" />
+      <div className="mb-5">
+        <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+          <Calendar className="w-4 h-4 mr-1.5" />
           Date Range
         </label>
         <div className="grid grid-cols-2 gap-3">
@@ -192,21 +188,21 @@ const AdvancedSearch = ({ onSearch, onClose }) => {
             type="date"
             value={filters.dateRange.start}
             onChange={(e) => handleFilterChange('dateRange', { ...filters.dateRange, start: e.target.value })}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
           />
           <input
             type="date"
             value={filters.dateRange.end}
             onChange={(e) => handleFilterChange('dateRange', { ...filters.dateRange, end: e.target.value })}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
           />
         </div>
       </div>
 
       {/* Amount Range */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          <DollarSign className="w-4 h-4 inline mr-1" />
+      <div className="mb-5">
+        <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+          <DollarSign className="w-4 h-4 mr-1.5" />
           Amount Range
         </label>
         <div className="grid grid-cols-2 gap-3">
@@ -215,22 +211,22 @@ const AdvancedSearch = ({ onSearch, onClose }) => {
             value={filters.amountRange.min}
             onChange={(e) => handleFilterChange('amountRange', { ...filters.amountRange, min: e.target.value })}
             placeholder="Min amount"
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
           />
           <input
             type="number"
             value={filters.amountRange.max}
             onChange={(e) => handleFilterChange('amountRange', { ...filters.amountRange, max: e.target.value })}
             placeholder="Max amount"
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
           />
         </div>
       </div>
 
       {/* Categories */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          <Tag className="w-4 h-4 inline mr-1" />
+      <div className="mb-6">
+        <label className="flex items-center text-sm font-medium text-gray-700 mb-3">
+          <Tag className="w-4 h-4 mr-1.5" />
           Categories
         </label>
         <div className="flex flex-wrap gap-2">
@@ -238,10 +234,10 @@ const AdvancedSearch = ({ onSearch, onClose }) => {
             <button
               key={cat}
               onClick={() => handleArrayToggle('categories', cat)}
-              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+              className={`px-4 py-2 text-sm rounded-lg transition-all font-medium ${
                 filters.categories.includes(cat)
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               {cat}
@@ -250,47 +246,25 @@ const AdvancedSearch = ({ onSearch, onClose }) => {
         </div>
       </div>
 
-      {/* Payment Modes */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          <CreditCard className="w-4 h-4 inline mr-1" />
-          Payment Modes
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {paymentModes.map(mode => (
-            <button
-              key={mode}
-              onClick={() => handleArrayToggle('paymentModes', mode)}
-              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
-                filters.paymentModes.includes(mode)
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
-            >
-              {mode}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Action Buttons */}
-      <div className="flex gap-3">
+      <div className="flex gap-3 pt-2">
         <button
           onClick={handleSearch}
           disabled={isSearching}
-          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
         >
           {isSearching ? 'Searching...' : 'Search'}
         </button>
         <button
           onClick={() => setShowSaveDialog(true)}
-          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="px-4 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          title="Save Filter"
         >
-          <Save className="w-5 h-5" />
+          <Save className="w-5 h-5 text-gray-600" />
         </button>
         <button
           onClick={handleClearFilters}
-          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-gray-700"
         >
           Clear
         </button>
@@ -298,14 +272,14 @@ const AdvancedSearch = ({ onSearch, onClose }) => {
 
       {/* Saved Filters */}
       {savedFilters.length > 0 && (
-        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Saved Filters</h3>
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">Saved Filters</h3>
           <div className="flex flex-wrap gap-2">
             {savedFilters.map(sf => (
               <button
                 key={sf._id}
                 onClick={() => handleLoadFilter(sf)}
-                className="px-3 py-1.5 text-sm bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-200 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-colors font-medium"
               >
                 {sf.name}
               </button>
@@ -317,26 +291,26 @@ const AdvancedSearch = ({ onSearch, onClose }) => {
       {/* Save Dialog */}
       {showSaveDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Save Filter</h3>
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-2xl">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Save Filter</h3>
             <input
               type="text"
               value={filterName}
               onChange={(e) => setFilterName(e.target.value)}
               placeholder="Enter filter name"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white mb-4"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-4"
               autoFocus
             />
             <div className="flex gap-3">
               <button
                 onClick={handleSaveFilter}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-lg font-semibold transition-colors"
               >
                 Save
               </button>
               <button
                 onClick={() => setShowSaveDialog(false)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="px-4 py-2.5 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-gray-700"
               >
                 Cancel
               </button>

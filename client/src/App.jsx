@@ -1,4 +1,3 @@
-import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from './context/AuthContext'
@@ -14,7 +13,7 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary to-primary-dark">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary to-[#3a0ca3]">
         <div className="spinner border-4 w-12 h-12"></div>
         <p className="mt-4 text-white text-lg">Loading...</p>
       </div>
@@ -41,7 +40,7 @@ const PublicRoute = ({ children }) => {
 
 function App() {
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <ExpenseProvider>
           <IncomeProvider>
