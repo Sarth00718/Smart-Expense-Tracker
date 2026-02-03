@@ -34,10 +34,7 @@ router.post('/scan', auth, upload.single('receipt'), async (req, res) => {
     // Perform OCR
     const { data: { text } } = await Tesseract.recognize(
       req.file.buffer,
-      'eng',
-      {
-        logger: info => console.log(info)
-      }
+      'eng'
     );
 
     // Parse extracted text

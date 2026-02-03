@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Filter, X, Save, Calendar, DollarSign, Tag } from 'lucide-react';
 import toast from 'react-hot-toast';
-import api from '../services/api';
+import api from '../../../services/api';
 
 const AdvancedSearch = ({ onSearch, onClose }) => {
   const [filters, setFilters] = useState({

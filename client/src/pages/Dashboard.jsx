@@ -1,53 +1,35 @@
-import { useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import Sidebar from '../components/Sidebar'
-import Header from '../components/Header'
-import DashboardHome from '../components/DashboardHome'
-import Expenses from '../components/Expenses'
-import Income from '../components/Income'
-import Budgets from '../components/Budgets'
-import Goals from '../components/Goals'
-import AIAssistant from '../components/AIAssistant'
-import Analytics from '../components/Analytics'
-import Achievements from '../components/Achievements'
-import SpendingHeatmap from '../components/SpendingHeatmap'
-import ReceiptScanner from '../components/ReceiptScanner'
-import Settings from '../components/Settings'
+import AppLayout from '../components/layout/AppLayout'
+import DashboardHome from '../components/features/dashboard/DashboardHome'
+import Expenses from '../components/features/expenses/Expenses'
+import Income from '../components/features/income/Income'
+import Budgets from '../components/features/budgets/Budgets'
+import Goals from '../components/features/goals/Goals'
+import AIAssistant from '../components/features/ai/AIAssistant'
+import Analytics from '../components/features/analytics/Analytics'
+import Achievements from '../components/features/achievements/Achievements'
+import SpendingHeatmap from '../components/features/analytics/SpendingHeatmap'
+import ReceiptScanner from '../components/features/receipts/ReceiptScanner'
+import Settings from '../components/features/settings/Settings'
 
 const Dashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden w-full">
-        {/* Header */}
-        <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-
-        {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-gray-50">
-          <div className="max-w-7xl mx-auto">
-            <Routes>
-              <Route path="/" element={<DashboardHome />} />
-              <Route path="/expenses" element={<Expenses />} />
-              <Route path="/income" element={<Income />} />
-              <Route path="/budgets" element={<Budgets />} />
-              <Route path="/goals" element={<Goals />} />
-              <Route path="/ai" element={<AIAssistant />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/heatmap" element={<SpendingHeatmap />} />
-              <Route path="/receipt" element={<ReceiptScanner />} />
-              <Route path="/achievements" element={<Achievements />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="*" element={<Navigate to="/dashboard" />} />
-            </Routes>
-          </div>
-        </main>
-      </div>
-    </div>
+    <Routes>
+      <Route element={<AppLayout />}>
+        <Route index element={<DashboardHome />} />
+        <Route path="expenses" element={<Expenses />} />
+        <Route path="income" element={<Income />} />
+        <Route path="budgets" element={<Budgets />} />
+        <Route path="goals" element={<Goals />} />
+        <Route path="ai" element={<AIAssistant />} />
+        <Route path="analytics" element={<Analytics />} />
+        <Route path="heatmap" element={<SpendingHeatmap />} />
+        <Route path="receipt" element={<ReceiptScanner />} />
+        <Route path="achievements" element={<Achievements />} />
+        <Route path="settings" element={<Settings />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Route>
+    </Routes>
   )
 }
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Target, Plus, Trash2, TrendingUp, Calendar, DollarSign } from 'lucide-react'
-import { goalService } from '../services/goalService'
+import { goalService } from '../../../services/goalService'
+import { Card, Button, EmptyState } from '../../ui'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 
@@ -96,40 +97,50 @@ const Goals = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
       {/* Header */}
-      <div className="card">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Target className="w-6 h-6 text-primary" />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+            <Target className="w-8 h-8 text-primary" />
             Savings Goals
-          </h2>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="btn btn-primary"
-          >
-            <Plus className="w-5 h-5" />
-            {showForm ? 'Cancel' : 'Add Goal'}
-          </button>
+          </h1>
+          <p className="text-gray-600 text-lg">Set and track your financial goals</p>
         </div>
+        
+        <Button
+          variant="primary"
+          size="md"
+          icon={Plus}
+          onClick={() => setShowForm(!showForm)}
+        >
+          {showForm ? 'Cancel' : 'Add Goal'}
+        </Button>
+      </div>
 
-        {/* Add Goal Form */}
-        {showForm && (
-          <form onSubmit={handleSubmit} className="mb-6 p-4 bg-gray-50 rounded-lg">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Goal Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                  placeholder="e.g., Emergency Fund, Vacation, New Laptop"
-                  className="input"
-                />
-              </div>
+      {/* Add Goal Form */}
+      {showForm && (
+        <Card 
+          title="Create New Goal"
+          icon={Plus}
+          subtitle="Set a target and track your progress"
+        >
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Goal Name
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                required
+                placeholder="e.g., Emergency Fund, Vacation, New Laptop"
+                className="input w-full"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Target Amount (₹)
@@ -142,7 +153,7 @@ const Goals = () => {
                   onChange={(e) => setFormData({ ...formData, targetAmount: e.target.value })}
                   required
                   placeholder="50000.00"
-                  className="input"
+                  className="input w-full text-lg"
                 />
               </div>
               <div>
@@ -156,47 +167,52 @@ const Goals = () => {
                   value={formData.currentAmount}
                   onChange={(e) => setFormData({ ...formData, currentAmount: e.target.value })}
                   placeholder="0.00"
-                  className="input"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Deadline (Optional)
-                </label>
-                <input
-                  type="date"
-                  value={formData.deadline}
-                  onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                  className="input"
+                  className="input w-full text-lg"
                 />
               </div>
             </div>
-            <button type="submit" className="btn btn-primary mt-4">
-              Add Goal
-            </button>
-          </form>
-        )}
 
-        {/* Goals List */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Deadline (Optional)
+              </label>
+              <input
+                type="date"
+                value={formData.deadline}
+                onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+                className="input w-full"
+              />
+            </div>
+
+            <Button type="submit" variant="primary" fullWidth size="lg" icon={Plus}>
+              Create Goal
+            </Button>
+          </form>
+        </Card>
+      )}
+
+      {/* Goals Grid */}
+      <Card title="Your Goals" subtitle={`${goals.length} active ${goals.length === 1 ? 'goal' : 'goals'}`}>
         {goals.length === 0 ? (
-          <div className="text-center py-12">
-            <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">No savings goals yet. Create your first goal!</p>
-          </div>
+          <EmptyState
+            icon={Target}
+            title="No savings goals yet"
+            description="Create your first goal to start tracking your progress"
+          />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {goals.map((goal) => (
-              <div key={goal.id} className="p-5 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+              <div key={goal.id} className="p-6 border-2 border-gray-200 rounded-xl hover:border-primary hover:shadow-lg transition-all">
                 <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-1">{goal.name}</h3>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">{goal.name}</h3>
                     {goal.deadline && (
-                      <div className="flex items-center gap-1 text-sm text-gray-600">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Calendar className="w-4 h-4" />
-                        {format(new Date(goal.deadline), 'MMM dd, yyyy')}
+                        <span>{format(new Date(goal.deadline), 'MMM dd, yyyy')}</span>
                         {goal.daysLeft !== null && (
-                          <span className="ml-2 text-primary font-medium">
-                            ({goal.daysLeft} days left)
+                          <span className="ml-1 px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-semibold">
+                            {goal.daysLeft} days left
                           </span>
                         )}
                       </div>
@@ -204,43 +220,56 @@ const Goals = () => {
                   </div>
                   <button
                     onClick={() => handleDelete(goal.id, goal.name)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all hover:scale-110 flex-shrink-0"
                     title="Delete Goal"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-5 h-5" />
                   </button>
                 </div>
 
                 {/* Progress */}
-                <div className="mb-4">
+                <div className="mb-5">
                   <div className="flex justify-between text-sm mb-2">
-                    <span className="text-gray-600">
-                      ₹{goal.current.toFixed(2)} / ₹{goal.target.toFixed(2)}
+                    <span className="text-gray-600 font-medium">
+                      ₹{goal.current.toFixed(2)}
                     </span>
-                    <span className="font-semibold text-primary">
-                      {goal.percentage.toFixed(1)}%
+                    <span className="text-gray-400">
+                      / ₹{goal.target.toFixed(2)}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                  <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden mb-2">
                     <div
-                      className={`h-full transition-all duration-300 ${getProgressColor(goal.percentage)}`}
+                      className={`h-full transition-all duration-500 ${getProgressColor(goal.percentage)}`}
                       style={{ width: `${Math.min(goal.percentage, 100)}%` }}
                     ></div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className={`text-lg font-bold ${
+                      goal.percentage >= 100 ? 'text-green-600' :
+                      goal.percentage >= 75 ? 'text-blue-600' :
+                      goal.percentage >= 50 ? 'text-yellow-600' :
+                      'text-orange-600'
+                    }`}>
+                      {goal.percentage.toFixed(1)}%
+                    </span>
+                    {goal.percentage >= 100 && (
+                      <span className="text-green-600 font-semibold text-sm">🎉 Goal Achieved!</span>
+                    )}
                   </div>
                 </div>
 
                 {/* Stats */}
-                <div className="space-y-2 mb-4">
+                <div className="space-y-2 mb-5 p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-600">Remaining:</span>
-                    <span className="font-semibold">
+                    <span className="font-bold text-gray-900">
                       ₹{(goal.target - goal.current).toFixed(2)}
                     </span>
                   </div>
                   {goal.neededPerDay > 0 && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Save per day:</span>
-                      <span className="font-semibold text-primary">
+                      <span className="font-bold text-primary">
                         ₹{goal.neededPerDay.toFixed(2)}
                       </span>
                     </div>
@@ -248,27 +277,36 @@ const Goals = () => {
                 </div>
 
                 {/* Update Button */}
-                <button
+                <Button
+                  variant="primary"
+                  fullWidth
+                  icon={TrendingUp}
                   onClick={() => openUpdateModal(goal)}
-                  className="btn btn-secondary w-full"
                 >
-                  <TrendingUp className="w-4 h-4" />
                   Update Progress
-                </button>
+                </Button>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </Card>
 
       {/* Update Modal */}
       {showUpdateModal && selectedGoal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold mb-4">Update Goal Progress</h3>
-            <p className="text-gray-600 mb-4">{selectedGoal.name}</p>
-            <form onSubmit={handleUpdate}>
-              <div className="mb-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                <DollarSign className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900">Update Progress</h3>
+                <p className="text-gray-600">{selectedGoal.name}</p>
+              </div>
+            </div>
+            
+            <form onSubmit={handleUpdate} className="space-y-5">
+              <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Current Amount (₹)
                 </label>
@@ -279,27 +317,29 @@ const Goals = () => {
                   value={updateAmount}
                   onChange={(e) => setUpdateAmount(e.target.value)}
                   required
-                  className="input"
+                  className="input w-full text-lg"
                 />
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-500 mt-2">
                   Target: ₹{selectedGoal.target.toFixed(2)}
                 </p>
               </div>
-              <div className="flex gap-3">
-                <button type="submit" className="btn btn-primary flex-1">
+              
+              <div className="flex gap-3 pt-2">
+                <Button type="submit" variant="primary" fullWidth size="lg">
                   Update
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() => {
                     setShowUpdateModal(false)
                     setSelectedGoal(null)
                     setUpdateAmount('')
                   }}
-                  className="btn btn-secondary flex-1"
+                  className="px-6"
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
             </form>
           </div>

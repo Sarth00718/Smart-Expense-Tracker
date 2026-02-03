@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { PieChart, Plus, Trash2, TrendingDown, TrendingUp, AlertCircle, Lightbulb, Target, Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
-import { budgetService } from '../services/budgetService'
-import { budgetRecommendationService } from '../services/budgetRecommendationService'
-import { expenseService } from '../services/expenseService'
+import { budgetService } from '../../../services/budgetService'
+import { budgetRecommendationService } from '../../../services/budgetRecommendationService'
+import { expenseService } from '../../../services/expenseService'
 import toast from 'react-hot-toast'
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns'
 
@@ -35,7 +35,7 @@ const Budgets = () => {
     } else if (activeTab === 'history') {
       loadHistoryData()
     }
-  }, [activeTab, selectedMonth])
+  }, [activeTab, selectedMonth, recommendations])
 
   const loadBudgets = async () => {
     try {
@@ -69,14 +69,21 @@ const Budgets = () => {
       
       // Get budgets
       const budgetsResponse = await budgetService.getBudgets()
-      const currentBudgets = budgetsResponse.data.budgets || []
+      const currentBudgets = budgetsResponse.data?.budgets || []
+      
+      if (currentBudgets.length === 0) {
+        setHistoryData([])
+        setLoadingHistory(false)
+        return
+      }
       
       // Get expenses for the selected month
       const monthStart = startOfMonth(selectedMonth)
       const monthEnd = endOfMonth(selectedMonth)
       
-      const expensesResponse = await expenseService.getExpenses()
-      const allExpenses = expensesResponse.data || []
+      // Fetch all expenses with a high limit to ensure we get all data
+      const expensesResponse = await expenseService.getExpenses({ limit: 10000 })
+      const allExpenses = expensesResponse.data?.data || []
       
       // Filter expenses for selected month
       const monthExpenses = allExpenses.filter(exp => {
@@ -110,6 +117,7 @@ const Budgets = () => {
     } catch (error) {
       console.error('Failed to load history:', error)
       toast.error('Failed to load budget history')
+      setHistoryData([])
     } finally {
       setLoadingHistory(false)
     }
@@ -196,52 +204,57 @@ const Budgets = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
       {/* Header with Tabs */}
-      <div className="mb-4 sm:mb-6">
-        <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2">
-          <PieChart className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-          Budget Management
-        </h2>
+      <div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+              <PieChart className="w-8 h-8 text-primary" />
+              Budget Management
+            </h1>
+            <p className="text-gray-600 text-lg">Set budgets and track your spending</p>
+          </div>
+        </div>
         
         {/* Tabs */}
         <div className="flex gap-2 border-b border-gray-200 overflow-x-auto">
           <button
             onClick={() => setActiveTab('budgets')}
-            className={`px-4 py-2 font-medium text-sm sm:text-base whitespace-nowrap transition-colors ${
+            className={`px-5 py-3 font-medium text-sm sm:text-base whitespace-nowrap transition-all ${
               activeTab === 'budgets'
-                ? 'border-b-2 border-blue-600 text-blue-600'
+                ? 'border-b-2 border-primary text-primary'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             <span className="flex items-center gap-2">
-              <Target className="w-4 h-4" />
+              <Target className="w-5 h-5" />
               My Budgets
             </span>
           </button>
           <button
             onClick={() => setActiveTab('history')}
-            className={`px-4 py-2 font-medium text-sm sm:text-base whitespace-nowrap transition-colors ${
+            className={`px-5 py-3 font-medium text-sm sm:text-base whitespace-nowrap transition-all ${
               activeTab === 'history'
-                ? 'border-b-2 border-blue-600 text-blue-600'
+                ? 'border-b-2 border-primary text-primary'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             <span className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
+              <Calendar className="w-5 h-5" />
               History
             </span>
           </button>
           <button
             onClick={() => setActiveTab('recommendations')}
-            className={`px-4 py-2 font-medium text-sm sm:text-base whitespace-nowrap transition-colors ${
+            className={`px-5 py-3 font-medium text-sm sm:text-base whitespace-nowrap transition-all ${
               activeTab === 'recommendations'
-                ? 'border-b-2 border-blue-600 text-blue-600'
+                ? 'border-b-2 border-primary text-primary'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             <span className="flex items-center gap-2">
-              <Lightbulb className="w-4 h-4" />
+              <Lightbulb className="w-5 h-5" />
               AI Recommendations
             </span>
           </button>

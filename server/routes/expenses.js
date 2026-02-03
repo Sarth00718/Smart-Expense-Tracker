@@ -167,7 +167,6 @@ router.post('/search', auth, async (req, res) => {
     }
 
     const filters = parseNaturalLanguageQuery(query);
-    console.log('🔍 NLP Filters:', JSON.stringify(filters, null, 2));
 
     // Build MongoDB query
     const dbQuery = { userId: req.userId };
@@ -218,8 +217,6 @@ router.post('/search', auth, async (req, res) => {
         ]
       }));
     }
-
-    console.log('🔍 MongoDB Query:', JSON.stringify(dbQuery, null, 2));
 
     const expenses = await Expense.find(dbQuery).sort({ date: -1 });
 
@@ -318,8 +315,6 @@ router.get('/', auth, async (req, res) => {
 router.delete('/', auth, async (req, res) => {
   try {
     const result = await Expense.deleteMany({ userId: req.userId });
-    
-    console.log(`User ${req.userId} deleted all expenses (${result.deletedCount} items)`);
     
     res.json({ 
       message: 'All expenses deleted successfully',

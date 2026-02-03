@@ -1,6 +1,7 @@
 import api from './api'
 
 export const expenseService = {
+  getExpenses: (params) => api.get('/expenses', { params }),
   getAll: () => api.get('/expenses'),
   add: (expense) => api.post('/expenses', expense),
   update: (id, expense) => api.put(`/expenses/${id}`, expense),

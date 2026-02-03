@@ -163,7 +163,6 @@ async function awardBadge(userId, badgeName, badgeType) {
       badgeType
     });
     await achievement.save();
-    console.log(`Awarded ${badgeName} to user ${userId}`);
   } catch (error) {
     if (error.code !== 11000) { // Ignore duplicate key errors
       console.error('Error awarding badge:', error);

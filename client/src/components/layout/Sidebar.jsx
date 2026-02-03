@@ -10,12 +10,14 @@ import {
   Wallet,
   X,
   DollarSign,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Camera,
+  Mic
 } from 'lucide-react'
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const navItems = [
-    { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', end: true },
     { path: '/dashboard/expenses', icon: Receipt, label: 'Expenses' },
     { path: '/dashboard/income', icon: DollarSign, label: 'Income' },
     { path: '/dashboard/budgets', icon: PieChart, label: 'Budgets' },
@@ -69,7 +71,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             <NavLink
               key={item.path}
               to={item.path}
-              end={item.path === '/dashboard'}
+              end={item.end || false}
               onClick={() => setIsOpen(false)}
               className={({ isActive }) => `
                 flex items-center gap-3 px-4 py-3 rounded-xl

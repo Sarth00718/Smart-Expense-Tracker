@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Loader, Check, X, Edit2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import api from '../services/api';
+import api from '../../../services/api';
 
 const VoiceExpenseInput = ({ onExpenseCreated, onClose }) => {
   const [isListening, setIsListening] = useState(false);

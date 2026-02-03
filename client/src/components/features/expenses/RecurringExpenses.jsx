@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Plus, Repeat, Trash2, Edit2, X, Save } from 'lucide-react'
-import { useExpense } from '../context/ExpenseContext'
+import { useExpense } from '../../../context/ExpenseContext'
 import toast from 'react-hot-toast'
 
 const RecurringExpenses = ({ onClose }) => {

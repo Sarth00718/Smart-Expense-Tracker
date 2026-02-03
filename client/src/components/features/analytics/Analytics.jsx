@@ -3,9 +3,10 @@ import {
   TrendingUp, BarChart3, PieChart, Calendar, Activity, 
   Download, Grid, List, Filter 
 } from 'lucide-react'
-import { useExpense } from '../context/ExpenseContext'
-import { useIncome } from '../context/IncomeContext'
-import { analyticsService } from '../services/analyticsService'
+import { useExpense } from '../../../context/ExpenseContext'
+import { useIncome } from '../../../context/IncomeContext'
+import { analyticsService } from '../../../services/analyticsService'
+import { Button } from '../../ui'
 import { 
   LineChart, BarChart, PieChart as RechartsPie, 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, 
@@ -330,15 +331,15 @@ const Analytics = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <BarChart3 className="w-7 h-7 sm:w-8 sm:h-8 text-primary" />
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+            <BarChart3 className="w-8 h-8 text-primary" />
             Analytics
           </h1>
-          <p className="text-gray-600 mt-1">Comprehensive insights into your finances</p>
+          <p className="text-gray-600 text-lg">Comprehensive insights into your finances</p>
         </div>
 
         {/* Controls */}
@@ -347,7 +348,7 @@ const Analytics = () => {
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
-              className="input py-2 text-sm"
+              className="input py-2 px-4 text-sm"
             >
               <option value="thisMonth">This Month</option>
               <option value="lastMonth">Last Month</option>
@@ -358,39 +359,42 @@ const Analytics = () => {
           )}
 
           {activeTab === 'advanced' && (
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-              className="btn btn-secondary py-2 px-3"
               title="Toggle View"
             >
               {viewMode === 'grid' ? <List className="w-4 h-4" /> : <Grid className="w-4 h-4" />}
-            </button>
+            </Button>
           )}
 
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={exportToPNG}
-            className="btn btn-secondary py-2 px-3"
             title="Export as PNG"
           >
             <Download className="w-4 h-4" />
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="primary"
+            size="sm"
             onClick={exportToPDF}
-            className="btn btn-primary py-2 px-3"
+            icon={Download}
           >
-            <Download className="w-4 h-4" />
             PDF
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Tabs */}
       <div className="border-b border-gray-200">
-        <div className="flex gap-4">
+        <div className="flex gap-6">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`pb-3 px-1 font-medium transition-colors border-b-2 ${
+            className={`pb-3 px-1 font-medium text-base transition-all border-b-2 ${
               activeTab === 'overview'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
@@ -400,7 +404,7 @@ const Analytics = () => {
           </button>
           <button
             onClick={() => setActiveTab('advanced')}
-            className={`pb-3 px-1 font-medium transition-colors border-b-2 ${
+            className={`pb-3 px-1 font-medium text-base transition-all border-b-2 ${
               activeTab === 'advanced'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
@@ -410,7 +414,7 @@ const Analytics = () => {
           </button>
           <button
             onClick={() => setActiveTab('insights')}
-            className={`pb-3 px-1 font-medium transition-colors border-b-2 ${
+            className={`pb-3 px-1 font-medium text-base transition-all border-b-2 ${
               activeTab === 'insights'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-gray-600 hover:text-gray-900'

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { budgetRecommendationService } from '../services/budgetRecommendationService'
+import { budgetRecommendationService } from '../../../services/budgetRecommendationService'
 import toast from 'react-hot-toast'
 
 const BudgetRecommendations = () => {

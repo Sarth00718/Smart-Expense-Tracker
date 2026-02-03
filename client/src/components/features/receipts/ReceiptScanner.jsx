@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Camera, Upload, Scan, X, CheckCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { useExpense } from '../context/ExpenseContext'
-import { receiptService } from '../services/receiptService'
+import { useExpense } from '../../../context/ExpenseContext'
+import { receiptService } from '../../../services/receiptService'
 
 const ReceiptScanner = ({ onSuccess }) => {
   const { addExpense } = useExpense()

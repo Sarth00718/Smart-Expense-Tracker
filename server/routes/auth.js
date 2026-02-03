@@ -23,8 +23,6 @@ router.post('/register', async (req, res) => {
   try {
     const { email, password, fullName } = req.body;
 
-    console.log('Registration attempt:', { email, fullName, hasPassword: !!password });
-
     // Validation
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
@@ -58,7 +56,6 @@ router.post('/register', async (req, res) => {
     });
 
     await user.save();
-    console.log('User created successfully:', user.email);
 
     // Generate token
     const token = generateToken(user._id);

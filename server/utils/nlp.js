@@ -20,8 +20,6 @@ function parseNaturalLanguageQuery(query) {
   };
 
   try {
-    console.log('🔍 Parsing query:', query);
-
     // ===== YEAR EXTRACTION =====
     const yearMatch = lowerQuery.match(/\b(20\d{2})\b/);
     if (yearMatch) {
@@ -189,8 +187,6 @@ function parseNaturalLanguageQuery(query) {
         filters.descriptionKeywords.push(cleanWord);
       }
     }
-
-    console.log('✅ Parsed filters:', JSON.stringify(filters, null, 2));
 
   } catch (error) {
     console.error('❌ Error parsing query:', error);
