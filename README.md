@@ -32,13 +32,6 @@ A comprehensive MERN stack expense tracking application with AI-powered features
 - Confidence scoring
 - **Example**: "Add 50 rupees grocery expense"
 
-#### 🔒 Two-Factor Authentication (2FA)
-- Email OTP support
-- TOTP support (Google Authenticator)
-- 10 backup codes for recovery
-- Secure OTP storage with expiration
-- Rate limiting protection
-
 #### 🔍 Advanced Search & Filters
 - Multi-criteria search (date, amount, category, payment mode)
 - Quick filter presets (today, last 7 days, this month)
@@ -89,10 +82,6 @@ GOOGLE_CLIENT_ID=your-google-client-id
 # Client URL
 CLIENT_URL=http://localhost:5173
 
-# Email Service (Optional - for 2FA)
-SENDGRID_API_KEY=your-sendgrid-api-key
-FROM_EMAIL=noreply@yourapp.com
-
 # AI Service (Optional)
 OPENAI_API_KEY=your-openai-api-key
 ```
@@ -117,7 +106,6 @@ db.expenses.createIndex({ userId: 1, date: -1 })
 db.expenses.createIndex({ userId: 1, category: 1 })
 db.expenses.createIndex({ userId: 1, amount: 1 })
 db.expenses.createIndex({ userId: 1, paymentMode: 1 })
-db.otps.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 })
 db.savedfilters.createIndex({ userId: 1, name: 1 }, { unique: true })
 ```
 
@@ -156,8 +144,6 @@ smart-expense-tracker/
 │   │   │   ├── ReceiptScanner.jsx
 │   │   │   ├── Settings.jsx            # 🆕 Settings page
 │   │   │   ├── Sidebar.jsx
-│   │   │   ├── TwoFactorSetup.jsx      # 🆕 2FA setup
-│   │   │   ├── TwoFactorVerify.jsx     # 🆕 2FA verify
 │   │   │   └── VoiceExpenseInput.jsx   # 🆕 Voice input
 │   │   ├── context/            # React context
 │   │   │   ├── AuthContext.jsx
@@ -188,7 +174,6 @@ smart-expense-tracker/
 │   │   ├── Expense.js
 │   │   ├── Goal.js
 │   │   ├── Income.js
-│   │   ├── OTP.js                      # 🆕 OTP model
 │   │   ├── SavedFilter.js              # 🆕 Filter model
 │   │   └── User.js
 │   ├── routes/                 # API routes
@@ -205,7 +190,6 @@ smart-expense-tracker/
 │   │   ├── income.js
 │   │   ├── receipts.js
 │   │   ├── reports.js
-│   │   ├── twoFactor.js                # 🆕 2FA
 │   │   ├── users.js                    # 🆕 User preferences
 │   │   └── voice.js                    # 🆕 Voice input
 │   ├── utils/                  # Utility functions
@@ -214,7 +198,6 @@ smart-expense-tracker/
 │   │   ├── llmRetry.js
 │   │   ├── nlp.js
 │   │   ├── ocr.js
-│   │   ├── twoFactor.js                # 🆕 2FA utilities
 │   │   └── voiceParser.js              # 🆕 Voice parser
 │   ├── package.json
 │   └── server.js
@@ -258,8 +241,6 @@ smart-expense-tracker/
 - **Tesseract.js** - OCR
 - **Multer** - File uploads
 - **PDFKit** - PDF generation
-- **Speakeasy** - TOTP generation 🆕
-- **QRCode** - QR code generation 🆕
 - **Compromise** - NLP parsing 🆕
 
 ---
@@ -271,7 +252,6 @@ smart-expense-tracker/
 - `POST /api/auth/login` - Login user
 - `POST /api/auth/google` - Google OAuth login
 - `GET /api/auth/me` - Get current user
-- `POST /api/auth/verify-2fa` - Verify 2FA code 🆕
 
 ### Expenses
 - `GET /api/expenses` - Get all expenses
@@ -316,15 +296,6 @@ smart-expense-tracker/
 - `POST /api/voice/parse` - Parse voice transcript
 - `POST /api/voice/expense` - Create expense from voice
 
-### 🆕 Two-Factor Authentication
-- `GET /api/2fa/status` - Get 2FA status
-- `POST /api/2fa/setup/email` - Setup email 2FA
-- `POST /api/2fa/setup/totp` - Setup TOTP 2FA
-- `POST /api/2fa/verify/email` - Verify email 2FA
-- `POST /api/2fa/verify/totp` - Verify TOTP 2FA
-- `POST /api/2fa/disable` - Disable 2FA
-- `POST /api/2fa/regenerate-backup-codes` - Regenerate backup codes
-
 ### 🆕 User Settings
 - `GET /api/users/profile` - Get user profile
 - `PATCH /api/users/profile` - Update profile
@@ -352,24 +323,6 @@ For complete API documentation, see [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
 // - Creates description: "Grocery expense"
 ```
 
-### 2FA Setup
-```javascript
-// Email OTP
-1. Go to Settings → Security
-2. Click "Enable 2FA"
-3. Choose "Email OTP"
-4. Enter code from email
-5. Save backup codes
-
-// Google Authenticator
-1. Go to Settings → Security
-2. Click "Enable 2FA"
-3. Choose "Authenticator App"
-4. Scan QR code with Google Authenticator
-5. Enter 6-digit code
-6. Save backup codes
-```
-
 ### Advanced Search
 ```javascript
 // Search expenses
@@ -389,15 +342,11 @@ For complete API documentation, see [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
 
 - ✅ JWT authentication with secure tokens
 - ✅ Password hashing with bcryptjs
-- ✅ Two-factor authentication (Email OTP + TOTP)
 - ✅ Rate limiting on all endpoints
 - ✅ Input validation and sanitization
 - ✅ XSS protection
 - ✅ NoSQL injection prevention
 - ✅ CORS configuration
-- ✅ Encrypted TOTP secrets
-- ✅ OTP auto-expiration
-- ✅ One-time backup codes
 - ✅ HTTPS required in production
 
 ---
@@ -411,11 +360,7 @@ For complete API documentation, see [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
   password: String (hashed),
   fullName: String,
   picture: String,
-  googleId: String,
-  twoFactorEnabled: Boolean,
-  twoFactorSecret: String (encrypted),
-  twoFactorMethod: 'email' | 'totp',
-  twoFactorBackupCodes: [{ code: String, used: Boolean }]
+  googleId: String
 }
 ```
 
@@ -454,7 +399,6 @@ npm test
 ### Manual Testing Checklist
 - [ ] User registration and login
 - [ ] Google OAuth login
-- [ ] 2FA setup and verification
 - [ ] Voice input expense creation
 - [ ] Advanced search with filters
 - [ ] Expense CRUD operations
@@ -472,7 +416,6 @@ npm test
 |---------|--------|---------|--------|------|
 | Core Features | ✅ | ✅ | ✅ | ✅ |
 | Voice Input | ✅ | ⚠️ | ✅ | ✅ |
-| 2FA | ✅ | ✅ | ✅ | ✅ |
 | Search | ✅ | ✅ | ✅ | ✅ |
 
 ✅ Full support | ⚠️ Limited support | ❌ Not supported
@@ -501,8 +444,6 @@ MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/expense-tracker
 JWT_SECRET=your-super-secret-jwt-key-min-32-chars
 GOOGLE_CLIENT_ID=your-google-client-id
 CLIENT_URL=https://yourapp.com
-SENDGRID_API_KEY=your-sendgrid-api-key
-FROM_EMAIL=noreply@yourapp.com
 ```
 
 ### Deployment Platforms
@@ -556,11 +497,6 @@ Contributions are welcome! Please follow these steps:
 Solution: Ensure HTTPS in production, grant microphone permission, use Chrome/Safari
 ```
 
-**2FA OTP not received**
-```
-Solution: Check server console (dev mode), verify SENDGRID_API_KEY, check spam folder
-```
-
 **MongoDB connection error**
 ```
 Solution: Verify MONGODB_URI in .env, check MongoDB is running, verify network
@@ -579,7 +515,6 @@ For more troubleshooting, see [INSTALL.md](docs/INSTALL.md)
 
 ### Version 2.0.0 (Current)
 - ✨ Added Voice Input for Expenses
-- ✨ Added Two-Factor Authentication (Email OTP + TOTP)
 - ✨ Added Advanced Search & Filters (multi-criteria + saved filters)
 - 🔒 Enhanced security features
 - ⚡ Performance optimizations
@@ -619,7 +554,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Tailwind CSS for the styling system
 - Chart.js for data visualization
 - Tesseract.js for OCR capabilities
-- Speakeasy for TOTP implementation
 - All open-source contributors
 
 ---
@@ -675,7 +609,6 @@ If you find this project useful, please consider giving it a star on GitHub!
 ## 💡 Tips & Best Practices
 
 ### For Users
-- Enable 2FA for enhanced security (Settings → Security)
 - Use voice input for quick expense entry (Expenses page)
 - Use advanced search to analyze spending (Expenses page)
 - Set realistic budgets and goals

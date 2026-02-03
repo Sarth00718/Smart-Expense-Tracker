@@ -4,7 +4,6 @@ const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
-const { createOTP, verifyOTP, sendOTPEmail, verifyTOTP, verifyBackupCode } = require('../utils/twoFactor');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -103,7 +102,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Find user
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+twoFactorSecret');
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -114,9 +113,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // 2FA has been disabled - skip 2FA check and proceed with login
-
-    // Update last login (skip validation for existing users)
+    // Update last login
     user.lastLogin = new Date();
     await user.save({ validateBeforeSave: false });
 
@@ -135,87 +132,6 @@ router.post('/login', async (req, res) => {
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Server error during login' });
-  }
-});
-
-// @route   POST /api/auth/verify-2fa
-// @desc    Verify 2FA code and complete login
-// @access  Public (with temp token)
-router.post('/verify-2fa', async (req, res) => {
-  try {
-    const { tempToken, code, backupCode } = req.body;
-
-    if (!tempToken) {
-      return res.status(400).json({ error: 'Temporary token is required' });
-    }
-
-    if (!code && !backupCode) {
-      return res.status(400).json({ error: 'Verification code or backup code is required' });
-    }
-
-    // Verify temp token
-    let decoded;
-    try {
-      decoded = jwt.verify(tempToken, process.env.JWT_SECRET);
-      if (!decoded.temp) {
-        return res.status(401).json({ error: 'Invalid token' });
-      }
-    } catch (error) {
-      return res.status(401).json({ error: 'Token expired or invalid' });
-    }
-
-    const user = await User.findById(decoded.userId).select('+twoFactorSecret');
-    if (!user || !user.twoFactorEnabled) {
-      return res.status(401).json({ error: 'Invalid request' });
-    }
-
-    let verified = false;
-
-    // Try backup code first if provided
-    if (backupCode) {
-      verified = await verifyBackupCode(user, backupCode);
-      if (!verified) {
-        return res.status(401).json({ error: 'Invalid backup code' });
-      }
-    } else {
-      // Verify based on 2FA method
-      if (user.twoFactorMethod === 'email') {
-        const verification = await verifyOTP(user._id, code, 'login');
-        if (!verification.success) {
-          return res.status(401).json({ error: verification.error });
-        }
-        verified = true;
-      } else if (user.twoFactorMethod === 'totp') {
-        verified = verifyTOTP(user.twoFactorSecret, code);
-        if (!verified) {
-          return res.status(401).json({ error: 'Invalid code' });
-        }
-      }
-    }
-
-    if (!verified) {
-      return res.status(401).json({ error: 'Verification failed' });
-    }
-
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save({ validateBeforeSave: false });
-
-    // Generate final token
-    const token = generateToken(user._id);
-
-    res.json({
-      token,
-      user: {
-        id: user._id,
-        email: user.email,
-        fullName: user.fullName,
-        picture: user.picture
-      }
-    });
-  } catch (error) {
-    console.error('2FA verification error:', error);
-    res.status(500).json({ error: 'Verification failed' });
   }
 });
 
