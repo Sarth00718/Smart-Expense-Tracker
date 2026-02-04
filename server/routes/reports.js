@@ -4,6 +4,7 @@ const PDFDocument = require('pdfkit');
 const Expense = require('../models/Expense');
 const Income = require('../models/Income');
 const auth = require('../middleware/auth');
+const { Parser } = require('json2csv');
 
 // @route   GET /api/reports/pdf
 // @desc    Generate PDF financial report

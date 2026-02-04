@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PWA Icon Generator</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #4361ee;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    canvas {
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      margin: 20px 0;
+      display: block;
+    }
+    button {
+      background: #4361ee;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 10px 10px 10px 0;
+    }
+    button:hover {
+      background: #3a0ca3;
+    }
+    .preview {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .preview-item {
+      text-align: center;
+    }
+    .preview-item img {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+    }
+    .preview-item p {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #666;
+    }
+    .instructions {
+      background: #f0f7ff;
+      border-left: 4px solid #4361ee;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .instructions h3 {
+      margin-top: 0;
+      color: #4361ee;
+    }
+    .instructions ol {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+    .instructions li {
+      margin: 8px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💰 PWA Icon Generator</h1>
+    <p class="subtitle">Generate icons for Smart Expense Tracker PWA</p>
+
+    <div class="instructions">
+      <h3>📋 Instructions</h3>
+      <ol>
+        <li>Click the buttons below to generate and download each icon</li>
+        <li>Save the downloaded files to <code>client/public/</code> folder</li>
+        <li>Keep the exact filenames (pwa-192x192.png, etc.)</li>
+        <li>Rebuild your app: <code>npm run build</code></li>
+      </ol>
+    </div>
+
+    <div>
+      <button onclick="generateIcon(192)">Generate 192x192 Icon</button>
+      <button onclick="generateIcon(512)">Generate 512x512 Icon</button>
+      <button onclick="generateIcon(180, 'apple')">Generate Apple Touch Icon</button>
+    </div>
+
+    <div class="preview" id="preview"></div>
+  </div>
+
+  <script>
+    function generateIcon(size, type = 'pwa') {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // Background
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#4361ee');
+      gradient.addColorStop(1, '#3a0ca3');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, size, size);
+
+      // Icon symbol (💰)
+      ctx.fillStyle = 'white';
+      ctx.font = `bold ${size * 0.5}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('💰', size / 2, size / 2);
+
+      // Convert to blob and download
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        
+        if (type === 'apple') {
+          a.download = 'apple-touch-icon.png';
+        } else {
+          a.download = `pwa-${size}x${size}.png`;
+        }
+        
+        a.click();
+        URL.revokeObjectURL(url);
+
+        // Show preview
+        showPreview(url, size, type);
+      });
+    }
+
+    function showPreview(url, size, type) {
+      const preview = document.getElementById('preview');
+      const item = document.createElement('div');
+      item.className = 'preview-item';
+      
+      const img = document.createElement('img');
+      img.src = url;
+      img.width = Math.min(size, 192);
+      img.height = Math.min(size, 192);
+      
+      const label = document.createElement('p');
+      label.textContent = type === 'apple' ? 'Apple Touch Icon' : `${size}x${size}`;
+      
+      item.appendChild(img);
+      item.appendChild(label);
+      preview.appendChild(item);
+    }
+  </script>
+</body>
+</html>

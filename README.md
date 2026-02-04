@@ -39,6 +39,13 @@ A comprehensive MERN stack expense tracking application with AI-powered features
 - Real-time statistics
 - Pagination support
 
+#### 📱 Progressive Web App (PWA)
+- **Installable** - Install on any device like a native app
+- **Offline Support** - Works without internet connection
+- **Auto-Sync** - Pending data syncs when back online
+- **Fast Loading** - Cached assets for instant load
+- **Push Ready** - Infrastructure for notifications (coming soon)
+
 ---
 
 ## 🚀 Quick Start
@@ -516,6 +523,9 @@ For more troubleshooting, see [INSTALL.md](docs/INSTALL.md)
 ### Version 2.0.0 (Current)
 - ✨ Added Voice Input for Expenses
 - ✨ Added Advanced Search & Filters (multi-criteria + saved filters)
+- ✨ Added Progressive Web App (PWA) support
+- 📱 Installable on all devices
+- 🔌 Offline support with auto-sync
 - 🔒 Enhanced security features
 - ⚡ Performance optimizations
 - 📚 Comprehensive documentation
@@ -593,12 +603,13 @@ If you find this project useful, please consider giving it a star on GitHub!
 ## 🎯 Roadmap
 
 ### Upcoming Features
+- [ ] Push notifications for bill reminders
+- [ ] Background sync for offline data
 - [ ] Mobile app (React Native)
 - [ ] Multi-currency support
 - [ ] Bank account integration
 - [ ] Cryptocurrency tracking
 - [ ] Investment portfolio tracking
-- [ ] Bill reminders and notifications
 - [ ] Shared budgets for families
 - [ ] Export to Excel/CSV
 - [ ] Recurring expense automation

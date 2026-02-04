@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react'
 import { useExpense } from '../../../context/ExpenseContext'
 import { expenseService } from '../../../services/expenseService'
-import { Trash2, Calendar, Edit2, X, Download, Trash, Search, ArrowUpDown, Filter, Repeat } from 'lucide-react'
+import { reportService } from '../../../services/reportService'
+import { Trash2, Calendar, Edit2, X, Download, Trash, Search, ArrowUpDown, Filter, Repeat, FileText, FileSpreadsheet, File } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
-import * as XLSX from 'xlsx'
-import { Button } from '../../ui'
+import { Button, Modal } from '../../ui'
 import { useNavigate } from 'react-router-dom'
 import AdvancedSearch from './AdvancedSearch'
 import RecurringExpenses from './RecurringExpenses'
@@ -29,6 +29,12 @@ const Expenses = () => {
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false)
   const [advancedSearchResults, setAdvancedSearchResults] = useState(null)
   const [showRecurring, setShowRecurring] = useState(false)
+  const [showExportModal, setShowExportModal] = useState(false)
+  const [exportDateRange, setExportDateRange] = useState({
+    startDate: '',
+    endDate: ''
+  })
+  const [exportLoading, setExportLoading] = useState(false)
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
@@ -56,26 +62,47 @@ const Expenses = () => {
   }
 
   const handleExportToExcel = () => {
+    setShowExportModal(true)
+  }
+
+  const handleExport = async (format) => {
     if (expenses.length === 0) {
       toast.error('No expenses to export')
       return
     }
 
-    const exportData = expenses.map(exp => ({
-      Date: format(new Date(exp.date), 'yyyy-MM-dd'),
-      Category: exp.category,
-      Description: exp.description || '',
-      Amount: exp.amount
-    }))
+    try {
+      setExportLoading(true)
+      const params = {
+        startDate: exportDateRange.startDate || undefined,
+        endDate: exportDateRange.endDate || undefined
+      }
 
-    const ws = XLSX.utils.json_to_sheet(exportData)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Expenses')
-    
-    const fileName = `expenses_${format(new Date(), 'yyyy-MM-dd')}.xlsx`
-    XLSX.writeFile(wb, fileName)
-    
-    toast.success('Expenses exported successfully!')
+      switch (format) {
+        case 'excel':
+          await reportService.exportExpensesExcel(params)
+          toast.success('Excel file downloaded successfully!')
+          break
+        case 'csv':
+          await reportService.exportExpensesCSV(params)
+          toast.success('CSV file downloaded successfully!')
+          break
+        case 'pdf':
+          await reportService.exportExpensesPDF(params)
+          toast.success('PDF file downloaded successfully!')
+          break
+        default:
+          toast.error('Invalid export format')
+      }
+
+      setShowExportModal(false)
+      setExportDateRange({ startDate: '', endDate: '' })
+    } catch (error) {
+      console.error('Export error:', error)
+      toast.error(error.response?.data?.error || 'Failed to export expenses')
+    } finally {
+      setExportLoading(false)
+    }
   }
 
   const handleNaturalLanguageSearch = async () => {
