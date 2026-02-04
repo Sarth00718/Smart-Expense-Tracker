@@ -11,26 +11,26 @@ const Card = ({
 }) => {
   const paddingClasses = {
     none: '',
-    sm: 'p-4',
-    default: 'p-6',
-    lg: 'p-8'
+    sm: 'p-3 sm:p-4',
+    default: 'p-4 sm:p-6',
+    lg: 'p-6 sm:p-8'
   }
   
   const hoverClass = hover ? 'hover:shadow-lg hover:-translate-y-1 transition-all duration-300' : ''
   
   return (
-    <div id={id} className={`bg-white rounded-xl shadow-card ${paddingClasses[padding]} ${hoverClass} ${className}`}>
+    <div id={id} className={`bg-white rounded-lg sm:rounded-xl shadow-card ${paddingClasses[padding]} ${hoverClass} ${className}`}>
       {(title || action) && (
-        <div className="flex items-start justify-between mb-6">
-          <div className="flex items-center gap-3">
+        <div className="flex items-start justify-between mb-4 sm:mb-6 gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {Icon && (
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Icon className="w-6 h-6 text-primary" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
               </div>
             )}
-            <div>
-              {title && <h3 className="text-xl font-bold text-gray-900">{title}</h3>}
-              {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+            <div className="min-w-0">
+              {title && <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">{title}</h3>}
+              {subtitle && <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1 truncate">{subtitle}</p>}
             </div>
           </div>
           {action && <div className="flex-shrink-0">{action}</div>}

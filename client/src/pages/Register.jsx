@@ -13,9 +13,10 @@ const Register = () => {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const { register } = useAuth()
+  const { register, googleLogin } = useAuth()
   const navigate = useNavigate()
 
   const handleChange = (e) => {
@@ -60,34 +61,51 @@ const Register = () => {
     }
   }
 
+  const handleGoogleLogin = async () => {
+    setError('')
+    setGoogleLoading(true)
+
+    try {
+      await googleLogin()
+      toast.success('Account created successfully!')
+      navigate('/dashboard')
+    } catch (err) {
+      const errorMsg = err.response?.data?.error || err.message || 'Google sign-in failed'
+      setError(errorMsg)
+      toast.error(errorMsg)
+    } finally {
+      setGoogleLoading(false)
+    }
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary via-primary-dark to-purple-900 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary via-primary-dark to-purple-900 px-3 sm:px-4 py-8 sm:py-12">
       <div className="w-full max-w-md">
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl p-6 sm:p-8">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
-              <Wallet className="w-8 h-8 text-primary" />
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-primary/10 rounded-full mb-3 sm:mb-4">
+              <Wallet className="w-7 h-7 sm:w-8 sm:h-8 text-primary" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               Create Account
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600">
               Start tracking your expenses today
             </p>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-800">{error}</p>
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 sm:gap-3">
+              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <p className="text-xs sm:text-sm text-red-800">{error}</p>
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
             {/* Full Name */}
             <div>
               <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-2">
@@ -194,13 +212,13 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className="btn btn-primary w-full py-3 text-base"
+              className="btn btn-primary w-full py-2.5 sm:py-3 text-sm sm:text-base tap-target"
             >
               {loading ? (
                 <div className="spinner"></div>
               ) : (
                 <>
-                  <UserPlus className="w-5 h-5" />
+                  <UserPlus className="w-4 h-4 sm:w-5 sm:h-5" />
                   Create Account
                 </>
               )}
@@ -208,12 +226,12 @@ const Register = () => {
           </form>
 
           {/* Divider */}
-          <div className="relative my-6">
+          <div className="relative my-5 sm:my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200"></div>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500">Already have an account?</span>
+            <div className="relative flex justify-center text-xs sm:text-sm">
+              <span className="px-3 sm:px-4 bg-white text-gray-500">Already have an account?</span>
             </div>
           </div>
 
@@ -221,7 +239,7 @@ const Register = () => {
           <div className="text-center">
             <Link
               to="/login"
-              className="text-primary hover:text-primary-dark font-semibold transition-colors"
+              className="text-sm sm:text-base text-primary hover:text-primary-dark font-semibold transition-colors"
             >
               Sign in instead
             </Link>
@@ -229,7 +247,7 @@ const Register = () => {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-white/80 text-sm mt-6">
+        <p className="text-center text-white/80 text-xs sm:text-sm mt-4 sm:mt-6">
           Join thousands tracking their expenses 🚀
         </p>
       </div>

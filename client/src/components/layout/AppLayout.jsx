@@ -18,8 +18,8 @@ const AppLayout = () => {
         <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-gray-50 pb-16 lg:pb-0">
-          <div className="max-w-7xl mx-auto">
+        <main className="flex-1 overflow-y-auto bg-gray-50 pb-14 sm:pb-16 lg:pb-0 smooth-scroll">
+          <div className="max-w-7xl mx-auto w-full">
             <Outlet />
           </div>
         </main>

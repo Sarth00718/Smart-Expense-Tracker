@@ -41,32 +41,32 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       {/* Sidebar */}
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-50
-        w-72 bg-white border-r border-gray-200
+        w-64 sm:w-72 bg-white border-r border-gray-200
         transform transition-transform duration-300 ease-in-out
         flex flex-col
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Logo */}
-        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-[#3a0ca3] rounded-xl flex items-center justify-center shadow-lg">
-              <Wallet className="w-6 h-6 text-white" />
+        <div className="h-16 flex items-center justify-between px-4 sm:px-6 border-b border-gray-200 flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-[#3a0ca3] rounded-xl flex items-center justify-center shadow-lg">
+              <Wallet className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
             <div>
-              <span className="font-bold text-xl text-gray-900">ExpenseTracker</span>
-              <p className="text-xs text-gray-500">Smart Finance</p>
+              <span className="font-bold text-lg sm:text-xl text-gray-900">ExpenseTracker</span>
+              <p className="text-xs text-gray-500 hidden sm:block">Smart Finance</p>
             </div>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors tap-target"
           >
             <X className="w-5 h-5 text-gray-700" />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-3 sm:p-4 space-y-1 overflow-y-auto smooth-scroll">
           {navItems.map((item) => (
             <NavLink
               key={item.path}
@@ -74,8 +74,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               end={item.end || false}
               onClick={() => setIsOpen(false)}
               className={({ isActive }) => `
-                flex items-center gap-3 px-4 py-3 rounded-xl
-                transition-all duration-200 group
+                flex items-center gap-3 px-3 sm:px-4 py-3 rounded-xl
+                transition-all duration-200 group tap-target
                 ${isActive 
                   ? 'bg-gradient-to-r from-primary to-[#3a0ca3] text-white shadow-md' 
                   : 'text-gray-700 hover:bg-gray-50 hover:translate-x-1'
@@ -83,15 +83,15 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               `}
             >
               <item.icon className="w-5 h-5 flex-shrink-0" />
-              <span className="font-medium">{item.label}</span>
+              <span className="font-medium text-sm sm:text-base">{item.label}</span>
             </NavLink>
           ))}
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-200 flex-shrink-0">
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4">
-            <p className="text-sm font-semibold text-gray-900 mb-1">💡 Pro Tip</p>
+        <div className="p-3 sm:p-4 border-t border-gray-200 flex-shrink-0">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-3 sm:p-4">
+            <p className="text-xs sm:text-sm font-semibold text-gray-900 mb-1">💡 Pro Tip</p>
             <p className="text-xs text-gray-600">Track daily for better insights!</p>
           </div>
         </div>

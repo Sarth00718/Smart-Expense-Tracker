@@ -1,20 +1,71 @@
-import { useState } from 'react'
-import { User, Bell, Lock, Edit2, Save, X, Camera } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { User, Bell, Lock, Edit2, Save, X, Camera, Fingerprint } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { Card, Button } from '../../ui'
 import api from '../../../services/api'
 import toast from 'react-hot-toast'
 
 const Settings = () => {
-  const { user, setUser } = useAuth()
+  const { user, setUser, biometricService } = useAuth()
   const [activeTab, setActiveTab] = useState('profile')
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [biometricAvailable, setBiometricAvailable] = useState(false)
+  const [biometricEnabled, setBiometricEnabled] = useState(false)
+  const [biometricType, setBiometricType] = useState('Biometric')
+  const [biometricLoading, setBiometricLoading] = useState(false)
   const [profileForm, setProfileForm] = useState({
     fullName: user?.fullName || '',
     email: user?.email || '',
     picture: user?.picture || ''
   })
+
+  useEffect(() => {
+    checkBiometricAvailability()
+  }, [])
+
+  const checkBiometricAvailability = async () => {
+    const available = await biometricService.isAvailable()
+    setBiometricAvailable(available)
+    
+    if (available) {
+      const type = await biometricService.getBiometricType()
+      setBiometricType(type)
+      
+      if (user?.id) {
+        const enabled = biometricService.isBiometricEnabled(user.id)
+        setBiometricEnabled(enabled)
+      }
+    }
+  }
+
+  const handleBiometricToggle = async () => {
+    if (!user?.id) {
+      toast.error('User not found')
+      return
+    }
+
+    setBiometricLoading(true)
+
+    try {
+      if (biometricEnabled) {
+        // Disable biometric
+        biometricService.disableBiometric(user.id)
+        setBiometricEnabled(false)
+        toast.success('Biometric authentication disabled')
+      } else {
+        // Enable biometric
+        await biometricService.register(user.id, user.email)
+        setBiometricEnabled(true)
+        toast.success(`${biometricType} enabled successfully!`)
+      }
+    } catch (error) {
+      console.error('Biometric toggle error:', error)
+      toast.error(error.message || 'Failed to update biometric settings')
+    } finally {
+      setBiometricLoading(false)
+    }
+  }
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
@@ -275,6 +326,44 @@ const Settings = () => {
         {/* Security Tab */}
         {activeTab === 'security' && (
           <div className="space-y-6">
+            {/* Biometric Authentication Section */}
+            {biometricAvailable && (
+              <Card>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-4 mb-3">
+                      <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center">
+                        <Fingerprint className="w-7 h-7 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900">
+                          {biometricType}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          {biometricEnabled ? 'Enabled' : 'Disabled'}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-gray-600 ml-18">
+                      {biometricEnabled 
+                        ? `Use ${biometricType} for quick and secure login.`
+                        : `Enable ${biometricType} for faster, more secure access to your account.`
+                      }
+                    </p>
+                  </div>
+                  <Button
+                    variant={biometricEnabled ? 'outline' : 'primary'}
+                    size="md"
+                    onClick={handleBiometricToggle}
+                    disabled={biometricLoading}
+                    className="ml-4"
+                  >
+                    {biometricLoading ? 'Processing...' : biometricEnabled ? 'Disable' : 'Enable'}
+                  </Button>
+                </div>
+              </Card>
+            )}
+
             {/* Password Section */}
             <Card>
               <div className="flex items-start justify-between">
