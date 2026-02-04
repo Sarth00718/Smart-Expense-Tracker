@@ -243,7 +243,7 @@ const Settings = () => {
                   </label>
                   <input
                     type="text"
-                    value={user?.googleId ? 'Google Account' : 'Email Account'}
+                    value="Email Account"
                     readOnly
                     className="input w-full bg-gray-50"
                   />

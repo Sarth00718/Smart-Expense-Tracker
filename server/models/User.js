@@ -11,9 +11,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: function() {
-      return !this.googleId; // Password required only if not Google OAuth
-    }
+    required: true
   },
   fullName: {
     type: String,
@@ -22,11 +20,6 @@ const userSchema = new mongoose.Schema({
   },
   picture: {
     type: String
-  },
-  googleId: {
-    type: String,
-    sparse: true,
-    unique: true
   },
   createdAt: {
     type: Date,

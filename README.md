@@ -21,7 +21,6 @@ A comprehensive MERN stack expense tracking application with AI-powered features
 - 🏆 **Achievements System** - Gamified financial milestones
 - 📄 **PDF Reports** - Generate detailed financial reports
 - 🔐 **JWT Authentication** - Secure user authentication
-- 🌐 **Google OAuth** - Quick sign-in with Google
 
 ### 🆕 Advanced Features (v2.0)
 
@@ -38,13 +37,6 @@ A comprehensive MERN stack expense tracking application with AI-powered features
 - Saved custom filters
 - Real-time statistics
 - Pagination support
-
-#### 📱 Progressive Web App (PWA)
-- **Installable** - Install on any device like a native app
-- **Offline Support** - Works without internet connection
-- **Auto-Sync** - Pending data syncs when back online
-- **Fast Loading** - Cached assets for instant load
-- **Push Ready** - Infrastructure for notifications (coming soon)
 
 ---
 
@@ -83,9 +75,6 @@ MONGODB_URI=mongodb://localhost:27017/expense-tracker
 # Authentication
 JWT_SECRET=your-super-secret-jwt-key-min-32-chars
 
-# Google OAuth (Optional)
-GOOGLE_CLIENT_ID=your-google-client-id
-
 # Client URL
 CLIENT_URL=http://localhost:5173
 
@@ -97,7 +86,6 @@ Create `client/.env`:
 
 ```env
 VITE_API_URL=http://localhost:5000/api
-VITE_GOOGLE_CLIENT_ID=your-google-client-id
 ```
 
 ### Database Setup
@@ -244,7 +232,6 @@ smart-expense-tracker/
 - **Mongoose** - ODM
 - **JWT** - Authentication
 - **bcryptjs** - Password hashing
-- **Google OAuth** - Social login
 - **Tesseract.js** - OCR
 - **Multer** - File uploads
 - **PDFKit** - PDF generation
@@ -257,7 +244,6 @@ smart-expense-tracker/
 ### Authentication
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login user
-- `POST /api/auth/google` - Google OAuth login
 - `GET /api/auth/me` - Get current user
 
 ### Expenses
@@ -366,8 +352,7 @@ For complete API documentation, see [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
   email: String,
   password: String (hashed),
   fullName: String,
-  picture: String,
-  googleId: String
+  picture: String
 }
 ```
 
@@ -405,7 +390,6 @@ npm test
 
 ### Manual Testing Checklist
 - [ ] User registration and login
-- [ ] Google OAuth login
 - [ ] Voice input expense creation
 - [ ] Advanced search with filters
 - [ ] Expense CRUD operations
@@ -449,7 +433,6 @@ npm run build
 NODE_ENV=production
 MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/expense-tracker
 JWT_SECRET=your-super-secret-jwt-key-min-32-chars
-GOOGLE_CLIENT_ID=your-google-client-id
 CLIENT_URL=https://yourapp.com
 ```
 
@@ -523,9 +506,6 @@ For more troubleshooting, see [INSTALL.md](docs/INSTALL.md)
 ### Version 2.0.0 (Current)
 - ✨ Added Voice Input for Expenses
 - ✨ Added Advanced Search & Filters (multi-criteria + saved filters)
-- ✨ Added Progressive Web App (PWA) support
-- 📱 Installable on all devices
-- 🔌 Offline support with auto-sync
 - 🔒 Enhanced security features
 - ⚡ Performance optimizations
 - 📚 Comprehensive documentation
@@ -541,7 +521,6 @@ For more troubleshooting, see [INSTALL.md](docs/INSTALL.md)
 - 🏆 Achievements system
 - 📄 PDF reports
 - 🔐 JWT authentication
-- 🌐 Google OAuth
 
 ---
 
@@ -603,13 +582,12 @@ If you find this project useful, please consider giving it a star on GitHub!
 ## 🎯 Roadmap
 
 ### Upcoming Features
-- [ ] Push notifications for bill reminders
-- [ ] Background sync for offline data
 - [ ] Mobile app (React Native)
 - [ ] Multi-currency support
 - [ ] Bank account integration
 - [ ] Cryptocurrency tracking
 - [ ] Investment portfolio tracking
+- [ ] Bill reminders and notifications
 - [ ] Shared budgets for families
 - [ ] Export to Excel/CSV
 - [ ] Recurring expense automation

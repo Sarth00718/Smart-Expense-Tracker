@@ -6,7 +6,6 @@ import { IncomeProvider } from './context/IncomeContext'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
-import { PWAInstallPrompt, OfflineIndicator } from './components/ui'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -45,10 +44,6 @@ function App() {
       <AuthProvider>
         <ExpenseProvider>
           <IncomeProvider>
-            {/* PWA Components */}
-            <PWAInstallPrompt />
-            <OfflineIndicator />
-            
             <Toaster 
               position="top-right"
               toastOptions={{

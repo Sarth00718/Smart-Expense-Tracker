@@ -1,11 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
-
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Generate JWT token
 const generateToken = (userId) => {
@@ -129,64 +126,6 @@ router.post('/login', async (req, res) => {
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Server error during login' });
-  }
-});
-
-// @route   POST /api/auth/google
-// @desc    Google OAuth login
-// @access  Public
-router.post('/google', async (req, res) => {
-  try {
-    const { token } = req.body;
-
-    if (!process.env.GOOGLE_CLIENT_ID) {
-      return res.status(400).json({ error: 'Google OAuth not configured' });
-    }
-
-    // Verify Google token
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID
-    });
-
-    const payload = ticket.getPayload();
-    const { sub: googleId, email, name, picture } = payload;
-
-    // Find or create user
-    let user = await User.findOne({ $or: [{ googleId }, { email: email.toLowerCase() }] });
-
-    if (!user) {
-      user = new User({
-        email: email.toLowerCase(),
-        fullName: name,
-        picture,
-        googleId
-      });
-      await user.save();
-    } else {
-      // Update user info (skip validation for existing users)
-      user.googleId = googleId;
-      user.fullName = name || user.fullName;
-      user.picture = picture || user.picture;
-      user.lastLogin = new Date();
-      await user.save({ validateBeforeSave: false });
-    }
-
-    // Generate JWT token
-    const jwtToken = generateToken(user._id);
-
-    res.json({
-      token: jwtToken,
-      user: {
-        id: user._id,
-        email: user.email,
-        fullName: user.fullName,
-        picture: user.picture
-      }
-    });
-  } catch (error) {
-    console.error('Google auth error:', error);
-    res.status(500).json({ error: 'Google authentication failed' });
   }
 });
 
