@@ -1,6 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react'
 import { authService } from '../services/authService'
-import { biometricService } from '../services/biometricService'
 
 const AuthContext = createContext()
 
@@ -28,12 +27,6 @@ export const AuthProvider = ({ children }) => {
     return data
   }
 
-  const biometricLogin = async (userId) => {
-    const data = await authService.biometricLogin(userId)
-    setUser(data.user)
-    return data
-  }
-
   const register = async (email, password, fullName) => {
     const data = await authService.register(email, password, fullName)
     setUser(data.user)
@@ -49,11 +42,9 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     login,
-    biometricLogin,
     register,
     logout,
-    setUser,
-    biometricService
+    setUser
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

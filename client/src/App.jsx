@@ -6,6 +6,8 @@ import { IncomeProvider } from './context/IncomeContext'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
+import PWAInstallPrompt from './components/ui/PWAInstallPrompt'
+import OfflineIndicator from './components/ui/OfflineIndicator'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {

@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
-import { Wallet, Mail, Lock, LogIn, AlertCircle, Eye, EyeOff, Fingerprint } from 'lucide-react'
+import { Wallet, Mail, Lock, LogIn, AlertCircle, Eye, EyeOff } from 'lucide-react'
 
 const Login = () => {
   const [email, setEmail] = useState('')
@@ -11,32 +11,8 @@ const Login = () => {
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [biometricAvailable, setBiometricAvailable] = useState(false)
-  const [biometricEnabled, setBiometricEnabled] = useState(false)
-  const [biometricType, setBiometricType] = useState('Biometric')
-  const { login, biometricLogin, biometricService } = useAuth()
+  const { login, googleLogin } = useAuth()
   const navigate = useNavigate()
-
-  useEffect(() => {
-    checkBiometricAvailability()
-  }, [])
-
-  const checkBiometricAvailability = async () => {
-    const available = await biometricService.isAvailable()
-    setBiometricAvailable(available)
-    
-    if (available) {
-      const type = await biometricService.getBiometricType()
-      setBiometricType(type)
-      
-      // Check if user has biometric enabled
-      const user = JSON.parse(localStorage.getItem('user') || '{}')
-      if (user.id) {
-        const enabled = biometricService.isBiometricEnabled(user.id)
-        setBiometricEnabled(enabled)
-      }
-    }
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -49,28 +25,6 @@ const Login = () => {
       navigate('/dashboard')
     } catch (err) {
       const errorMsg = err.response?.data?.error || 'Login failed'
-      setError(errorMsg)
-      toast.error(errorMsg)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleBiometricLogin = async () => {
-    setError('')
-    setLoading(true)
-
-    try {
-      const user = JSON.parse(localStorage.getItem('user') || '{}')
-      if (!user.id) {
-        throw new Error('No user found. Please login with email and password first.')
-      }
-
-      await biometricLogin(user.id)
-      toast.success('Welcome back!')
-      navigate('/dashboard')
-    } catch (err) {
-      const errorMsg = err.message || 'Biometric authentication failed'
       setError(errorMsg)
       toast.error(errorMsg)
     } finally {
@@ -112,30 +66,6 @@ const Login = () => {
               Sign in to continue tracking your expenses
             </p>
           </div>
-
-          {/* Biometric Login Button */}
-          {biometricAvailable && biometricEnabled && (
-            <button
-              onClick={handleBiometricLogin}
-              disabled={loading}
-              className="btn btn-secondary w-full py-2.5 sm:py-3 text-sm sm:text-base tap-target mb-4"
-            >
-              <Fingerprint className="w-5 h-5" />
-              Sign in with {biometricType}
-            </button>
-          )}
-
-          {/* Divider */}
-          {biometricAvailable && biometricEnabled && (
-            <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200"></div>
-              </div>
-              <div className="relative flex justify-center text-xs sm:text-sm">
-                <span className="px-3 sm:px-4 bg-white text-gray-500">Or continue with email</span>
-              </div>
-            </div>
-          )}
 
           {/* Error Message */}
           {error && (
