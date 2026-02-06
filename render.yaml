@@ -1,34 +1,25 @@
 services:
+  # Backend API Service
   - type: web
-    name: expense-tracker-backend
+    name: expense-tracker-api
+    runtime: node
     env: node
-    rootDir: server
-    buildCommand: npm install
-    startCommand: npm start
+    region: oregon
+    plan: free
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
     healthCheckPath: /health
     envVars:
-      - key: MONGODB_URI
-        value: mongodb+srv://sarthnarola007:MDSarth%40007@cluster0.f0fr2sn.mongodb.net/expense-tracker
-      - key: JWT_SECRET
-        generateValue: true
-      - key: PORT
-        value: 5000
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GROQ_API_KEY
+        sync: false
       - key: CLIENT_URL
         sync: false
-    # Auto-deploy on push
     autoDeploy: true
-    # Health check configuration
-    healthCheck:
-      path: /health
-      interval: 30
-      timeout: 10
-      unhealthyThreshold: 3
-    # CORS and headers
-    headers:
-      - path: /*
-        headers:
-          Access-Control-Allow-Origin: "*"
-          Access-Control-Allow-Methods: "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-          Access-Control-Allow-Headers: "Content-Type, Authorization"

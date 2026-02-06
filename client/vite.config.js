@@ -7,18 +7,20 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      registerType: 'prompt',
+      injectRegister: 'auto',
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
         name: 'Smart Expense Tracker',
         short_name: 'Expense Tracker',
-        description: 'Track and analyze your expenses with AI-powered insights',
+        description: 'Track and analyze your expenses with AI-powered insights. Works offline!',
         theme_color: '#4361ee',
         background_color: '#ffffff',
         display: 'standalone',
-        orientation: 'portrait',
+        orientation: 'portrait-primary',
         scope: '/',
         start_url: '/',
+        id: '/',
         icons: [
           {
             src: 'pwa-192x192.png',
@@ -39,24 +41,28 @@ export default defineConfig({
             purpose: 'maskable'
           }
         ],
-        categories: ['finance', 'productivity'],
-        screenshots: [
+        categories: ['finance', 'productivity', 'business'],
+        shortcuts: [
           {
-            src: 'screenshot-wide.png',
-            sizes: '1280x720',
-            type: 'image/png',
-            form_factor: 'wide'
+            name: 'Add Expense',
+            short_name: 'Add Expense',
+            description: 'Quickly add a new expense',
+            url: '/dashboard/expenses',
+            icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }]
           },
           {
-            src: 'screenshot-mobile.png',
-            sizes: '750x1334',
-            type: 'image/png',
-            form_factor: 'narrow'
+            name: 'View Analytics',
+            short_name: 'Analytics',
+            description: 'View expense analytics',
+            url: '/dashboard/analytics',
+            icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }]
           }
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,json}'],
+        navigateFallback: 'index.html',
+        navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
           {
             urlPattern: /^https?:\/\/.*\/api\/.*/i,
@@ -102,7 +108,7 @@ export default defineConfig({
             }
           },
           {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
             handler: 'CacheFirst',
             options: {
               cacheName: 'images-cache',
@@ -119,7 +125,8 @@ export default defineConfig({
       },
       devOptions: {
         enabled: true,
-        type: 'module'
+        type: 'module',
+        navigateFallback: 'index.html'
       }
     })
   ],
