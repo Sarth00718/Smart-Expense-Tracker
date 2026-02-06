@@ -1,96 +1,13 @@
 {
   "version": 2,
-  "name": "expense-tracker-frontend",
-
-  "builds": [
-    {
-      "src": "client/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "client/dist"
-      }
-    }
-  ],
-
+  "buildCommand": "cd client && npm install && npm run build",
+  "outputDirectory": "client/dist",
+  "installCommand": "cd client && npm install",
+  "framework": "vite",
   "rewrites": [
-    {
-      "source": "/assets/(.*)",
-      "destination": "/assets/$1"
-    },
-    {
-      "source": "/pwa-.*\\.png",
-      "destination": "/$0"
-    },
-    {
-      "source": "/apple-touch-icon\\.png",
-      "destination": "/apple-touch-icon.png"
-    },
-    {
-      "source": "/favicon\\.ico",
-      "destination": "/favicon.ico"
-    },
-    {
-      "source": "/manifest\\.webmanifest",
-      "destination": "/manifest.webmanifest"
-    },
-    {
-      "source": "/sw\\.js",
-      "destination": "/sw.js"
-    },
-    {
-      "source": "/workbox-(.*)\\.js",
-      "destination": "/workbox-$1.js"
-    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ],
-
-  "headers": [
-    {
-      "source": "/sw.js",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        },
-        {
-          "key": "Service-Worker-Allowed",
-          "value": "/"
-        }
-      ]
-    },
-    {
-      "source": "/manifest.webmanifest",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/manifest+json"
-        }
-      ]
-    },
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        }
-      ]
-    }
-  ],
-
-  "buildCommand": "cd client && npm install && npm run build",
-  "outputDirectory": "client/dist",
-  "installCommand": "cd client && npm install",
-  "framework": "vite"
+  ]
 }
