@@ -11,7 +11,20 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true
+    required: function() {
+      // Password is required only if firebaseUid is not present
+      return !this.firebaseUid;
+    }
+  },
+  firebaseUid: {
+    type: String,
+    sparse: true,
+    unique: true
+  },
+  authProvider: {
+    type: String,
+    enum: ['local', 'firebase', 'both'],
+    default: 'local'
   },
   fullName: {
     type: String,

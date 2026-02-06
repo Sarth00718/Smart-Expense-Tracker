@@ -43,23 +43,29 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
+  'http://localhost:4173', // Vite preview
+  'http://localhost:4174', // Vite preview alternate
   process.env.CLIENT_URL,
   'https://smart-expense-tracker-37ahuzung-sarths-projects-b8db4f8c.vercel.app'
 ].filter(Boolean);
 
 app.use(cors({
   origin: function(origin, callback) {
-    // Allow requests with no origin (mobile apps, Postman, etc.)
+    // Allow requests with no origin (mobile apps, Postman, PWA, etc.)
     if (!origin) return callback(null, true);
     
     // Check if origin is allowed or matches Vercel pattern
-    if (allowedOrigins.includes(origin) || origin.includes('vercel.app')) {
+    if (allowedOrigins.includes(origin) || 
+        origin.includes('vercel.app') || 
+        origin.includes('localhost')) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));

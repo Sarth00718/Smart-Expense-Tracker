@@ -53,8 +53,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               <Wallet className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
             <div>
-              <span className="font-bold text-lg sm:text-xl text-gray-900">ExpenseTracker</span>
-              <p className="text-xs text-gray-500 hidden sm:block">Smart Finance</p>
+              <span className="font-bold text-lg sm:text-xl text-gray-900">Smart Expense</span>
+              <p className="text-xs text-gray-500 hidden sm:block">Tracker</p>
             </div>
           </div>
           <button

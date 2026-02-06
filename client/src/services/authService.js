@@ -1,31 +1,190 @@
+import { firebaseAuth } from '../config/firebase'
 import api from './api'
 
 export const authService = {
+  // Register - Try backend first, fallback to Firebase
   register: async (email, password, fullName) => {
-    const response = await api.post('/auth/register', { email, password, fullName })
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token)
-      localStorage.setItem('user', JSON.stringify(response.data.user))
+    // Try backend authentication first
+    try {
+      const response = await api.post('/auth/register', { email, password, fullName })
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token)
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+        localStorage.setItem('authMethod', 'backend')
+      }
+      return response.data
+    } catch (backendError) {
+      console.log('Backend registration failed, trying Firebase...', backendError.message)
+      
+      // Fallback to Firebase
+      try {
+        const result = await firebaseAuth.register(email, password, fullName)
+        
+        if (result.token) {
+          localStorage.setItem('token', result.token)
+          localStorage.setItem('user', JSON.stringify(result.user))
+          localStorage.setItem('authMethod', 'firebase')
+        }
+
+        // Sync with backend to link accounts
+        try {
+          const syncResponse = await api.post('/auth/firebase-sync', {
+            uid: result.user.uid,
+            email: result.user.email,
+            fullName: result.user.fullName
+          })
+          
+          // Use backend token and user data if sync successful
+          if (syncResponse.data.token) {
+            localStorage.setItem('token', syncResponse.data.token)
+            localStorage.setItem('user', JSON.stringify(syncResponse.data.user))
+            return {
+              token: syncResponse.data.token,
+              user: syncResponse.data.user
+            }
+          }
+        } catch (error) {
+          console.warn('Backend sync failed:', error)
+        }
+
+        return result
+      } catch (firebaseError) {
+        throw new Error(firebaseError.message || 'Registration failed')
+      }
     }
-    return response.data
   },
 
+  // Login - Try backend first, fallback to Firebase
   login: async (email, password) => {
-    const response = await api.post('/auth/login', { email, password })
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token)
-      localStorage.setItem('user', JSON.stringify(response.data.user))
+    // Try backend authentication first
+    try {
+      const response = await api.post('/auth/login', { email, password })
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token)
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+        localStorage.setItem('authMethod', 'backend')
+      }
+      return response.data
+    } catch (backendError) {
+      console.log('Backend login failed, trying Firebase...', backendError.message)
+      
+      // Fallback to Firebase
+      try {
+        const result = await firebaseAuth.login(email, password)
+        
+        if (result.token) {
+          localStorage.setItem('token', result.token)
+          localStorage.setItem('user', JSON.stringify(result.user))
+          localStorage.setItem('authMethod', 'firebase')
+        }
+
+        // Sync with backend to link accounts
+        try {
+          const syncResponse = await api.post('/auth/firebase-sync', {
+            uid: result.user.uid,
+            email: result.user.email,
+            fullName: result.user.fullName
+          })
+          
+          // Use backend token and user data if sync successful
+          if (syncResponse.data.token) {
+            localStorage.setItem('token', syncResponse.data.token)
+            localStorage.setItem('user', JSON.stringify(syncResponse.data.user))
+            return {
+              token: syncResponse.data.token,
+              user: syncResponse.data.user
+            }
+          }
+        } catch (error) {
+          console.warn('Backend sync failed:', error)
+        }
+
+        return result
+      } catch (firebaseError) {
+        throw new Error(firebaseError.message || 'Login failed')
+      }
     }
-    return response.data
   },
 
-  logout: () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+  // Login with Google (Firebase only)
+  loginWithGoogle: async () => {
+    try {
+      const result = await firebaseAuth.loginWithGoogle()
+      
+      if (result && result.token) {
+        localStorage.setItem('token', result.token)
+        localStorage.setItem('user', JSON.stringify(result.user))
+        localStorage.setItem('authMethod', 'firebase')
+      }
+
+      // Sync with backend to link accounts and preserve data
+      try {
+        const syncResponse = await api.post('/auth/firebase-sync', {
+          uid: result.user.uid,
+          email: result.user.email,
+          fullName: result.user.fullName,
+          picture: result.user.picture
+        })
+        
+        // Use backend token and user data if sync successful
+        if (syncResponse.data.token) {
+          localStorage.setItem('token', syncResponse.data.token)
+          localStorage.setItem('user', JSON.stringify(syncResponse.data.user))
+          return {
+            token: syncResponse.data.token,
+            user: syncResponse.data.user
+          }
+        }
+      } catch (error) {
+        console.warn('Backend sync failed:', error)
+      }
+
+      return result
+    } catch (error) {
+      throw new Error(error.message || 'Google login failed')
+    }
   },
 
+  // Logout - Handle both methods
+  logout: async () => {
+    const authMethod = localStorage.getItem('authMethod')
+    
+    try {
+      // If using Firebase, logout from Firebase
+      if (authMethod === 'firebase') {
+        await firebaseAuth.logout()
+      }
+      
+      // Clear local storage
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      localStorage.removeItem('authMethod')
+    } catch (error) {
+      console.error('Logout error:', error)
+      // Clear local storage even if logout fails
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      localStorage.removeItem('authMethod')
+    }
+  },
+
+  // Get current user
   getCurrentUser: () => {
     const user = localStorage.getItem('user')
     return user ? JSON.parse(user) : null
+  },
+
+  // Get auth method
+  getAuthMethod: () => {
+    return localStorage.getItem('authMethod') || 'backend'
+  },
+
+  // Get Firebase ID token (if using Firebase)
+  getIdToken: async () => {
+    const authMethod = localStorage.getItem('authMethod')
+    if (authMethod === 'firebase') {
+      return await firebaseAuth.getIdToken()
+    }
+    return localStorage.getItem('token')
   }
 }

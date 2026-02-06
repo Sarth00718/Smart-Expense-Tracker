@@ -6,7 +6,8 @@ const api = axios.create({
   baseURL: API_BASE,
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  timeout: 10000 // 10 second timeout
 })
 
 // Request interceptor to add auth token
@@ -25,8 +26,13 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle network errors
+    // Handle network errors (offline mode)
     if (!error.response) {
+      // Check if we're offline
+      if (!navigator.onLine) {
+        console.warn('Offline: Request will be cached and retried when online')
+        return Promise.reject(new Error('You are offline. Changes will sync when connection is restored.'))
+      }
       console.error('Network error:', error.message)
       return Promise.reject(new Error('Network error. Please check your connection.'))
     }
@@ -35,9 +41,13 @@ api.interceptors.response.use(
     const status = error.response.status
     
     if (status === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      window.location.href = '/login'
+      // Don't redirect if we're just checking auth
+      if (!error.config.url.includes('/auth/me')) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        localStorage.removeItem('authMethod')
+        window.location.href = '/login'
+      }
     } else if (status === 403) {
       console.error('Access forbidden')
     } else if (status === 404) {

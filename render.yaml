@@ -5,6 +5,7 @@ services:
     rootDir: server
     buildCommand: npm install
     startCommand: npm start
+    healthCheckPath: /health
     envVars:
       - key: MONGODB_URI
         value: mongodb+srv://sarthnarola007:MDSarth%40007@cluster0.f0fr2sn.mongodb.net/expense-tracker
@@ -14,3 +15,20 @@ services:
         value: 5000
       - key: NODE_ENV
         value: production
+      - key: CLIENT_URL
+        sync: false
+    # Auto-deploy on push
+    autoDeploy: true
+    # Health check configuration
+    healthCheck:
+      path: /health
+      interval: 30
+      timeout: 10
+      unhealthyThreshold: 3
+    # CORS and headers
+    headers:
+      - path: /*
+        headers:
+          Access-Control-Allow-Origin: "*"
+          Access-Control-Allow-Methods: "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+          Access-Control-Allow-Headers: "Content-Type, Authorization"

@@ -148,4 +148,136 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
+// @route   POST /api/auth/firebase-sync
+// @desc    Sync Firebase user with MongoDB (link or create)
+// @access  Public
+router.post('/firebase-sync', async (req, res) => {
+  try {
+    const { uid, email, fullName, picture } = req.body;
+
+    if (!uid || !email) {
+      return res.status(400).json({ error: 'Firebase UID and email are required' });
+    }
+
+    // Check if user exists by Firebase UID
+    let user = await User.findOne({ firebaseUid: uid });
+
+    if (user) {
+      // User already linked, update last login
+      user.lastLogin = new Date();
+      if (picture && !user.picture) {
+        user.picture = picture;
+      }
+      await user.save({ validateBeforeSave: false });
+
+      const token = generateToken(user._id);
+      return res.json({
+        token,
+        user: {
+          id: user._id,
+          email: user.email,
+          fullName: user.fullName,
+          picture: user.picture
+        },
+        message: 'Firebase user synced successfully'
+      });
+    }
+
+    // Check if user exists by email (existing MongoDB user)
+    user = await User.findOne({ email: email.toLowerCase() });
+
+    if (user) {
+      // Link existing MongoDB user to Firebase
+      user.firebaseUid = uid;
+      user.authProvider = 'both';
+      user.lastLogin = new Date();
+      if (picture && !user.picture) {
+        user.picture = picture;
+      }
+      await user.save({ validateBeforeSave: false });
+
+      const token = generateToken(user._id);
+      return res.json({
+        token,
+        user: {
+          id: user._id,
+          email: user.email,
+          fullName: user.fullName,
+          picture: user.picture
+        },
+        message: 'Existing user linked to Firebase successfully'
+      });
+    }
+
+    // Create new user for Firebase
+    user = new User({
+      email: email.toLowerCase(),
+      fullName: fullName || email.split('@')[0],
+      firebaseUid: uid,
+      authProvider: 'firebase',
+      picture: picture,
+      password: Math.random().toString(36).slice(-12) // Random password (won't be used)
+    });
+
+    await user.save();
+
+    const token = generateToken(user._id);
+    return res.status(201).json({
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        fullName: user.fullName,
+        picture: user.picture
+      },
+      message: 'New Firebase user created successfully'
+    });
+  } catch (error) {
+    console.error('Firebase sync error:', error);
+    
+    if (error.code === 11000) {
+      return res.status(400).json({ error: 'User sync failed: duplicate entry' });
+    }
+    
+    res.status(500).json({ error: 'Server error during Firebase sync' });
+  }
+});
+
+// @route   POST /api/auth/link-firebase
+// @desc    Link Firebase UID to existing logged-in user
+// @access  Private
+router.post('/link-firebase', auth, async (req, res) => {
+  try {
+    const { firebaseUid } = req.body;
+
+    if (!firebaseUid) {
+      return res.status(400).json({ error: 'Firebase UID is required' });
+    }
+
+    // Check if Firebase UID is already used by another user
+    const existingUser = await User.findOne({ firebaseUid });
+    if (existingUser && existingUser._id.toString() !== req.user._id.toString()) {
+      return res.status(400).json({ error: 'Firebase account already linked to another user' });
+    }
+
+    // Link Firebase to current user
+    req.user.firebaseUid = firebaseUid;
+    req.user.authProvider = 'both';
+    await req.user.save({ validateBeforeSave: false });
+
+    res.json({
+      user: {
+        id: req.user._id,
+        email: req.user.email,
+        fullName: req.user.fullName,
+        picture: req.user.picture
+      },
+      message: 'Firebase account linked successfully'
+    });
+  } catch (error) {
+    console.error('Link Firebase error:', error);
+    res.status(500).json({ error: 'Server error during Firebase linking' });
+  }
+});
+
 module.exports = router;

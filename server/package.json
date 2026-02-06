@@ -1,7 +1,7 @@
 {
-  "name": "expense-tracker-server",
+  "name": "smart-expense-tracker-server",
   "version": "1.0.0",
-  "description": "Expense Tracker Backend",
+  "description": "Smart Expense Tracker Backend",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
