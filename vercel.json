@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "smart-expense-tracker",
+  "name": "expense-tracker-frontend",
   "builds": [
     {
       "src": "client/package.json",
