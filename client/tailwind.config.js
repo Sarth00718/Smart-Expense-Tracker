@@ -16,15 +16,15 @@ export default {
       },
       colors: {
         primary: {
-          DEFAULT: '#4361ee',
-          dark: '#3a0ca3',
-          light: '#4cc9f0',
+          DEFAULT: '#1e40af',
+          dark: '#1e3a8a',
+          light: '#3b82f6',
         },
-        'primary-dark': '#3a0ca3',
+        'primary-dark': '#1e3a8a',
         success: '#10b981',
         danger: '#ef4444',
         warning: '#f59e0b',
-        dark: '#1e293b',
+        dark: '#0f172a',
         light: '#f8fafc',
       },
       boxShadow: {
