@@ -1,6 +1,7 @@
 {
   "version": 2,
   "name": "expense-tracker-frontend",
+
   "builds": [
     {
       "src": "client/package.json",
@@ -10,50 +11,42 @@
       }
     }
   ],
-  "routes": [
+
+  "rewrites": [
     {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
+      "source": "/assets/(.*)",
+      "destination": "/assets/$1"
     },
     {
-      "src": "/pwa-.*\\.png",
-      "dest": "/$0"
+      "source": "/pwa-.*\\.png",
+      "destination": "/$0"
     },
     {
-      "src": "/apple-touch-icon\\.png",
-      "dest": "/apple-touch-icon.png"
+      "source": "/apple-touch-icon\\.png",
+      "destination": "/apple-touch-icon.png"
     },
     {
-      "src": "/favicon\\.ico",
-      "dest": "/favicon.ico"
+      "source": "/favicon\\.ico",
+      "destination": "/favicon.ico"
     },
     {
-      "src": "/manifest\\.webmanifest",
-      "dest": "/manifest.webmanifest",
-      "headers": {
-        "Content-Type": "application/manifest+json"
-      }
+      "source": "/manifest\\.webmanifest",
+      "destination": "/manifest.webmanifest"
     },
     {
-      "src": "/sw\\.js",
-      "dest": "/sw.js",
-      "headers": {
-        "Content-Type": "application/javascript",
-        "Service-Worker-Allowed": "/"
-      }
+      "source": "/sw\\.js",
+      "destination": "/sw.js"
     },
     {
-      "src": "/workbox-(.*)\\.js",
-      "dest": "/workbox-$1.js",
-      "headers": {
-        "Content-Type": "application/javascript"
-      }
+      "source": "/workbox-(.*)\\.js",
+      "destination": "/workbox-$1.js"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
+
   "headers": [
     {
       "source": "/sw.js",
@@ -95,6 +88,7 @@
       ]
     }
   ],
+
   "buildCommand": "cd client && npm install && npm run build",
   "outputDirectory": "client/dist",
   "installCommand": "cd client && npm install",
