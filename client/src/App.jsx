@@ -7,7 +7,6 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import PWAInstallPrompt from './components/ui/PWAInstallPrompt'
-import PWAUpdatePrompt from './components/ui/PWAUpdatePrompt'
 import OfflineIndicator from './components/ui/OfflineIndicator'
 
 // Protected Route Component
@@ -74,7 +73,6 @@ function App() {
             />
             <OfflineIndicator />
             <PWAInstallPrompt />
-            <PWAUpdatePrompt />
             <Routes>
               <Route 
                 path="/login" 

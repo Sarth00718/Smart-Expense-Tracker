@@ -42,6 +42,9 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  passwordChangedAt: {
+    type: Date
+  },
   // Theme preferences
   preferences: {
     theme: {

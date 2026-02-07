@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { User, Bell, Lock, Edit2, Save, X, Camera } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { User, Bell, Lock, Edit2, Save, X, Camera, Eye, EyeOff, Monitor, Smartphone } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
-import { Card, Button } from '../../ui'
+import { Card, Button, Modal } from '../../ui'
 import api from '../../../services/api'
 import toast from 'react-hot-toast'
 
@@ -10,10 +10,23 @@ const Settings = () => {
   const [activeTab, setActiveTab] = useState('profile')
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [showSessionsModal, setShowSessionsModal] = useState(false)
+  const [sessions, setSessions] = useState([])
   const [profileForm, setProfileForm] = useState({
     fullName: user?.fullName || '',
     email: user?.email || '',
     picture: user?.picture || ''
+  })
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  })
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false
   })
 
   const tabs = [
@@ -87,6 +100,78 @@ const Settings = () => {
         setProfileForm({ ...profileForm, picture: reader.result })
       }
       reader.readAsDataURL(file)
+    }
+  }
+
+  const handleChangePassword = async () => {
+    const { currentPassword, newPassword, confirmPassword } = passwordForm
+
+    // Validation
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error('All password fields are required')
+      return
+    }
+
+    if (newPassword.length < 6) {
+      toast.error('New password must be at least 6 characters')
+      return
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error('New passwords do not match')
+      return
+    }
+
+    if (currentPassword === newPassword) {
+      toast.error('New password must be different from current password')
+      return
+    }
+
+    setLoading(true)
+    try {
+      await api.put('/users/change-password', {
+        currentPassword,
+        newPassword
+      })
+
+      toast.success('Password changed successfully!')
+      setShowPasswordModal(false)
+      setPasswordForm({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      })
+    } catch (error) {
+      console.error('Change password error:', error)
+      toast.error(error.response?.data?.error || 'Failed to change password')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchSessions = async () => {
+    try {
+      const response = await api.get('/users/sessions')
+      setSessions(response.data.sessions || [])
+    } catch (error) {
+      console.error('Fetch sessions error:', error)
+      toast.error('Failed to load sessions')
+    }
+  }
+
+  const handleViewSessions = () => {
+    setShowSessionsModal(true)
+    fetchSessions()
+  }
+
+  const handleRevokeSession = async (sessionId) => {
+    try {
+      await api.delete(`/users/sessions/${sessionId}`)
+      toast.success('Session revoked successfully')
+      fetchSessions()
+    } catch (error) {
+      console.error('Revoke session error:', error)
+      toast.error('Failed to revoke session')
     }
   }
 
@@ -288,7 +373,7 @@ const Settings = () => {
                         Password
                       </h3>
                       <p className="text-sm text-gray-500">
-                        Last changed: Never
+                        Last changed: {user?.passwordChangedAt ? new Date(user.passwordChangedAt).toLocaleDateString() : 'Never'}
                       </p>
                     </div>
                   </div>
@@ -299,7 +384,7 @@ const Settings = () => {
                 <Button
                   variant="outline"
                   size="md"
-                  onClick={() => toast.info('Password change feature coming soon!')}
+                  onClick={() => setShowPasswordModal(true)}
                   className="ml-4"
                 >
                   Change Password
@@ -313,14 +398,14 @@ const Settings = () => {
                 <div className="flex-1">
                   <div className="flex items-center gap-4 mb-3">
                     <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center">
-                      <Bell className="w-7 h-7 text-green-600" />
+                      <Monitor className="w-7 h-7 text-green-600" />
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-gray-900">
                         Active Sessions
                       </h3>
                       <p className="text-sm text-gray-500">
-                        1 active session
+                        {sessions.length || 1} active session{sessions.length !== 1 ? 's' : ''}
                       </p>
                     </div>
                   </div>
@@ -331,7 +416,7 @@ const Settings = () => {
                 <Button
                   variant="outline"
                   size="md"
-                  onClick={() => toast.info('Session management coming soon!')}
+                  onClick={handleViewSessions}
                   className="ml-4"
                 >
                   View Sessions
@@ -341,6 +426,168 @@ const Settings = () => {
           </div>
         )}
       </div>
+
+      {/* Change Password Modal */}
+      <Modal
+        isOpen={showPasswordModal}
+        onClose={() => {
+          setShowPasswordModal(false)
+          setPasswordForm({
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+          })
+        }}
+        title="Change Password"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Current Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPasswords.current ? 'text' : 'password'}
+                value={passwordForm.currentPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                className="input w-full pr-10"
+                placeholder="Enter current password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPasswords.current ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              New Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPasswords.new ? 'text' : 'password'}
+                value={passwordForm.newPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                className="input w-full pr-10"
+                placeholder="Enter new password (min 6 characters)"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPasswords.new ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Confirm New Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPasswords.confirm ? 'text' : 'password'}
+                value={passwordForm.confirmPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                className="input w-full pr-10"
+                placeholder="Confirm new password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPasswords.confirm ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <Button
+              variant="primary"
+              onClick={handleChangePassword}
+              disabled={loading}
+              className="flex-1"
+            >
+              {loading ? 'Changing...' : 'Change Password'}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowPasswordModal(false)
+                setPasswordForm({
+                  currentPassword: '',
+                  newPassword: '',
+                  confirmPassword: ''
+                })
+              }}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Sessions Modal */}
+      <Modal
+        isOpen={showSessionsModal}
+        onClose={() => setShowSessionsModal(false)}
+        title="Active Sessions"
+      >
+        <div className="space-y-4">
+          {sessions.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">No active sessions found</p>
+          ) : (
+            sessions.map((session) => (
+              <div
+                key={session.id}
+                className="p-4 border border-gray-200 rounded-lg hover:border-primary transition-colors"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      {session.device.includes('Mobile') ? (
+                        <Smartphone className="w-5 h-5 text-blue-600" />
+                      ) : (
+                        <Monitor className="w-5 h-5 text-blue-600" />
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">
+                        {session.device}
+                        {session.current && (
+                          <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                            Current
+                          </span>
+                        )}
+                      </h4>
+                      <p className="text-sm text-gray-600 mt-1">{session.browser}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        IP: {session.ip} • Last active: {new Date(session.lastActive).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  {!session.current && (
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => handleRevokeSession(session.id)}
+                    >
+                      Revoke
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </Modal>
     </div>
   )
 }
