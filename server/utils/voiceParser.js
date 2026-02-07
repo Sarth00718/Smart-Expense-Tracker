@@ -32,8 +32,14 @@ const CURRENCY_PATTERNS = {
  * @returns {Object} Parsed expense data
  */
 function parseVoiceCommand(transcript) {
+  // Input validation
   if (!transcript || typeof transcript !== 'string') {
-    throw new Error('Invalid transcript');
+    throw new Error('Invalid transcript: must be a non-empty string');
+  }
+
+  // Limit transcript length to prevent DoS
+  if (transcript.length > 1000) {
+    throw new Error('Transcript too long: maximum 1000 characters');
   }
 
   const lowerTranscript = transcript.toLowerCase().trim();

@@ -76,7 +76,6 @@ export const getInstallInstructions = () => {
 export const requestPersistentStorage = async () => {
   if (navigator.storage && navigator.storage.persist) {
     const isPersisted = await navigator.storage.persist();
-    console.log(`Persistent storage granted: ${isPersisted}`);
     return isPersisted;
   }
   return false;
@@ -110,7 +109,6 @@ export const clearAppCache = async () => {
     await Promise.all(
       cacheNames.map(cacheName => caches.delete(cacheName))
     );
-    console.log('App cache cleared');
     return true;
   }
   return false;
@@ -125,7 +123,6 @@ export const unregisterServiceWorker = async () => {
     await Promise.all(
       registrations.map(registration => registration.unregister())
     );
-    console.log('Service worker unregistered');
     return true;
   }
   return false;
@@ -139,7 +136,6 @@ export const checkForUpdates = async () => {
     const registration = await navigator.serviceWorker.getRegistration();
     if (registration) {
       await registration.update();
-      console.log('Checked for updates');
       return true;
     }
   }

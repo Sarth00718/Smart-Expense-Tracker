@@ -17,6 +17,12 @@ if (missingEnvVars.length > 0) {
   process.exit(1);
 }
 
+// Validate JWT_SECRET length
+if (process.env.JWT_SECRET.length < 32) {
+  console.error('❌ JWT_SECRET must be at least 32 characters long');
+  process.exit(1);
+}
+
 // Import routes
 const authRoutes = require('./routes/auth');
 const expenseRoutes = require('./routes/expenses');
@@ -37,7 +43,13 @@ const usersRoutes = require('./routes/users');
 // Import rate limiters
 const { authLimiter, aiLimiter, apiLimiter } = require('./middleware/rateLimiter');
 
+// Import security middleware
+const { securityHeaders, sanitizeInput } = require('./middleware/security');
+
 const app = express();
+
+// Security headers
+app.use(securityHeaders);
 
 // Middleware
 const allowedOrigins = [
@@ -57,23 +69,45 @@ app.use(cors({
     // Check if origin is allowed or matches Vercel pattern
     if (allowedOrigins.includes(origin) || 
         origin.includes('vercel.app') || 
-        origin.includes('localhost')) {
+        origin.includes('localhost') ||
+        origin.includes('render.com')) {
       callback(null, true);
     } else {
+      console.warn('CORS blocked origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  maxAge: 86400 // 24 hours
 }));
+
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/expense-tracker')
+// Input sanitization
+app.use(sanitizeInput);
+
+// MongoDB Connection with proper options
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/expense-tracker', {
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+})
 .then(() => console.log('✅ MongoDB Connected'))
-.catch(err => console.error('❌ MongoDB Connection Error:', err));
+.catch(err => {
+  console.error('❌ MongoDB Connection Error:', err);
+  process.exit(1);
+});
+
+// Handle MongoDB connection errors after initial connection
+mongoose.connection.on('error', err => {
+  console.error('❌ MongoDB connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.warn('⚠️ MongoDB disconnected');
+});
 
 // Routes with rate limiting
 app.use('/api/auth', authLimiter, authRoutes);
@@ -97,21 +131,35 @@ app.get('/', (req, res) => {
   res.json({
     message: 'Smart Expense Tracker API - MERN Stack',
     version: '1.0.0',
-    status: 'running'
+    status: 'running',
+    endpoints: {
+      health: '/health',
+      api: '/api',
+      docs: 'See README.md for API documentation'
+    }
   });
 });
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+  res.json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  });
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Error:', err.message);
+  
+  // Don't leak error details in production
+  const isDev = process.env.NODE_ENV === 'development';
+  
   res.status(err.status || 500).json({
-    error: err.message || 'Internal Server Error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    error: isDev ? err.message : 'Internal Server Error',
+    ...(isDev && { stack: err.stack })
   });
 });
 
@@ -120,9 +168,39 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  mongoose.connection.close(false, () => {
+    console.log('MongoDB connection closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT signal received: closing HTTP server');
+  mongoose.connection.close(false, () => {
+    console.log('MongoDB connection closed');
+    process.exit(0);
+  });
+});
+
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔗 API Base: http://localhost:${PORT}/api`);
 });
+
+// Handle server errors
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`❌ Port ${PORT} is already in use`);
+  } else {
+    console.error('❌ Server error:', error);
+  }
+  process.exit(1);
+});
+
+module.exports = app;

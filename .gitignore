@@ -2,36 +2,94 @@
 node_modules/
 client/node_modules/
 server/node_modules/
+/.pnp
+.pnp.js
 
 # Environment variables
 .env
 .env.local
 .env.production
+.env.development.local
+.env.test.local
+.env.production.local
 client/.env
 server/.env
+*.env
+!.env.example
+!client/.env.example
+!server/.env.example
+!.env.development
+!client/.env.development
+!server/.env.development
 
 # Build outputs
 client/dist/
 client/build/
 client/dev-dist/
+client/dist-ssr/
+server/dist/
+dist/
+build/
+*.local
 
 # Logs
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
 logs/
 
 # OS files
 .DS_Store
 Thumbs.db
-
-# IDE
-.vscode/
-.idea/
 *.swp
 *.swo
+*~
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# IDE and Editor
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.sublime-project
+*.sublime-workspace
+.history/
 
 # Testing
 coverage/
+.nyc_output/
 
 # Misc
 .cache/
+.vercel
+.turbo
+.next/
+out/
+.firebase/
+firebase-debug.log
+firestore-debug.log
+
+# OCR training data (keep only eng.traineddata)
+server/*.traineddata
+!server/eng.traineddata
+
+# Uploads and temporary files
+uploads/
+receipts/
+*.tmp
+*.temp
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Lock files (optional - uncomment if needed)
+# yarn.lock
+# pnpm-lock.yaml

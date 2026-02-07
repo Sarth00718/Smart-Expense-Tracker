@@ -1,13 +1,13 @@
 import axios from 'axios'
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api'
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 const api = axios.create({
   baseURL: API_BASE,
   headers: {
     'Content-Type': 'application/json'
   },
-  timeout: 10000 // 10 second timeout
+  timeout: 30000 // 30 second timeout
 })
 
 // Request interceptor to add auth token
@@ -25,6 +25,7 @@ api.interceptors.request.use(
 // Response interceptor for error handling
 api.interceptors.response.use(
   (response) => response,
+  // Response interceptor for error handling
   (error) => {
     // Handle network errors (offline mode)
     if (!error.response) {
@@ -39,6 +40,7 @@ api.interceptors.response.use(
 
     // Handle specific status codes
     const status = error.response.status
+    const errorMessage = error.response.data?.error || error.response.data?.message || 'An error occurred'
     
     if (status === 401) {
       // Don't redirect if we're just checking auth
@@ -49,11 +51,13 @@ api.interceptors.response.use(
         window.location.href = '/login'
       }
     } else if (status === 403) {
-      console.error('Access forbidden')
+      console.error('Access forbidden:', errorMessage)
     } else if (status === 404) {
-      console.error('Resource not found')
+      console.error('Resource not found:', errorMessage)
+    } else if (status === 429) {
+      console.error('Rate limit exceeded:', errorMessage)
     } else if (status >= 500) {
-      console.error('Server error:', error.response.data)
+      console.error('Server error:', errorMessage)
     }
     
     return Promise.reject(error)

@@ -35,6 +35,41 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
+// @route   GET /api/goals/stats
+// @desc    Get goals statistics
+// @access  Private
+// IMPORTANT: This route MUST come before /:id routes
+router.get('/stats', auth, async (req, res) => {
+  try {
+    const goals = await Goal.find({ userId: req.userId });
+
+    const totalGoals = goals.length;
+    const completedGoals = goals.filter(g => g.currentAmount >= g.targetAmount).length;
+    const totalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0);
+    const totalCurrent = goals.reduce((sum, g) => sum + g.currentAmount, 0);
+    const overallPercentage = totalTarget > 0 ? (totalCurrent / totalTarget) * 100 : 0;
+
+    res.json({
+      total_goals: totalGoals,
+      completed_goals: completedGoals,
+      total_target: Math.round(totalTarget * 100) / 100,
+      total_current: Math.round(totalCurrent * 100) / 100,
+      overall_percentage: Math.round(overallPercentage * 10) / 10,
+      remaining_amount: Math.round((totalTarget - totalCurrent) * 100) / 100
+    });
+  } catch (error) {
+    console.error('Get goals stats error:', error);
+    res.json({
+      total_goals: 0,
+      completed_goals: 0,
+      total_target: 0,
+      total_current: 0,
+      overall_percentage: 0,
+      remaining_amount: 0
+    });
+  }
+});
+
 // @route   GET /api/goals
 // @desc    Get all savings goals
 // @access  Private
@@ -76,40 +111,6 @@ router.get('/', auth, async (req, res) => {
   } catch (error) {
     console.error('Get goals error:', error);
     res.status(500).json({ error: 'Failed to fetch goals' });
-  }
-});
-
-// @route   GET /api/goals/stats
-// @desc    Get goals statistics
-// @access  Private
-router.get('/stats', auth, async (req, res) => {
-  try {
-    const goals = await Goal.find({ userId: req.userId });
-
-    const totalGoals = goals.length;
-    const completedGoals = goals.filter(g => g.currentAmount >= g.targetAmount).length;
-    const totalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0);
-    const totalCurrent = goals.reduce((sum, g) => sum + g.currentAmount, 0);
-    const overallPercentage = totalTarget > 0 ? (totalCurrent / totalTarget) * 100 : 0;
-
-    res.json({
-      total_goals: totalGoals,
-      completed_goals: completedGoals,
-      total_target: Math.round(totalTarget * 100) / 100,
-      total_current: Math.round(totalCurrent * 100) / 100,
-      overall_percentage: Math.round(overallPercentage * 10) / 10,
-      remaining_amount: Math.round((totalTarget - totalCurrent) * 100) / 100
-    });
-  } catch (error) {
-    console.error('Get goals stats error:', error);
-    res.json({
-      total_goals: 0,
-      completed_goals: 0,
-      total_target: 0,
-      total_current: 0,
-      overall_percentage: 0,
-      remaining_amount: 0
-    });
   }
 });
 

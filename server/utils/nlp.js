@@ -5,6 +5,16 @@
  * Handles: categories, amounts, dates, years, months, descriptions
  */
 function parseNaturalLanguageQuery(query) {
+  // Input validation
+  if (!query || typeof query !== 'string') {
+    throw new Error('Invalid query: must be a non-empty string');
+  }
+
+  // Limit query length to prevent DoS
+  if (query.length > 500) {
+    throw new Error('Query too long: maximum 500 characters');
+  }
+
   const lowerQuery = query.toLowerCase().trim();
   
   const filters = {

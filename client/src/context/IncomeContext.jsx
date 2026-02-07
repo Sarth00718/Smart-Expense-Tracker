@@ -19,22 +19,28 @@ export const IncomeProvider = ({ children }) => {
   const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 50, pages: 0 })
 
   const loadIncome = async (params = {}) => {
-    if (!user) return
+    if (!user) {
+      setIncome([])
+      return
+    }
     
     try {
       setLoading(true)
       const response = await incomeService.getAll(params)
-      setIncome(response.data.data)
-      setPagination(response.data.pagination)
+      setIncome(response.data.data || [])
+      setPagination(response.data.pagination || { total: 0, page: 1, limit: 50, pages: 0 })
     } catch (error) {
       console.error('Error loading income:', error)
+      setIncome([])
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    loadIncome()
+    if (user) {
+      loadIncome()
+    }
   }, [user])
 
   const addIncome = async (incomeData) => {

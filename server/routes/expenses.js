@@ -188,17 +188,22 @@ router.post('/search', auth, async (req, res) => {
 
       switch (filters.timePeriod) {
         case 'today':
-          startDate = new Date(now.setHours(0, 0, 0, 0));
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
           break;
         case 'yesterday':
-          startDate = new Date(now.setDate(now.getDate() - 1));
-          startDate.setHours(0, 0, 0, 0);
+          const yesterday = new Date(now);
+          yesterday.setDate(yesterday.getDate() - 1);
+          startDate = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
           break;
         case 'week':
-          startDate = new Date(now.setDate(now.getDate() - 7));
+          const weekAgo = new Date(now);
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          startDate = weekAgo;
           break;
         case 'month':
-          startDate = new Date(now.setMonth(now.getMonth() - 1));
+          const monthAgo = new Date(now);
+          monthAgo.setMonth(monthAgo.getMonth() - 1);
+          startDate = monthAgo;
           break;
       }
 

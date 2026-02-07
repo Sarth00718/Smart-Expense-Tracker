@@ -1,6 +1,16 @@
 // OCR and receipt parsing utilities
 
 function parseReceiptText(text, categoryHint = null) {
+  // Input validation
+  if (!text || typeof text !== 'string') {
+    return { amount: null, date: null, category: categoryHint || 'Other', vendor: null };
+  }
+
+  // Limit text length to prevent ReDoS
+  if (text.length > 10000) {
+    text = text.substring(0, 10000);
+  }
+
   const extracted = {
     amount: 0.0,
     date: new Date().toISOString().split('T')[0],

@@ -14,7 +14,7 @@ export const authService = {
       }
       return response.data
     } catch (backendError) {
-      console.log('Backend registration failed, trying Firebase...', backendError.message)
+      // Fallback to Firebase silently
       
       // Fallback to Firebase
       try {
@@ -66,7 +66,7 @@ export const authService = {
       }
       return response.data
     } catch (backendError) {
-      console.log('Backend login failed, trying Firebase...', backendError.message)
+      // Fallback to Firebase silently
       
       // Fallback to Firebase
       try {

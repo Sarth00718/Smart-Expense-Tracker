@@ -18,7 +18,10 @@ export const ExpenseProvider = ({ children }) => {
   const [loading, setLoading] = useState(false)
 
   const loadExpenses = async () => {
-    if (!user) return
+    if (!user) {
+      setExpenses([])
+      return
+    }
     
     try {
       setLoading(true)
@@ -35,7 +38,9 @@ export const ExpenseProvider = ({ children }) => {
   }
 
   useEffect(() => {
-    loadExpenses()
+    if (user) {
+      loadExpenses()
+    }
   }, [user])
 
   const addExpense = async (expense) => {

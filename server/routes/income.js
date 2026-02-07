@@ -3,6 +3,19 @@ const router = express.Router();
 const Income = require('../models/Income');
 const auth = require('../middleware/auth');
 
+// @route   GET /api/income/sources
+// @desc    Get unique income sources
+// @access  Private
+router.get('/sources', auth, async (req, res) => {
+  try {
+    const sources = await Income.distinct('source', { userId: req.userId });
+    res.json({ sources: sources.sort() });
+  } catch (error) {
+    console.error('Get sources error:', error);
+    res.status(500).json({ error: 'Failed to fetch sources' });
+  }
+});
+
 // @route   GET /api/income
 // @desc    Get all income with pagination
 // @access  Private
@@ -116,30 +129,10 @@ router.put('/:id', auth, async (req, res) => {
   }
 });
 
-// @route   DELETE /api/income/:id
-// @desc    Delete income
-// @access  Private
-router.delete('/:id', auth, async (req, res) => {
-  try {
-    const income = await Income.findOneAndDelete({ 
-      _id: req.params.id, 
-      userId: req.userId 
-    });
-
-    if (!income) {
-      return res.status(404).json({ error: 'Income not found' });
-    }
-
-    res.json({ message: 'Income deleted successfully' });
-  } catch (error) {
-    console.error('Delete income error:', error);
-    res.status(500).json({ error: 'Failed to delete income' });
-  }
-});
-
 // @route   GET /api/income/summary
 // @desc    Get income summary statistics
 // @access  Private
+// IMPORTANT: This route MUST come before /:id routes
 router.get('/summary', auth, async (req, res) => {
   try {
     const totalResult = await Income.aggregate([
@@ -180,6 +173,27 @@ router.get('/summary', auth, async (req, res) => {
   } catch (error) {
     console.error('Get income summary error:', error);
     res.status(500).json({ error: 'Failed to fetch income summary' });
+  }
+});
+
+// @route   DELETE /api/income/:id
+// @desc    Delete income
+// @access  Private
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    const income = await Income.findOneAndDelete({ 
+      _id: req.params.id, 
+      userId: req.userId 
+    });
+
+    if (!income) {
+      return res.status(404).json({ error: 'Income not found' });
+    }
+
+    res.json({ message: 'Income deleted successfully' });
+  } catch (error) {
+    console.error('Delete income error:', error);
+    res.status(500).json({ error: 'Failed to delete income' });
   }
 });
 

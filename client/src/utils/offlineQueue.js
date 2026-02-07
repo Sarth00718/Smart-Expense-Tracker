@@ -42,7 +42,6 @@ class OfflineQueue {
     this.queue.push(queueItem);
     this.saveQueue();
     
-    console.log('Request queued for offline sync:', queueItem);
     return queueItem.id;
   }
 
@@ -66,11 +65,12 @@ class OfflineQueue {
   // Process queue when back online
   async processQueue() {
     if (this.queue.length === 0) {
-      console.log('No offline requests to sync');
       return { success: true, processed: 0, failed: 0 };
     }
 
-    console.log(`Processing ${this.queue.length} offline requests...`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Processing ${this.queue.length} offline requests...`);
+    }
     
     const results = {
       success: true,
@@ -87,7 +87,6 @@ class OfflineQueue {
         await this.executeRequest(item);
         this.removeFromQueue(item.id);
         results.processed++;
-        console.log('Synced offline request:', item);
       } catch (error) {
         results.failed++;
         results.errors.push({
@@ -100,7 +99,6 @@ class OfflineQueue {
         const itemAge = Date.now() - new Date(item.timestamp).getTime();
         if (itemAge > 24 * 60 * 60 * 1000) {
           this.removeFromQueue(item.id);
-          console.log('Removed old failed request:', item.id);
         }
       }
     }
@@ -133,8 +131,6 @@ class OfflineQueue {
   // Setup listener for online event
   setupOnlineListener() {
     window.addEventListener('online', async () => {
-      console.log('Back online! Processing queued requests...');
-      
       // Wait a bit to ensure connection is stable
       setTimeout(async () => {
         const results = await this.processQueue();

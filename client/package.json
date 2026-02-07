@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "description": "Smart Expense Tracker Frontend - React PWA",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -39,5 +40,9 @@
     "vite": "^5.0.8",
     "vite-plugin-pwa": "^1.2.0",
     "workbox-window": "^7.4.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
   }
 }
