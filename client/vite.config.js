@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      injectRegister: 'auto',
+      injectRegister: false, // Changed from 'auto' to false to prevent auto-injection issues
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
         name: 'Smart Expense Tracker',
@@ -124,7 +124,7 @@ export default defineConfig({
         clientsClaim: true
       },
       devOptions: {
-        enabled: true,
+        enabled: false, // Disable PWA in development to avoid service worker issues
         type: 'module',
         navigateFallback: 'index.html'
       }

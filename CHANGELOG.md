@@ -2,6 +2,97 @@
 
 All notable changes to the Smart Expense Tracker project.
 
+## [2.0.0] - 2026-02-07
+
+### Added - Major Features
+- 📤 **Centralized Common Export Component** - Global export functionality
+  - Unified export interface accessible from application header
+  - Positioned left of profile icon for consistent access across all pages
+  - Support for multiple data types: All Data, Expenses Only, Income Only
+  - Multiple export formats: CSV, Excel, JSON, and Comprehensive PDF
+  - Optional date range filtering for all exports
+  - **Comprehensive PDF Report** with visual analytics:
+    - Executive summary with key financial metrics
+    - Income vs Expense overview chart
+    - Category breakdown pie chart
+    - Spending trend line chart
+    - Monthly comparison bar chart
+    - Detailed category breakdown
+    - Budget status and utilization tracking
+    - Savings goals progress monitoring
+    - Recent transactions list
+    - Professional formatting with page numbers
+  - Server-side chart generation using Chart.js
+  - High-quality embedded chart images in PDF
+  - Clean architecture with reusable components
+  - Removed redundant export buttons from individual pages
+  - Enhanced user experience with modal-based interface
+
+### Changed
+- Refactored export system for better maintainability
+- Moved export functionality from Settings page to global header
+- Removed DataExport component from Settings
+- Removed export buttons from Expenses and Analytics pages
+- Improved export service with additional methods
+- Enhanced PDF generation with visual charts
+
+### Technical Improvements
+- Added `chartjs-node-canvas` for server-side chart rendering
+- Created `chartGenerator.js` utility for chart generation
+- Enhanced export routes with comprehensive PDF endpoint
+- Implemented proper data aggregation from backend APIs
+- Optimized performance for large dataset exports
+- Added proper error handling and loading states
+
+## [1.1.0] - 2026-02-07
+
+### Added - New Features
+- 🔐 **Biometric Authentication** - Fingerprint and Face ID login support
+  - WebAuthn API integration for secure biometric authentication
+  - Platform authenticator support (Touch ID, Face ID, Windows Hello)
+  - Credential management in user settings
+  - Fallback to traditional login methods
+- 🤖 **Enhanced AI Assistant** - ChatGPT-style conversational finance bot
+  - "Where did I overspend this month?" - Detailed overspending analysis
+  - "Suggest budget plan for ₹20,000 salary" - Personalized budget recommendations
+  - Natural language understanding for complex financial queries
+  - Improved quick question buttons
+  - Better context-aware responses
+  - 🎤 **Voice Input** - Speak your questions to the AI assistant
+    - Web Speech API integration
+    - Real-time voice recognition
+    - Visual feedback while listening
+    - Automatic text conversion
+- 📊 **Data Export System** - Export financial data in multiple formats
+  - Export expenses to CSV, Excel, and JSON
+  - Export income records to CSV
+  - Complete financial data export with all categories
+  - Multi-sheet Excel exports with summary
+  - Date range filtering for exports
+  - Dedicated export settings page
+
+### Added - Backend APIs
+- `/api/biometric/register` - Register biometric credentials
+- `/api/biometric/authenticate` - Authenticate using biometrics
+- `/api/biometric/credentials` - Manage biometric credentials
+- `/api/export/expenses` - Export expenses data
+- `/api/export/income` - Export income data
+- `/api/export/all` - Export complete financial data
+
+### Added - UI Components
+- `BiometricSettings.jsx` - Biometric authentication management
+- `DataExport.jsx` - Data export interface
+- Enhanced Settings page with new tabs
+- Biometric login button on login page
+- Improved AI chat interface with more quick questions
+
+### Technical Improvements
+- Added `xlsx` library for Excel export functionality
+- WebAuthn API integration for biometric authentication
+- Enhanced AI route with specialized query handlers
+- Improved error handling and user feedback
+- Better mobile responsiveness for new features
+
 ## [1.0.0] - 2024
 
 ### Added - Core Features

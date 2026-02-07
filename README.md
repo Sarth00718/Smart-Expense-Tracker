@@ -14,11 +14,17 @@ A full-featured expense tracking application built with MongoDB, Express.js, Rea
 - 📱 **PWA Support** - Install as mobile/desktop app, works offline
 
 ### Advanced Features
-- 🤖 **AI Assistant** - Get personalized financial advice (Groq API)
+- 🤖 **AI Assistant** - ChatGPT-style conversational finance assistant
+  - Ask: "Where did I overspend this month?"
+  - Get budget suggestions: "Suggest budget plan for ₹20,000 salary"
+  - Natural language queries about expenses and spending
+  - 🎤 Voice input support - Speak your questions
 - 📸 **Receipt Scanner** - OCR-powered receipt scanning (Tesseract.js)
 - 🎤 **Voice Input** - Add expenses via voice commands
 - 🏅 **Achievements** - Gamification with badges and milestones
 - 📊 **Spending Heatmap** - Calendar view of daily expenses
+- 📄 **Export Data** - Export to Excel, CSV, or JSON formats
+- 🔐 **Biometric Authentication** - Fingerprint/Face ID login support
 - 📄 **PDF Reports** - Generate detailed financial reports
 - 🔐 **Dual Authentication** - Backend JWT + Firebase Auth support
 

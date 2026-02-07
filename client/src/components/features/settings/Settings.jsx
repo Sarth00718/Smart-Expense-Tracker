@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { User, Bell, Lock, Edit2, Save, X, Camera, Eye, EyeOff, Monitor, Smartphone } from 'lucide-react'
+import { User, Bell, Lock, Edit2, Save, X, Camera, Eye, EyeOff, Monitor, Smartphone, Fingerprint } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { Card, Button, Modal } from '../../ui'
+import BiometricSettings from './BiometricSettings'
 import api from '../../../services/api'
 import toast from 'react-hot-toast'
 
@@ -32,6 +33,7 @@ const Settings = () => {
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'security', label: 'Security', icon: Lock },
+    { id: 'biometric', label: 'Biometric', icon: Fingerprint },
   ]
 
   const handleEditToggle = () => {
@@ -424,6 +426,11 @@ const Settings = () => {
               </div>
             </Card>
           </div>
+        )}
+
+        {/* Biometric Tab */}
+        {activeTab === 'biometric' && (
+          <BiometricSettings />
         )}
       </div>
 

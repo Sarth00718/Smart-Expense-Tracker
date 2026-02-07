@@ -35,8 +35,11 @@ export const AuthProvider = ({ children }) => {
           // Only set up Firebase listener if using Firebase auth
           if (authMethod === 'firebase') {
             setupFirebaseListener()
+          } else if (authMethod === 'biometric' || authMethod === 'backend') {
+            // Backend or biometric auth - no need for Firebase listener
+            setLoading(false)
           } else {
-            // Backend auth - no need for Firebase listener
+            // Unknown auth method, clear and start fresh
             setLoading(false)
           }
           return
@@ -106,7 +109,7 @@ export const AuthProvider = ({ children }) => {
             console.error('Firebase token error:', error)
           }
         } else {
-          // Only clear if we don't have a backend user
+          // Only clear if we don't have a backend or biometric user
           const authMethod = localStorage.getItem('authMethod')
           if (authMethod === 'firebase') {
             localStorage.removeItem('token')

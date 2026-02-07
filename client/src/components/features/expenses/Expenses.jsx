@@ -1,8 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useExpense } from '../../../context/ExpenseContext'
 import { expenseService } from '../../../services/expenseService'
-import { reportService } from '../../../services/reportService'
-import { Trash2, Calendar, Edit2, X, Download, Trash, Search, ArrowUpDown, Filter, Repeat, FileText, FileSpreadsheet, File } from 'lucide-react'
+import { Trash2, Calendar, Edit2, X, Trash, Search, ArrowUpDown, Filter, Repeat } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 import { Button, Modal } from '../../ui'
@@ -29,12 +28,6 @@ const Expenses = () => {
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false)
   const [advancedSearchResults, setAdvancedSearchResults] = useState(null)
   const [showRecurring, setShowRecurring] = useState(false)
-  const [showExportModal, setShowExportModal] = useState(false)
-  const [exportDateRange, setExportDateRange] = useState({
-    startDate: '',
-    endDate: ''
-  })
-  const [exportLoading, setExportLoading] = useState(false)
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
@@ -58,50 +51,6 @@ const Expenses = () => {
           toast.error('Failed to clear expenses')
         }
       }
-    }
-  }
-
-  const handleExportToExcel = () => {
-    setShowExportModal(true)
-  }
-
-  const handleExport = async (format) => {
-    if (expenses.length === 0) {
-      toast.error('No expenses to export')
-      return
-    }
-
-    try {
-      setExportLoading(true)
-      const params = {
-        startDate: exportDateRange.startDate || undefined,
-        endDate: exportDateRange.endDate || undefined
-      }
-
-      switch (format) {
-        case 'excel':
-          await reportService.exportExpensesExcel(params)
-          toast.success('Excel file downloaded successfully!')
-          break
-        case 'csv':
-          await reportService.exportExpensesCSV(params)
-          toast.success('CSV file downloaded successfully!')
-          break
-        case 'pdf':
-          await reportService.exportExpensesPDF(params)
-          toast.success('PDF file downloaded successfully!')
-          break
-        default:
-          toast.error('Invalid export format')
-      }
-
-      setShowExportModal(false)
-      setExportDateRange({ startDate: '', endDate: '' })
-    } catch (error) {
-      console.error('Export error:', error)
-      toast.error(error.response?.data?.error || 'Failed to export expenses')
-    } finally {
-      setExportLoading(false)
     }
   }
 
@@ -250,14 +199,6 @@ const Expenses = () => {
         
         {/* Primary Actions */}
         <div className="flex flex-wrap gap-2">
-          <Button 
-            variant="primary" 
-            size="md"
-            icon={Download}
-            onClick={handleExportToExcel}
-          >
-            Export
-          </Button>
           <Button 
             variant="outline" 
             size="md"

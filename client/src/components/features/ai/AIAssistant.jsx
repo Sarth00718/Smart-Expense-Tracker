@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Sparkles, RefreshCw, Lightbulb, Send, Bot, User } from 'lucide-react'
+import { Sparkles, RefreshCw, Lightbulb, Send, Bot, User, Mic, MicOff } from 'lucide-react'
 import { analyticsService } from '../../../services/analyticsService'
 import { Card, Button } from '../../ui'
 import toast from 'react-hot-toast'
@@ -11,15 +11,57 @@ const AIAssistant = () => {
   const [chatMessages, setChatMessages] = useState([])
   const [userInput, setUserInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
+  const [isListening, setIsListening] = useState(false)
+  const [isVoiceSupported, setIsVoiceSupported] = useState(false)
   const chatEndRef = useRef(null)
+  const recognitionRef = useRef(null)
 
   useEffect(() => {
     loadSuggestions()
     // Add welcome message
     setChatMessages([{
       role: 'assistant',
-      content: '👋 Hi! I\'m your AI Finance Assistant. Ask me anything about your expenses!\n\nTry asking:\n• "How much did I spend on food last month?"\n• "Can I afford a ₹5,000 phone this month?"\n• "What are my top spending categories?"\n• "Show me my recent expenses"'
+      content: '👋 Hi! I\'m your AI Finance Assistant. Ask me anything about your expenses!\n\nTry asking:\n• "Where did I overspend this month?"\n• "Suggest budget plan for ₹20,000 salary"\n• "What are my top spending categories?"\n• "How much did I spend on food last month?"\n• "Can I afford a ₹5,000 phone this month?"\n\n🎤 You can also use voice input!'
     }])
+
+    // Check for voice recognition support
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (SpeechRecognition) {
+      setIsVoiceSupported(true)
+      recognitionRef.current = new SpeechRecognition()
+      recognitionRef.current.continuous = false
+      recognitionRef.current.interimResults = false
+      recognitionRef.current.lang = 'en-US'
+
+      recognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript
+        setUserInput(transcript)
+        setIsListening(false)
+        toast.success('Voice captured!')
+      }
+
+      recognitionRef.current.onerror = (event) => {
+        console.error('Speech recognition error:', event.error)
+        setIsListening(false)
+        if (event.error === 'no-speech') {
+          toast.error('No speech detected. Please try again.')
+        } else if (event.error === 'not-allowed') {
+          toast.error('Microphone access denied. Please enable it in browser settings.')
+        } else {
+          toast.error('Voice recognition error. Please try again.')
+        }
+      }
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false)
+      }
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop()
+      }
+    }
   }, [])
 
   const loadSuggestions = async (type = 'general') => {
@@ -96,6 +138,32 @@ const AIAssistant = () => {
       toast.error('Failed to get response')
     } finally {
       setChatLoading(false)
+    }
+  }
+
+  const handleVoiceInput = () => {
+    if (!isVoiceSupported) {
+      toast.error('Voice recognition not supported in this browser')
+      return
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop()
+      setIsListening(false)
+      return
+    }
+
+    try {
+      setIsListening(true)
+      recognitionRef.current.start()
+      toast.success('Listening... Speak now!', {
+        icon: '🎤',
+        duration: 2000
+      })
+    } catch (error) {
+      console.error('Voice input error:', error)
+      setIsListening(false)
+      toast.error('Failed to start voice recognition')
     }
   }
 
@@ -205,14 +273,35 @@ const AIAssistant = () => {
 
         {/* Chat Input */}
         <form onSubmit={handleChatSubmit} className="flex gap-3 mb-4">
-          <input
-            type="text"
-            value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
-            placeholder="Ask me anything about your finances..."
-            className="input flex-1"
-            disabled={chatLoading}
-          />
+          <div className="relative flex-1">
+            <input
+              type="text"
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              placeholder="Ask me anything about your finances..."
+              className="input w-full pr-12"
+              disabled={chatLoading}
+            />
+            {isVoiceSupported && (
+              <button
+                type="button"
+                onClick={handleVoiceInput}
+                disabled={chatLoading}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all ${
+                  isListening 
+                    ? 'bg-red-500 text-white animate-pulse' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                title={isListening ? 'Stop listening' : 'Voice input'}
+              >
+                {isListening ? (
+                  <MicOff className="w-5 h-5" />
+                ) : (
+                  <Mic className="w-5 h-5" />
+                )}
+              </button>
+            )}
+          </div>
           <Button 
             type="submit" 
             variant="primary"
@@ -227,22 +316,34 @@ const AIAssistant = () => {
         {/* Quick Questions */}
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={() => setUserInput("How much did I spend on food last month?")}
-            className="text-sm px-4 py-2 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
+            onClick={() => setUserInput("Where did I overspend this month?")}
+            className="text-sm px-4 py-2 bg-red-100 text-red-700 rounded-full hover:bg-red-200 transition-colors"
           >
-            💰 Food spending?
+            ⚠️ Where did I overspend?
           </button>
           <button
-            onClick={() => setUserInput("Can I afford a ₹5,000 phone this month?")}
+            onClick={() => setUserInput("Suggest budget plan for ₹20,000 salary")}
             className="text-sm px-4 py-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors"
           >
-            📱 Afford ₹5,000?
+            💰 Budget plan for ₹20K
           </button>
           <button
             onClick={() => setUserInput("What are my top spending categories?")}
             className="text-sm px-4 py-2 bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition-colors"
           >
             📊 Top categories?
+          </button>
+          <button
+            onClick={() => setUserInput("How much did I spend on food last month?")}
+            className="text-sm px-4 py-2 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
+          >
+            🍔 Food spending?
+          </button>
+          <button
+            onClick={() => setUserInput("Can I afford a ₹5,000 phone this month?")}
+            className="text-sm px-4 py-2 bg-yellow-100 text-yellow-700 rounded-full hover:bg-yellow-200 transition-colors"
+          >
+            📱 Can I afford ₹5K?
           </button>
         </div>
       </Card>

@@ -39,6 +39,8 @@ const reportsRoutes = require('./routes/reports');
 const voiceRoutes = require('./routes/voice');
 const filtersRoutes = require('./routes/filters');
 const usersRoutes = require('./routes/users');
+const exportRoutes = require('./routes/export');
+const biometricRoutes = require('./routes/biometric');
 
 // Import rate limiters
 const { authLimiter, aiLimiter, apiLimiter } = require('./middleware/rateLimiter');
@@ -93,6 +95,11 @@ app.use(sanitizeInput);
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/expense-tracker', {
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
+  family: 4, // Use IPv4, skip trying IPv6
+  maxPoolSize: 10,
+  minPoolSize: 5,
+  retryWrites: true,
+  retryReads: true,
 })
 .then(() => console.log('✅ MongoDB Connected'))
 .catch(err => {
@@ -106,7 +113,11 @@ mongoose.connection.on('error', err => {
 });
 
 mongoose.connection.on('disconnected', () => {
-  console.warn('⚠️ MongoDB disconnected');
+  console.warn('⚠️ MongoDB disconnected. Attempting to reconnect...');
+});
+
+mongoose.connection.on('reconnected', () => {
+  console.log('✅ MongoDB reconnected');
 });
 
 // Routes with rate limiting
@@ -125,6 +136,8 @@ app.use('/api/reports', apiLimiter, reportsRoutes);
 app.use('/api/voice', apiLimiter, voiceRoutes);
 app.use('/api/filters', apiLimiter, filtersRoutes);
 app.use('/api/users', apiLimiter, usersRoutes);
+app.use('/api/export', apiLimiter, exportRoutes);
+app.use('/api/biometric', authLimiter, biometricRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

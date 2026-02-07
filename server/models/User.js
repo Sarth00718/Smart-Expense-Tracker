@@ -57,7 +57,14 @@ const userSchema = new mongoose.Schema({
       enum: ['blue', 'green', 'purple', 'orange', 'pink'],
       default: 'blue'
     }
-  }
+  },
+  // Biometric authentication
+  biometricCredentials: [{
+    credentialId: String,
+    publicKey: String,
+    counter: Number,
+    createdAt: Date
+  }]
 }, {
   timestamps: true
 });

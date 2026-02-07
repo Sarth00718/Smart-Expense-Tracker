@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { biometricService, isBiometricSupported } from '../services/biometricService'
 import toast from 'react-hot-toast'
-import { Wallet, Mail, Lock, LogIn, AlertCircle, Eye, EyeOff, TrendingUp, Shield, Zap, Sparkles, ArrowRight } from 'lucide-react'
+import { Wallet, Mail, Lock, LogIn, AlertCircle, Eye, EyeOff, TrendingUp, Shield, Zap, Sparkles, ArrowRight, Fingerprint } from 'lucide-react'
 
 const Login = () => {
   const [email, setEmail] = useState('')
@@ -15,11 +16,17 @@ const Login = () => {
   const [emailError, setEmailError] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [focusedField, setFocusedField] = useState(null)
-  const { login, loginWithGoogle } = useAuth()
+  const [biometricAvailable, setBiometricAvailable] = useState(false)
+  const [biometricLoading, setBiometricLoading] = useState(false)
+  const { login, loginWithGoogle, setUser } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
     setMounted(true)
+    // Check if biometric is available
+    if (isBiometricSupported() && biometricService.isRegistered()) {
+      setBiometricAvailable(true)
+    }
   }, [])
 
   const validateEmail = (email) => {
@@ -73,11 +80,29 @@ const Login = () => {
           color: '#fff',
         },
       })
-      navigate('/dashboard')
+      
+      // Small delay to ensure state is updated
+      setTimeout(() => {
+        navigate('/dashboard')
+      }, 100)
     } catch (err) {
-      const errorMsg = err.message || 'Login failed'
+      console.error('Login error:', err)
+      let errorMsg = 'Login failed. Please try again.'
+      
+      if (err.message) {
+        errorMsg = err.message
+      } else if (err.response?.data?.error) {
+        errorMsg = err.response.data.error
+      } else if (err.response?.status === 429) {
+        errorMsg = 'Too many login attempts. Please wait a few minutes and try again.'
+      } else if (err.response?.status === 401) {
+        errorMsg = 'Invalid email or password. Please check your credentials.'
+      }
+      
       setError(errorMsg)
-      toast.error(errorMsg)
+      toast.error(errorMsg, {
+        duration: 5000,
+      })
     } finally {
       setLoading(false)
     }
@@ -97,13 +122,75 @@ const Login = () => {
           color: '#fff',
         },
       })
-      navigate('/dashboard')
+      
+      // Small delay to ensure state is updated
+      setTimeout(() => {
+        navigate('/dashboard')
+      }, 100)
     } catch (err) {
-      const errorMsg = err.message || 'Google sign-in failed'
+      console.error('Google login error:', err)
+      let errorMsg = 'Google sign-in failed. Please try again.'
+      
+      if (err.message) {
+        errorMsg = err.message
+      } else if (err.response?.status === 429) {
+        errorMsg = 'Too many attempts. Please wait a few minutes and try again.'
+      }
+      
       setError(errorMsg)
-      toast.error(errorMsg)
+      toast.error(errorMsg, {
+        duration: 5000,
+      })
     } finally {
       setGoogleLoading(false)
+    }
+  }
+
+  const handleBiometricLogin = async () => {
+    setError('')
+    setBiometricLoading(true)
+
+    try {
+      const result = await biometricService.authenticate()
+      
+      // Update auth context with user data
+      if (result.user) {
+        setUser(result.user)
+      }
+      
+      toast.success('Welcome back!', {
+        icon: '🔐',
+        style: {
+          borderRadius: '12px',
+          background: '#10b981',
+          color: '#fff',
+        },
+      })
+      
+      // Small delay to ensure state is updated
+      setTimeout(() => {
+        navigate('/dashboard')
+      }, 100)
+    } catch (err) {
+      console.error('Biometric login error:', err)
+      const errorMsg = err.message || 'Biometric authentication failed'
+      setError(errorMsg)
+      toast.error(errorMsg, {
+        duration: 5000,
+        style: {
+          borderRadius: '12px',
+        },
+      })
+      
+      // If biometric fails, suggest alternative methods
+      if (errorMsg.includes('credential') || errorMsg.includes('register')) {
+        toast('Try using email/password or Google sign-in', {
+          icon: '💡',
+          duration: 4000,
+        })
+      }
+    } finally {
+      setBiometricLoading(false)
     }
   }
 
@@ -356,6 +443,25 @@ const Login = () => {
                   </>
                 )}
               </button>
+
+              {/* Biometric Sign In */}
+              {biometricAvailable && (
+                <button
+                  type="button"
+                  onClick={handleBiometricLogin}
+                  disabled={biometricLoading}
+                  className="group w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-xl hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-500/50 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3 mt-3"
+                >
+                  {biometricLoading ? (
+                    <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <Fingerprint className="w-6 h-6" />
+                      <span>Sign in with Biometric</span>
+                    </>
+                  )}
+                </button>
+              )}
 
               {/* Register Link */}
               <div className="mt-8 text-center">

@@ -1,6 +1,7 @@
 import { useAuth } from '../../context/AuthContext'
 import { Menu, LogOut, User } from 'lucide-react'
 import toast from 'react-hot-toast'
+import CommonExport from '../common/CommonExport'
 
 const Header = ({ toggleSidebar }) => {
   const { user, logout } = useAuth()
@@ -23,10 +24,13 @@ const Header = ({ toggleSidebar }) => {
         </button>
       </div>
 
-      {/* Right: User */}
+      {/* Right: Export & User */}
       <div className="flex items-center gap-2 sm:gap-3">
+        {/* Common Export Component */}
+        <CommonExport />
+
         {/* User Menu */}
-        <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3">
+        <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-gray-200">
           <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-[#3a0ca3] rounded-full flex items-center justify-center overflow-hidden">
             {user?.picture ? (
               <img 
