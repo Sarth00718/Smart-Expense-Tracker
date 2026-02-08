@@ -16,10 +16,11 @@ const Card = ({
     lg: 'p-6 sm:p-8'
   }
   
-  const hoverClass = hover ? 'hover:shadow-lg hover:-translate-y-1 transition-all duration-300' : ''
-  
   return (
-    <div id={id} className={`bg-white rounded-lg sm:rounded-xl shadow-card ${paddingClasses[padding]} ${hoverClass} ${className}`}>
+    <div 
+      id={id} 
+      className={`bg-white rounded-lg sm:rounded-xl shadow-card ${paddingClasses[padding]} ${className}`}
+    >
       {(title || action) && (
         <div className="flex items-start justify-between mb-4 sm:mb-6 gap-3">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">

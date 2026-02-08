@@ -10,15 +10,15 @@ const Button = ({
   className = '',
   ...props 
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 no-select tap-target'
+  const baseStyles = 'inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 no-select tap-target'
   
   const variants = {
-    primary: 'bg-primary text-white hover:bg-[#3a0ca3] focus:ring-primary/20 shadow-sm hover:shadow-md active:scale-95',
-    secondary: 'bg-white text-primary border-2 border-primary hover:bg-primary hover:text-white focus:ring-primary/20 active:scale-95',
-    success: 'bg-success text-white hover:bg-green-600 focus:ring-success/20 shadow-sm hover:shadow-md active:scale-95',
-    danger: 'bg-danger text-white hover:bg-red-600 focus:ring-danger/20 shadow-sm hover:shadow-md active:scale-95',
-    ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-200 active:scale-95',
-    outline: 'bg-transparent border-2 border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50 focus:ring-gray-200 active:scale-95'
+    primary: 'bg-primary text-white hover:bg-[#3a0ca3] focus:ring-primary/20 shadow-sm hover:shadow-md',
+    secondary: 'bg-white text-primary border-2 border-primary hover:bg-primary hover:text-white focus:ring-primary/20',
+    success: 'bg-success text-white hover:bg-green-600 focus:ring-success/20 shadow-sm hover:shadow-md',
+    danger: 'bg-danger text-white hover:bg-red-600 focus:ring-danger/20 shadow-sm hover:shadow-md',
+    ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-200',
+    outline: 'bg-transparent border-2 border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50 focus:ring-gray-200'
   }
   
   const sizes = {

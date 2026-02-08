@@ -95,14 +95,20 @@ const DashboardHome = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="spinner"></div>
+      <div 
+        className="flex items-center justify-center h-96"
+      >
+        <div 
+          className="spinner animate-spin"
+        />
       </div>
     )
   }
 
   return (
-    <div className="p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6 lg:space-y-8 max-w-[1600px] mx-auto">
+    <div 
+      className="p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6 lg:space-y-8 max-w-[1600px] mx-auto"
+    >
       {/* Header Section */}
       <div className="flex flex-col gap-3 sm:gap-4">
         <div>
@@ -143,31 +149,41 @@ const DashboardHome = () => {
       </div>
 
       {/* Stats Cards - Primary Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-        <StatCard
-          title="Total Income"
-          value={`₹${stats?.totalIncome?.toFixed(2) || '0.00'}`}
-          icon={TrendingUp}
-          color="green"
-        />
-        <StatCard
-          title="Total Expenses"
-          value={`₹${stats?.totalExpenses?.toFixed(2) || '0.00'}`}
-          icon={TrendingDown}
-          color="red"
-        />
-        <StatCard
-          title="Net Balance"
-          value={`₹${stats?.netBalance?.toFixed(2) || '0.00'}`}
-          icon={Wallet}
-          color={(stats?.netBalance || 0) >= 0 ? 'blue' : 'orange'}
-        />
-        <StatCard
-          title="This Month"
-          value={`₹${stats?.monthNetBalance?.toFixed(2) || '0.00'}`}
-          icon={TrendingUp}
-          color="purple"
-        />
+      <div 
+        className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6"
+      >
+        <div>
+          <StatCard
+            title="Total Income"
+            value={`₹${stats?.totalIncome?.toFixed(2) || '0.00'}`}
+            icon={TrendingUp}
+            color="green"
+          />
+        </div>
+        <div>
+          <StatCard
+            title="Total Expenses"
+            value={`₹${stats?.totalExpenses?.toFixed(2) || '0.00'}`}
+            icon={TrendingDown}
+            color="red"
+          />
+        </div>
+        <div>
+          <StatCard
+            title="Net Balance"
+            value={`₹${stats?.netBalance?.toFixed(2) || '0.00'}`}
+            icon={Wallet}
+            color={(stats?.netBalance || 0) >= 0 ? 'blue' : 'orange'}
+          />
+        </div>
+        <div>
+          <StatCard
+            title="This Month"
+            value={`₹${stats?.monthNetBalance?.toFixed(2) || '0.00'}`}
+            icon={TrendingUp}
+            color="purple"
+          />
+        </div>
       </div>
 
       {/* Main Content Grid */}
@@ -269,7 +285,9 @@ const DashboardHome = () => {
             }
           >
             {recentExpenses.length > 0 ? (
-              <div className="space-y-2 sm:space-y-3">
+              <div 
+                className="space-y-2 sm:space-y-3"
+              >
                 {recentExpenses.map((expense) => (
                   <div 
                     key={expense._id}

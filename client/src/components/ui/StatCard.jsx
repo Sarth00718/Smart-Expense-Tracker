@@ -17,7 +17,9 @@ const StatCard = ({
   }
 
   return (
-    <div className={`bg-gradient-to-br ${colors[color]} text-white rounded-lg sm:rounded-xl shadow-card p-4 sm:p-6 ${className}`}>
+    <div 
+      className={`bg-gradient-to-br ${colors[color]} text-white rounded-lg sm:rounded-xl shadow-card p-4 sm:p-6 ${className}`}
+    >
       <div className="flex items-start justify-between mb-2 sm:mb-3">
         {Icon && (
           <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-lg flex items-center justify-center">
