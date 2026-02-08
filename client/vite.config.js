@@ -14,7 +14,7 @@ export default defineConfig({
         name: 'Smart Expense Tracker',
         short_name: 'Expense Tracker',
         description: 'Track and analyze your expenses with AI-powered insights. Works offline!',
-        theme_color: '#0f172a',
+        theme_color: '#1e293b',
         background_color: '#1e293b',
         display: 'standalone',
         orientation: 'portrait-primary',
@@ -140,7 +140,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'chart-vendor': ['chart.js', 'react-chartjs-2'],
+          'chart-vendor': ['recharts'],
         }
       }
     }
