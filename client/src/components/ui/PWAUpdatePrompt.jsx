@@ -9,8 +9,8 @@ const PWAUpdatePrompt = () => {
     needRefresh,
     updateServiceWorker,
   } = useRegisterSW({
-    onRegistered(r) {
-      console.log('SW Registered:', r);
+    onRegistered() {
+      // Service worker registered
     },
     onRegisterError(error) {
       console.error('SW registration error', error);

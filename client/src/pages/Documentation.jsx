@@ -132,21 +132,34 @@ const Documentation = () => {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-        {sections.map((section) => (
-          <button
-            key={section.id}
-            onClick={() => setActiveSection(section.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
-              activeSection === section.id
-                ? `bg-${section.color}-100 text-${section.color}-700 border-2 border-${section.color}-500`
-                : 'bg-white text-gray-600 border-2 border-gray-200 hover:border-gray-300'
-            }`}
-          >
-            <section.icon className="w-4 h-4" />
-            {section.label}
-          </button>
-        ))}
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+        {sections.map((section) => {
+          const isActive = activeSection === section.id
+          const colorClasses = {
+            blue: isActive ? 'bg-blue-100 text-blue-700 border-blue-500' : '',
+            purple: isActive ? 'bg-purple-100 text-purple-700 border-purple-500' : '',
+            green: isActive ? 'bg-green-100 text-green-700 border-green-500' : '',
+            orange: isActive ? 'bg-orange-100 text-orange-700 border-orange-500' : '',
+            pink: isActive ? 'bg-pink-100 text-pink-700 border-pink-500' : '',
+            indigo: isActive ? 'bg-indigo-100 text-indigo-700 border-indigo-500' : '',
+            red: isActive ? 'bg-red-100 text-red-700 border-red-500' : '',
+          }
+          
+          return (
+            <button
+              key={section.id}
+              onClick={() => setActiveSection(section.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
+                isActive
+                  ? `${colorClasses[section.color]} border-2`
+                  : 'bg-white text-gray-600 border-2 border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <section.icon className="w-4 h-4" />
+              {section.label}
+            </button>
+          )
+        })}
       </div>
 
       {/* Content Sections */}

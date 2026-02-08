@@ -1,7 +1,5 @@
 import api from './api'
 import * as XLSX from 'xlsx'
-import jsPDF from 'jspdf'
-import html2canvas from 'html2canvas'
 
 export const exportService = {
   // Export expenses to CSV

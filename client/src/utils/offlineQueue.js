@@ -68,9 +68,7 @@ class OfflineQueue {
       return { success: true, processed: 0, failed: 0 };
     }
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Processing ${this.queue.length} offline requests...`);
-    }
+    // Processing offline requests
     
     const results = {
       success: true,

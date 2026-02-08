@@ -13,13 +13,13 @@ const AppLayout = () => {
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden w-full">
+      <div className="flex-1 flex flex-col overflow-hidden w-full min-w-0">
         {/* Header */}
         <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-gray-50 pb-14 sm:pb-16 lg:pb-0 smooth-scroll">
-          <div className="max-w-7xl mx-auto w-full">
+        <main className="flex-1 overflow-y-auto bg-gray-50 pb-16 lg:pb-4 smooth-scroll">
+          <div className="max-w-7xl mx-auto w-full px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
             <Outlet />
           </div>
         </main>
