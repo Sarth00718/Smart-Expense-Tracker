@@ -1,5 +1,6 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import { motion, AnimatePresence } from 'framer-motion'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ExpenseProvider } from './context/ExpenseContext'
 import { IncomeProvider } from './context/IncomeContext'
@@ -8,6 +9,7 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import PWAInstallPrompt from './components/ui/PWAInstallPrompt'
 import OfflineIndicator from './components/ui/OfflineIndicator'
+import { pageTransition } from './utils/animations'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -15,18 +17,25 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div 
+      <motion.div 
         className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary to-[#3a0ca3]"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
       >
-        <div 
-          className="spinner border-4 w-12 h-12 animate-spin"
+        <motion.div 
+          className="spinner border-4 w-12 h-12"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
         />
-        <p 
+        <motion.p 
           className="mt-4 text-white text-lg"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
         >
           Loading...
-        </p>
-      </div>
+        </motion.p>
+      </motion.div>
     )
   }
 
@@ -47,6 +56,48 @@ const PublicRoute = ({ children }) => {
 
   return !user ? children : <Navigate to="/dashboard" />
 }
+
+// Animated Routes wrapper
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route 
+          path="/login" 
+          element={
+            <PublicRoute>
+              <motion.div {...pageTransition}>
+                <Login />
+              </motion.div>
+            </PublicRoute>
+          } 
+        />
+        <Route 
+          path="/register" 
+          element={
+            <PublicRoute>
+              <motion.div {...pageTransition}>
+                <Register />
+              </motion.div>
+            </PublicRoute>
+          } 
+        />
+        <Route 
+          path="/dashboard/*" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="/" element={<Navigate to="/dashboard" />} />
+        <Route path="*" element={<Navigate to="/dashboard" />} />
+      </Routes>
+    </AnimatePresence>
+  );
+};
 
 function App() {
   return (
@@ -81,34 +132,7 @@ function App() {
             />
             <OfflineIndicator />
             <PWAInstallPrompt />
-            <Routes>
-              <Route 
-                path="/login" 
-                element={
-                  <PublicRoute>
-                    <Login />
-                  </PublicRoute>
-                } 
-              />
-              <Route 
-                path="/register" 
-                element={
-                  <PublicRoute>
-                    <Register />
-                  </PublicRoute>
-                } 
-              />
-              <Route 
-                path="/dashboard/*" 
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route path="/" element={<Navigate to="/dashboard" />} />
-              <Route path="*" element={<Navigate to="/dashboard" />} />
-            </Routes>
+            <AnimatedRoutes />
           </IncomeProvider>
         </ExpenseProvider>
       </AuthProvider>

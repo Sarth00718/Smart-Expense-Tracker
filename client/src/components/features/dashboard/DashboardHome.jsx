@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { useExpense } from '../../../context/ExpenseContext'
 import { analyticsService } from '../../../services/analyticsService'
 import { TrendingUp, TrendingDown, Wallet, Plus, Receipt, Camera, Mic, ArrowUpRight } from 'lucide-react'
 import { Doughnut } from 'react-chartjs-2'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import toast from 'react-hot-toast'
-import { StatCard, Card, Button, EmptyState, Modal } from '../../ui'
+import { StatCard, Card, Button, EmptyState, Modal, SkeletonCard, SkeletonList } from '../../ui'
 import { format } from 'date-fns'
 import { useNavigate } from 'react-router-dom'
 import VoiceExpenseInput from '../voice/VoiceExpenseInput'
 import ReceiptScanner from '../receipts/ReceiptScanner'
+import { staggerContainer, staggerItem, fadeInUp } from '../../../utils/animations'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -20,6 +22,7 @@ const DashboardHome = () => {
   const [loading, setLoading] = useState(true)
   const [showVoiceInput, setShowVoiceInput] = useState(false)
   const [showReceiptScanner, setShowReceiptScanner] = useState(false)
+  const [showAddExpense, setShowAddExpense] = useState(false)
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     category: '',
@@ -54,6 +57,7 @@ const DashboardHome = () => {
         amount: '',
         description: ''
       })
+      setShowAddExpense(false)
     } catch (error) {
       toast.error('Failed to add expense')
     }
@@ -95,22 +99,39 @@ const DashboardHome = () => {
 
   if (loading) {
     return (
-      <div 
-        className="flex items-center justify-center h-96"
-      >
-        <div 
-          className="spinner animate-spin"
-        />
+      <div className="p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6 lg:space-y-8 max-w-[1600px] mx-auto">
+        <div className="space-y-4">
+          <div className="h-20 bg-gray-200 rounded-lg animate-pulse"></div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+            {[1, 2, 3, 4].map(i => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+            <div className="lg:col-span-2">
+              <SkeletonList count={3} />
+            </div>
+            <div>
+              <SkeletonCard />
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div 
+    <motion.div 
       className="p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6 lg:space-y-8 max-w-[1600px] mx-auto"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
     >
       {/* Header Section */}
-      <div className="flex flex-col gap-3 sm:gap-4">
+      <motion.div 
+        className="flex flex-col gap-3 sm:gap-4"
+        {...fadeInUp}
+      >
         <div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">
             Welcome back! 👋
@@ -124,7 +145,7 @@ const DashboardHome = () => {
             variant="primary" 
             size="sm"
             icon={Plus}
-            onClick={() => document.getElementById('add-expense-form')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => setShowAddExpense(true)}
           >
             <span className="hidden xs:inline">Add Expense</span>
             <span className="xs:hidden">Add</span>
@@ -146,129 +167,62 @@ const DashboardHome = () => {
             Scan
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Stats Cards - Primary Metrics */}
-      <div 
+      <motion.div 
         className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6"
+        variants={staggerContainer}
+        initial="initial"
+        animate="animate"
       >
-        <div>
+        <motion.div variants={staggerItem}>
           <StatCard
             title="Total Income"
             value={`₹${stats?.totalIncome?.toFixed(2) || '0.00'}`}
             icon={TrendingUp}
             color="green"
+            animateValue={true}
           />
-        </div>
-        <div>
+        </motion.div>
+        <motion.div variants={staggerItem}>
           <StatCard
             title="Total Expenses"
             value={`₹${stats?.totalExpenses?.toFixed(2) || '0.00'}`}
             icon={TrendingDown}
             color="red"
+            animateValue={true}
           />
-        </div>
-        <div>
+        </motion.div>
+        <motion.div variants={staggerItem}>
           <StatCard
             title="Net Balance"
             value={`₹${stats?.netBalance?.toFixed(2) || '0.00'}`}
             icon={Wallet}
             color={(stats?.netBalance || 0) >= 0 ? 'blue' : 'orange'}
+            animateValue={true}
           />
-        </div>
-        <div>
+        </motion.div>
+        <motion.div variants={staggerItem}>
           <StatCard
             title="This Month"
             value={`₹${stats?.monthNetBalance?.toFixed(2) || '0.00'}`}
             icon={TrendingUp}
             color="purple"
+            animateValue={true}
           />
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-        {/* Left Column - Add Expense Form (2/3 width) */}
+      <motion.div 
+        className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.4 }}
+      >
+        {/* Left Column - Recent Transactions (2/3 width) */}
         <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-          <Card 
-            id="add-expense-form"
-            title="Add New Expense" 
-            icon={Plus}
-            subtitle="Quickly log your expenses"
-          >
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    required
-                    className="input w-full text-sm sm:text-base"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
-                    Category
-                  </label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    required
-                    className="input w-full text-sm sm:text-base"
-                  >
-                    <option value="">Select Category</option>
-                    <option value="Food">🍔 Food</option>
-                    <option value="Travel">✈️ Travel</option>
-                    <option value="Transport">🚗 Transport</option>
-                    <option value="Shopping">🛍️ Shopping</option>
-                    <option value="Bills">📄 Bills</option>
-                    <option value="Entertainment">🎬 Entertainment</option>
-                    <option value="Healthcare">🏥 Healthcare</option>
-                    <option value="Education">📚 Education</option>
-                    <option value="Other">📦 Other</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
-                  Amount (₹)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0.01"
-                  value={formData.amount}
-                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                  required
-                  placeholder="0.00"
-                  className="input w-full text-base sm:text-lg"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
-                  Description (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="What was this expense for?"
-                  className="input w-full text-sm sm:text-base"
-                />
-              </div>
-
-              <Button type="submit" variant="primary" fullWidth icon={Plus} size="lg">
-                Add Expense
-              </Button>
-            </form>
-          </Card>
-
           {/* Recent Transactions */}
           <Card 
             title="Recent Transactions" 
@@ -285,14 +239,20 @@ const DashboardHome = () => {
             }
           >
             {recentExpenses.length > 0 ? (
-              <div 
+              <motion.div 
                 className="space-y-2 sm:space-y-3"
+                variants={staggerContainer}
+                initial="initial"
+                animate="animate"
               >
-                {recentExpenses.map((expense) => (
-                  <div 
+                {recentExpenses.map((expense, index) => (
+                  <motion.div 
                     key={expense._id}
                     className="flex items-center justify-between p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-200 hover:border-primary hover:shadow-sm transition-all cursor-pointer"
                     onClick={() => navigate('/dashboard/expenses')}
+                    variants={staggerItem}
+                    whileHover={{ scale: 1.02, x: 4 }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
                       <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
@@ -322,9 +282,9 @@ const DashboardHome = () => {
                     <div className="text-right flex-shrink-0 ml-2 sm:ml-4">
                       <p className="font-bold text-gray-900 text-base sm:text-lg">₹{expense.amount.toFixed(2)}</p>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             ) : (
               <EmptyState
                 icon={Receipt}
@@ -338,94 +298,194 @@ const DashboardHome = () => {
         {/* Right Column - Chart & Quick Links (1/3 width) */}
         <div className="space-y-4 sm:space-y-6">
           {/* Category Chart */}
-          <Card title="Spending by Category" subtitle="This month">
-            {Object.keys(categoryData).length > 0 ? (
-              <div className="h-64 sm:h-72">
-                <Doughnut 
-                  data={chartData} 
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        position: 'bottom',
-                        labels: {
-                          boxWidth: 10,
-                          padding: 10,
-                          font: { size: 10 }
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5, duration: 0.4 }}
+          >
+            <Card title="Spending by Category" subtitle="This month">
+              {Object.keys(categoryData).length > 0 ? (
+                <div className="h-64 sm:h-72">
+                  <Doughnut 
+                    data={chartData} 
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          position: 'bottom',
+                          labels: {
+                            boxWidth: 10,
+                            padding: 10,
+                            font: { size: 10 }
+                          }
                         }
                       }
-                    }
-                  }}
+                    }}
+                  />
+                </div>
+              ) : (
+                <EmptyState
+                  icon={Receipt}
+                  title="No expenses yet"
+                  description="Add your first expense to see the breakdown"
                 />
-              </div>
-            ) : (
-              <EmptyState
-                icon={Receipt}
-                title="No expenses yet"
-                description="Add your first expense to see the breakdown"
-              />
-            )}
-          </Card>
+              )}
+            </Card>
+          </motion.div>
 
           {/* Quick Links */}
-          <Card title="Quick Links" subtitle="Explore more features">
-            <div className="space-y-1.5 sm:space-y-2">
-              <button
-                onClick={() => navigate('/dashboard/analytics')}
-                className="w-full flex items-center justify-between p-2.5 sm:p-3 rounded-lg hover:bg-gray-50 transition-colors group"
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.6, duration: 0.4 }}
+          >
+            <Card title="Quick Links" subtitle="Explore more features">
+              <div className="space-y-1.5 sm:space-y-2">
+                <motion.button
+                  whileHover={{ scale: 1.02, x: 4 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate('/dashboard/analytics')}
+                  className="w-full flex items-center justify-between p-2.5 sm:p-3 rounded-lg hover:bg-gray-50 transition-colors group"
+                >
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                    </div>
+                    <span className="font-medium text-gray-900 text-sm sm:text-base">Analytics</span>
                   </div>
-                  <span className="font-medium text-gray-900 text-sm sm:text-base">Analytics</span>
-                </div>
-                <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 group-hover:text-primary" />
-              </button>
-              
-              <button
-                onClick={() => navigate('/dashboard/budgets')}
-                className="w-full flex items-center justify-between p-2.5 sm:p-3 rounded-lg hover:bg-gray-50 transition-colors group"
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                  <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 group-hover:text-primary" />
+                </motion.button>
+                
+                <motion.button
+                  whileHover={{ scale: 1.02, x: 4 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate('/dashboard/budgets')}
+                  className="w-full flex items-center justify-between p-2.5 sm:p-3 rounded-lg hover:bg-gray-50 transition-colors group"
+                >
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                    </div>
+                    <span className="font-medium text-gray-900 text-sm sm:text-base">Budgets</span>
                   </div>
-                  <span className="font-medium text-gray-900 text-sm sm:text-base">Budgets</span>
-                </div>
-                <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 group-hover:text-primary" />
-              </button>
-              
-              <button
-                onClick={() => navigate('/dashboard/goals')}
-                className="w-full flex items-center justify-between p-2.5 sm:p-3 rounded-lg hover:bg-gray-50 transition-colors group"
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                  <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 group-hover:text-primary" />
+                </motion.button>
+                
+                <motion.button
+                  whileHover={{ scale: 1.02, x: 4 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate('/dashboard/goals')}
+                  className="w-full flex items-center justify-between p-2.5 sm:p-3 rounded-lg hover:bg-gray-50 transition-colors group"
+                >
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                    </div>
+                    <span className="font-medium text-gray-900 text-sm sm:text-base">Goals</span>
                   </div>
-                  <span className="font-medium text-gray-900 text-sm sm:text-base">Goals</span>
-                </div>
-                <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 group-hover:text-primary" />
-              </button>
-              
-              <button
-                onClick={() => navigate('/dashboard/heatmap')}
-                className="w-full flex items-center justify-between p-2.5 sm:p-3 rounded-lg hover:bg-gray-50 transition-colors group"
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 group-hover:text-primary" />
+                </motion.button>
+                
+                <motion.button
+                  whileHover={{ scale: 1.02, x: 4 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate('/dashboard/analytics')}
+                  className="w-full flex items-center justify-between p-2.5 sm:p-3 rounded-lg hover:bg-gray-50 transition-colors group"
+                >
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                      <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                    </div>
+                    <span className="font-medium text-gray-900 text-sm sm:text-base">Analytics</span>
                   </div>
-                  <span className="font-medium text-gray-900 text-sm sm:text-base">Heatmap</span>
-                </div>
-                <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 group-hover:text-primary" />
-              </button>
-            </div>
-          </Card>
+                  <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 group-hover:text-primary" />
+                </motion.button>
+              </div>
+            </Card>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
+
+      {/* Add Expense Modal */}
+      <Modal 
+        isOpen={showAddExpense} 
+        onClose={() => setShowAddExpense(false)}
+        title="Add New Expense"
+        size="md"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Date
+              </label>
+              <input
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                required
+                className="input w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Category
+              </label>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                required
+                className="input w-full"
+              >
+                <option value="">Select Category</option>
+                <option value="Food">🍔 Food</option>
+                <option value="Travel">✈️ Travel</option>
+                <option value="Transport">🚗 Transport</option>
+                <option value="Shopping">🛍️ Shopping</option>
+                <option value="Bills">📄 Bills</option>
+                <option value="Entertainment">🎬 Entertainment</option>
+                <option value="Healthcare">🏥 Healthcare</option>
+                <option value="Education">📚 Education</option>
+                <option value="Other">📦 Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Amount (₹)
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0.01"
+              value={formData.amount}
+              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+              required
+              placeholder="0.00"
+              className="input w-full text-lg"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Description (Optional)
+            </label>
+            <input
+              type="text"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="What was this expense for?"
+              className="input w-full"
+            />
+          </div>
+
+          <Button type="submit" variant="primary" fullWidth icon={Plus} size="lg">
+            Add Expense
+          </Button>
+        </form>
+      </Modal>
 
       {/* Voice Input Modal */}
       {showVoiceInput && (
@@ -453,7 +513,7 @@ const DashboardHome = () => {
           <ReceiptScanner onSuccess={handleReceiptScanned} />
         </Modal>
       )}
-    </div>
+    </motion.div>
   )
 }
 

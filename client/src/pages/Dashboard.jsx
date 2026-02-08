@@ -11,6 +11,7 @@ import Achievements from '../components/features/achievements/Achievements'
 import SpendingHeatmap from '../components/features/analytics/SpendingHeatmap'
 import ReceiptScanner from '../components/features/receipts/ReceiptScanner'
 import Settings from '../components/features/settings/Settings'
+import Documentation from './Documentation'
 
 const Dashboard = () => {
   return (
@@ -26,6 +27,7 @@ const Dashboard = () => {
         <Route path="heatmap" element={<SpendingHeatmap />} />
         <Route path="receipt" element={<ReceiptScanner />} />
         <Route path="achievements" element={<Achievements />} />
+        <Route path="documentation" element={<Documentation />} />
         <Route path="settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>

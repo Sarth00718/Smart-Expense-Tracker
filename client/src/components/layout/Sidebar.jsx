@@ -12,7 +12,8 @@ import {
   DollarSign,
   Settings as SettingsIcon,
   Camera,
-  Mic
+  Mic,
+  BookOpen
 } from 'lucide-react'
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -25,6 +26,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { path: '/dashboard/analytics', icon: TrendingUp, label: 'Analytics' },
     { path: '/dashboard/ai', icon: Sparkles, label: 'AI Assistant' },
     { path: '/dashboard/achievements', icon: Trophy, label: 'Achievements' },
+    { path: '/dashboard/documentation', icon: BookOpen, label: 'Documentation' },
     { path: '/dashboard/settings', icon: SettingsIcon, label: 'Settings' },
   ]
 
@@ -33,19 +35,21 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       {/* Mobile Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden transition-opacity"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-200"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <aside className={`
-        fixed lg:static inset-y-0 left-0 z-50
-        w-64 sm:w-72 bg-white border-r border-gray-200
-        transform transition-transform duration-300 ease-in-out
-        flex flex-col
-        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
+      <aside 
+        className={`
+          fixed lg:static inset-y-0 left-0 z-50
+          w-64 sm:w-72 bg-white border-r border-gray-200
+          flex flex-col shadow-xl lg:shadow-none
+          transition-transform duration-300 ease-out
+          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-4 sm:px-6 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center gap-2 sm:gap-3">
