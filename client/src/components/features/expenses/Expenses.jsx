@@ -1,16 +1,19 @@
 import { useState, useMemo } from 'react'
 import { useExpense } from '../../../context/ExpenseContext'
 import { expenseService } from '../../../services/expenseService'
-import { Trash2, Calendar, Edit2, X, Trash, Search, ArrowUpDown, Filter, Repeat } from 'lucide-react'
+import { Trash2, Calendar, Edit2, X, Trash, Search, ArrowUpDown, Filter, Repeat, Plus, Mic, Camera } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 import { Button, Modal } from '../../ui'
 import { useNavigate } from 'react-router-dom'
 import AdvancedSearch from './AdvancedSearch'
 import RecurringExpenses from './RecurringExpenses'
+import VoiceExpenseInput from '../voice/VoiceExpenseInput'
+import ReceiptScanner from '../receipts/ReceiptScanner'
 
 const Expenses = () => {
-  const { expenses, deleteExpense, updateExpense, loading, fetchExpenses } = useExpense()
+  const { expenses, deleteExpense, updateExpense, addExpense, loading, fetchExpenses } = useExpense()
+  const navigate = useNavigate()
   const [editingExpense, setEditingExpense] = useState(null)
   const [editForm, setEditForm] = useState({
     date: '',
@@ -28,6 +31,15 @@ const Expenses = () => {
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false)
   const [advancedSearchResults, setAdvancedSearchResults] = useState(null)
   const [showRecurring, setShowRecurring] = useState(false)
+  const [showAddExpense, setShowAddExpense] = useState(false)
+  const [showVoiceInput, setShowVoiceInput] = useState(false)
+  const [showReceiptScanner, setShowReceiptScanner] = useState(false)
+  const [formData, setFormData] = useState({
+    date: new Date().toISOString().split('T')[0],
+    category: '',
+    amount: '',
+    description: ''
+  })
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
@@ -38,6 +50,35 @@ const Expenses = () => {
         toast.error('Failed to delete expense')
       }
     }
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    try {
+      await addExpense(formData)
+      toast.success('Expense added successfully!')
+      setFormData({
+        date: new Date().toISOString().split('T')[0],
+        category: '',
+        amount: '',
+        description: ''
+      })
+      setShowAddExpense(false)
+      await fetchExpenses()
+    } catch (error) {
+      toast.error('Failed to add expense')
+    }
+  }
+
+  const handleVoiceExpenseCreated = async () => {
+    await fetchExpenses()
+    setShowVoiceInput(false)
+    toast.success('Expense created from voice input!')
+  }
+
+  const handleReceiptScanned = async () => {
+    await fetchExpenses()
+    setShowReceiptScanner(false)
   }
 
   const handleClearAll = async () => {
@@ -189,35 +230,65 @@ const Expenses = () => {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-            Expense History
-          </h1>
-          <p className="text-gray-600 text-lg">Manage and track all your expenses</p>
-        </div>
-        
-        {/* Primary Actions */}
-        <div className="flex flex-wrap gap-2">
-          <Button 
-            variant="outline" 
-            size="md"
-            icon={Repeat}
-            onClick={() => setShowRecurring(true)}
-          >
-            Recurring
-          </Button>
-          {expenses.length > 0 && (
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
+              Expense Tracker
+            </h1>
+            <p className="text-gray-600 text-lg">Manage and track all your expenses</p>
+          </div>
+          
+          {/* Secondary Actions */}
+          <div className="flex flex-wrap gap-2">
             <Button 
               variant="outline" 
               size="md"
-              icon={Trash}
-              onClick={handleClearAll}
-              className="text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400"
+              icon={Repeat}
+              onClick={() => setShowRecurring(true)}
             >
-              Clear All
+              Recurring
             </Button>
-          )}
+            {expenses.length > 0 && (
+              <Button 
+                variant="outline" 
+                size="md"
+                icon={Trash}
+                onClick={handleClearAll}
+                className="text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400"
+              >
+                Clear All
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Quick Action Buttons */}
+        <div className="flex flex-wrap gap-2">
+          <Button 
+            variant="primary" 
+            size="md"
+            icon={Plus}
+            onClick={() => setShowAddExpense(true)}
+          >
+            Add Expense
+          </Button>
+          <Button 
+            variant="outline" 
+            size="md"
+            icon={Mic}
+            onClick={() => setShowVoiceInput(true)}
+          >
+            Voice
+          </Button>
+          <Button 
+            variant="outline" 
+            size="md"
+            icon={Camera}
+            onClick={() => setShowReceiptScanner(true)}
+          >
+            Scan
+          </Button>
         </div>
       </div>
 
@@ -556,6 +627,113 @@ const Expenses = () => {
       {/* Recurring Expenses Modal */}
       {showRecurring && (
         <RecurringExpenses onClose={() => setShowRecurring(false)} />
+      )}
+
+      {/* Add Expense Modal */}
+      <Modal 
+        isOpen={showAddExpense} 
+        onClose={() => setShowAddExpense(false)}
+        title="Add New Expense"
+        size="md"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Date
+              </label>
+              <input
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                required
+                className="input w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Category
+              </label>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                required
+                className="input w-full"
+              >
+                <option value="">Select Category</option>
+                <option value="Food">🍔 Food</option>
+                <option value="Travel">✈️ Travel</option>
+                <option value="Transport">🚗 Transport</option>
+                <option value="Shopping">🛍️ Shopping</option>
+                <option value="Bills">📄 Bills</option>
+                <option value="Entertainment">🎬 Entertainment</option>
+                <option value="Healthcare">🏥 Healthcare</option>
+                <option value="Education">📚 Education</option>
+                <option value="Other">📦 Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Amount (₹)
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0.01"
+              value={formData.amount}
+              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+              required
+              placeholder="0.00"
+              className="input w-full text-lg"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Description (Optional)
+            </label>
+            <input
+              type="text"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="What was this expense for?"
+              className="input w-full"
+            />
+          </div>
+
+          <Button type="submit" variant="primary" fullWidth icon={Plus} size="lg">
+            Add Expense
+          </Button>
+        </form>
+      </Modal>
+
+      {/* Voice Input Modal */}
+      {showVoiceInput && (
+        <Modal 
+          isOpen={showVoiceInput} 
+          onClose={() => setShowVoiceInput(false)}
+          size="md"
+          showCloseButton={false}
+        >
+          <VoiceExpenseInput
+            onExpenseCreated={handleVoiceExpenseCreated}
+            onClose={() => setShowVoiceInput(false)}
+          />
+        </Modal>
+      )}
+
+      {/* Receipt Scanner Modal */}
+      {showReceiptScanner && (
+        <Modal 
+          isOpen={showReceiptScanner} 
+          onClose={() => setShowReceiptScanner(false)}
+          size="xl"
+          title="Receipt Scanner"
+        >
+          <ReceiptScanner onSuccess={handleReceiptScanned} />
+        </Modal>
       )}
     </div>
   )

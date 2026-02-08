@@ -80,41 +80,52 @@ const SpendingHeatmap = () => {
     .filter(day => day.day !== null).length
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="card">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <CalendarIcon className="w-6 h-6 text-primary" />
-            Spending Heatmap
+        {/* Header with Month Navigation */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+            <CalendarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+            <span className="hidden sm:inline">Spending Heatmap</span>
+            <span className="sm:hidden">Heatmap</span>
           </h2>
-          <div className="flex items-center gap-3">
-            <button onClick={previousMonth} className="btn btn-secondary p-2">
-              <ChevronLeft className="w-5 h-5" />
+          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-start">
+            <button 
+              onClick={previousMonth} 
+              className="btn btn-secondary p-1.5 sm:p-2 hover:bg-gray-100 transition-colors"
+              aria-label="Previous month"
+            >
+              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
-            <span className="font-semibold text-lg min-w-[150px] text-center">
+            <span className="font-semibold text-base sm:text-lg min-w-[120px] sm:min-w-[150px] text-center">
               {heatmapData.monthName} {heatmapData.year}
             </span>
-            <button onClick={nextMonth} className="btn btn-secondary p-2">
-              <ChevronRight className="w-5 h-5" />
+            <button 
+              onClick={nextMonth} 
+              className="btn btn-secondary p-1.5 sm:p-2 hover:bg-gray-100 transition-colors"
+              aria-label="Next month"
+            >
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
         </div>
 
         {/* Calendar Grid */}
-        <div className="bg-white rounded-lg p-4">
+        <div className="bg-white rounded-lg p-2 sm:p-4 overflow-x-auto">
           {/* Week day headers */}
-          <div className="grid grid-cols-7 gap-2 mb-2">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-1 sm:mb-2">
             {weekDays.map(day => (
-              <div key={day} className="text-center text-sm font-semibold text-gray-600 py-2">
-                {day}
+              <div key={day} className="text-center text-xs sm:text-sm font-semibold text-gray-600 py-1 sm:py-2">
+                <span className="hidden sm:inline">{day}</span>
+                <span className="sm:hidden">{day.substring(0, 1)}</span>
               </div>
             ))}
           </div>
 
           {/* Calendar weeks */}
-          <div className="space-y-2">
+          <div className="space-y-1 sm:space-y-2">
             {heatmapData.heatmap.map((week, weekIndex) => (
-              <div key={weekIndex} className="grid grid-cols-7 gap-2">
+              <div key={weekIndex} className="grid grid-cols-7 gap-1 sm:gap-2">
                 {week.map((dayData, dayIndex) => {
                   if (dayData.day === null) {
                     return <div key={`empty-${weekIndex}-${dayIndex}`} className="aspect-square" />
@@ -126,21 +137,21 @@ const SpendingHeatmap = () => {
                   return (
                     <div
                       key={`day-${dayData.day}`}
-                      className={`aspect-square rounded-lg ${intensityColor} flex flex-col items-center justify-center cursor-pointer hover:ring-2 hover:ring-primary transition-all group relative`}
+                      className={`aspect-square rounded sm:rounded-lg ${intensityColor} flex flex-col items-center justify-center cursor-pointer hover:ring-2 hover:ring-primary transition-all group relative min-h-[40px] sm:min-h-0`}
                       title={`${format(dateObj, 'MMM dd')}: ₹${dayData.amount.toFixed(2)}`}
                     >
-                      <span className="text-sm font-semibold text-gray-800">
+                      <span className="text-xs sm:text-sm font-semibold text-gray-800">
                         {dayData.day}
                       </span>
                       {dayData.hasData && (
-                        <span className="text-xs text-gray-700">
+                        <span className="text-[10px] sm:text-xs text-gray-700 hidden sm:block">
                           ₹{dayData.amount.toFixed(0)}
                         </span>
                       )}
                       
                       {/* Tooltip */}
-                      <div className="absolute bottom-full mb-2 hidden group-hover:block z-10">
-                        <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+                      <div className="absolute bottom-full mb-2 hidden group-hover:block z-10 pointer-events-none">
+                        <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap shadow-lg">
                           {format(dateObj, 'MMM dd')}: ₹{dayData.amount.toFixed(2)}
                         </div>
                       </div>
@@ -153,36 +164,36 @@ const SpendingHeatmap = () => {
         </div>
 
         {/* Legend */}
-        <div className="mt-6 flex items-center justify-center gap-4">
-          <span className="text-sm text-gray-600">Less</span>
+        <div className="mt-4 sm:mt-6 flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
+          <span className="text-xs sm:text-sm text-gray-600">Less</span>
           <div className="flex gap-1">
-            <div className="w-6 h-6 bg-gray-100 rounded"></div>
-            <div className="w-6 h-6 bg-green-400 rounded"></div>
-            <div className="w-6 h-6 bg-yellow-500 rounded"></div>
-            <div className="w-6 h-6 bg-orange-500 rounded"></div>
-            <div className="w-6 h-6 bg-red-500 rounded"></div>
-            <div className="w-6 h-6 bg-red-600 rounded"></div>
+            <div className="w-4 h-4 sm:w-6 sm:h-6 bg-gray-100 rounded"></div>
+            <div className="w-4 h-4 sm:w-6 sm:h-6 bg-green-400 rounded"></div>
+            <div className="w-4 h-4 sm:w-6 sm:h-6 bg-yellow-500 rounded"></div>
+            <div className="w-4 h-4 sm:w-6 sm:h-6 bg-orange-500 rounded"></div>
+            <div className="w-4 h-4 sm:w-6 sm:h-6 bg-red-500 rounded"></div>
+            <div className="w-4 h-4 sm:w-6 sm:h-6 bg-red-600 rounded"></div>
           </div>
-          <span className="text-sm text-gray-600">More</span>
+          <span className="text-xs sm:text-sm text-gray-600">More</span>
         </div>
 
         {/* Stats */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm text-blue-600 font-semibold">Total This Month</p>
-            <p className="text-2xl font-bold text-blue-900">
+        <div className="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <div className="p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-xs sm:text-sm text-blue-600 font-semibold">Total This Month</p>
+            <p className="text-xl sm:text-2xl font-bold text-blue-900">
               ₹{totalAmount.toFixed(2)}
             </p>
           </div>
-          <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-            <p className="text-sm text-purple-600 font-semibold">Days with Expenses</p>
-            <p className="text-2xl font-bold text-purple-900">
+          <div className="p-3 sm:p-4 bg-purple-50 rounded-lg border border-purple-200">
+            <p className="text-xs sm:text-sm text-purple-600 font-semibold">Days with Expenses</p>
+            <p className="text-xl sm:text-2xl font-bold text-purple-900">
               {totalCount}
             </p>
           </div>
-          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-            <p className="text-sm text-green-600 font-semibold">Daily Average</p>
-            <p className="text-2xl font-bold text-green-900">
+          <div className="p-3 sm:p-4 bg-green-50 rounded-lg border border-green-200">
+            <p className="text-xs sm:text-sm text-green-600 font-semibold">Daily Average</p>
+            <p className="text-xl sm:text-2xl font-bold text-green-900">
               ₹{(totalAmount / daysInMonth).toFixed(2)}
             </p>
           </div>

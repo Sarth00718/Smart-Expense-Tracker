@@ -33,7 +33,6 @@ const Settings = () => {
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'security', label: 'Security', icon: Lock },
-    { id: 'biometric', label: 'Biometric', icon: Fingerprint },
   ]
 
   const handleEditToggle = () => {
@@ -394,6 +393,9 @@ const Settings = () => {
               </div>
             </Card>
 
+            {/* Biometric Authentication Section */}
+            <BiometricSettings />
+
             {/* Sessions Section */}
             <Card>
               <div className="flex items-start justify-between">
@@ -426,11 +428,6 @@ const Settings = () => {
               </div>
             </Card>
           </div>
-        )}
-
-        {/* Biometric Tab */}
-        {activeTab === 'biometric' && (
-          <BiometricSettings />
         )}
       </div>
 

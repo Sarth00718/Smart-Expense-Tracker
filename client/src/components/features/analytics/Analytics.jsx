@@ -1,26 +1,25 @@
 import { useState, useEffect, useMemo } from 'react'
 import { 
-  TrendingUp, BarChart3, PieChart, Calendar, Activity, 
-  Download, DollarSign, TrendingDown, Zap
+  TrendingUp, BarChart3, PieChart, Activity, 
+  DollarSign, TrendingDown, Zap, Calendar
 } from 'lucide-react'
 import { useExpense } from '../../../context/ExpenseContext'
 import { useIncome } from '../../../context/IncomeContext'
 import { analyticsService } from '../../../services/analyticsService'
-import { Button, Card } from '../../ui'
+import { Card } from '../../ui'
+import SpendingHeatmap from './SpendingHeatmap'
 import { 
   AreaChart, BarChart, PieChart as RechartsPie, 
   Area, XAxis, YAxis, CartesianGrid, 
-  Tooltip, Legend, ResponsiveContainer, Cell, Pie, Bar, Line, LineChart
+  Tooltip, ResponsiveContainer, Cell, Pie, Bar
 } from 'recharts'
 import { format, startOfMonth, endOfMonth, subMonths, eachDayOfInterval } from 'date-fns'
-import toast from 'react-hot-toast'
 
 const Analytics = () => {
   const { expenses } = useExpense()
   const { income } = useIncome()
   const [patterns, setPatterns] = useState([])
   const [predictions, setPredictions] = useState([])
-  const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState('thisMonth')
 
   const COLORS = ['#4361ee', '#7209b7', '#f72585', '#4cc9f0', '#f8961e', '#38b000', '#ff006e', '#8338ec']
@@ -31,7 +30,6 @@ const Analytics = () => {
 
   const loadAnalytics = async () => {
     try {
-      setLoading(true)
       const [patternsRes, predictionsRes] = await Promise.all([
         analyticsService.getPatterns(),
         analyticsService.getPredictions()
@@ -40,8 +38,6 @@ const Analytics = () => {
       setPredictions(predictionsRes.data.predictions || [])
     } catch (error) {
       console.error('Error loading analytics:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -98,8 +94,7 @@ const Analytics = () => {
       
       return {
         date: format(day, 'MMM dd'),
-        amount: total,
-        count: dayExpenses.length
+        amount: total
       }
     })
   }, [filteredData])
@@ -107,25 +102,26 @@ const Analytics = () => {
   // Calculate category data
   const categoryData = useMemo(() => {
     const { expenses } = filteredData
-    const categoryTotals = expenses.reduce((acc, exp) => {
-      acc[exp.category] = (acc[exp.category] || 0) + exp.amount
-      return acc
-    }, {})
-
-    return Object.entries(categoryTotals)
+    const categoryMap = {}
+    
+    expenses.forEach(exp => {
+      categoryMap[exp.category] = (categoryMap[exp.category] || 0) + exp.amount
+    })
+    
+    return Object.entries(categoryMap)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
   }, [filteredData])
 
-  // Calculate income vs expense
+  // Calculate income vs expense data
   const incomeVsExpenseData = useMemo(() => {
     const { expenses, income } = filteredData
     const totalExpense = expenses.reduce((sum, exp) => sum + exp.amount, 0)
     const totalIncome = income.reduce((sum, inc) => sum + inc.amount, 0)
-
+    
     return [
-      { name: 'Income', value: totalIncome, fill: '#10b981' },
-      { name: 'Expense', value: totalExpense, fill: '#ef4444' },
+      { name: 'Income', value: totalIncome, fill: '#38b000' },
+      { name: 'Expense', value: totalExpense, fill: '#f72585' },
       { name: 'Savings', value: Math.max(0, totalIncome - totalExpense), fill: '#4361ee' }
     ]
   }, [filteredData])
@@ -133,70 +129,73 @@ const Analytics = () => {
   // Calculate statistics
   const statistics = useMemo(() => {
     const { expenses, income } = filteredData
-    const totalExpense = expenses.reduce((sum, exp) => sum + exp.amount, 0)
+    const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0)
     const totalIncome = income.reduce((sum, inc) => sum + inc.amount, 0)
-    const avgDaily = expenses.length > 0 ? totalExpense / expenses.length : 0
-    const highestExpense = expenses.length > 0 ? Math.max(...expenses.map(e => e.amount)) : 0
+    const netSavings = totalIncome - totalExpenses
+    const avgDaily = totalExpenses / (expenses.length || 1)
+    const categoryCount = new Set(expenses.map(exp => exp.category)).size
+    const transactionCount = expenses.length + income.length
 
     return {
-      totalExpense,
+      totalExpenses,
       totalIncome,
-      netSavings: totalIncome - totalExpense,
+      netSavings,
       avgDaily,
-      highestExpense,
-      transactionCount: expenses.length,
-      categoryCount: new Set(expenses.map(e => e.category)).size
+      categoryCount,
+      transactionCount
     }
   }, [filteredData])
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="spinner"></div>
-      </div>
-    )
-  }
-
   return (
-    <div className="p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-[1600px] mx-auto">
+    <div className="p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6 lg:space-y-8 max-w-[1600px] mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 sm:mb-2 flex items-center gap-2 sm:gap-3">
-            <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">
             Analytics Dashboard
           </h1>
-          <p className="text-gray-600 text-sm sm:text-base lg:text-lg">Comprehensive insights into your finances</p>
+          <p className="text-gray-600 text-sm sm:text-base lg:text-lg">
+            Insights into your spending patterns
+          </p>
         </div>
-
+        
+        {/* Time Range Selector */}
         <div className="flex flex-wrap gap-2">
-          <select
-            value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value)}
-            className="input py-2 px-3 text-sm"
-          >
-            <option value="thisMonth">This Month</option>
-            <option value="lastMonth">Last Month</option>
-            <option value="last3Months">Last 3 Months</option>
-            <option value="last6Months">Last 6 Months</option>
-          </select>
+          {[
+            { value: 'thisMonth', label: 'This Month' },
+            { value: 'lastMonth', label: 'Last Month' },
+            { value: 'last3Months', label: 'Last 3 Months' },
+            { value: 'last6Months', label: 'Last 6 Months' }
+          ].map(option => (
+            <button
+              key={option.value}
+              onClick={() => setTimeRange(option.value)}
+              className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+                timeRange === option.value
+                  ? 'bg-primary text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Overview Stats */}
+      {/* Statistics Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-        <div className="card bg-gradient-to-br from-red-500 to-red-600 text-white p-3 sm:p-4">
-          <TrendingDown className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
-          <p className="text-white/80 text-xs sm:text-sm">Total Expense</p>
-          <p className="text-lg sm:text-xl lg:text-2xl font-bold mt-1">₹{statistics.totalExpense.toFixed(0)}</p>
-        </div>
-        <div className="card bg-gradient-to-br from-green-500 to-green-600 text-white p-3 sm:p-4">
-          <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
+        <div className="card bg-gradient-to-br from-blue-500 to-blue-600 text-white p-3 sm:p-4">
+          <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
           <p className="text-white/80 text-xs sm:text-sm">Total Income</p>
           <p className="text-lg sm:text-xl lg:text-2xl font-bold mt-1">₹{statistics.totalIncome.toFixed(0)}</p>
         </div>
-        <div className="card bg-gradient-to-br from-blue-500 to-blue-600 text-white p-3 sm:p-4">
-          <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
+        <div className="card bg-gradient-to-br from-red-500 to-red-600 text-white p-3 sm:p-4">
+          <TrendingDown className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
+          <p className="text-white/80 text-xs sm:text-sm">Total Expenses</p>
+          <p className="text-lg sm:text-xl lg:text-2xl font-bold mt-1">₹{statistics.totalExpenses.toFixed(0)}</p>
+        </div>
+        <div className="card bg-gradient-to-br from-green-500 to-green-600 text-white p-3 sm:p-4">
+          <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
           <p className="text-white/80 text-xs sm:text-sm">Net Savings</p>
           <p className="text-lg sm:text-xl lg:text-2xl font-bold mt-1">₹{statistics.netSavings.toFixed(0)}</p>
         </div>
@@ -221,9 +220,9 @@ const Analytics = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Spending Trend */}
         <Card title="Spending Trend" subtitle="Daily spending over time" icon={TrendingUp}>
-          <div className="h-64 sm:h-80">
+          <div className="w-full" style={{ minHeight: '256px', height: '320px' }}>
             {filteredData.expenses.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
                 <AreaChart data={spendingTrendData}>
                   <defs>
                     <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
@@ -250,9 +249,9 @@ const Analytics = () => {
 
         {/* Category Breakdown */}
         <Card title="Category Breakdown" subtitle="Spending by category" icon={PieChart}>
-          <div className="h-64 sm:h-80">
+          <div className="w-full" style={{ minHeight: '256px', height: '320px' }}>
             {categoryData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
                 <RechartsPie>
                   <Pie
                     data={categoryData}
@@ -278,11 +277,17 @@ const Analytics = () => {
             )}
           </div>
         </Card>
+      </div>
 
+      {/* Spending Heatmap - Full Width */}
+      <SpendingHeatmap />
+
+      {/* Secondary Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Income vs Expense */}
         <Card title="Income vs Expense" subtitle="Financial overview" icon={BarChart3}>
-          <div className="h-64 sm:h-80">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="w-full" style={{ minHeight: '256px', height: '320px' }}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
               <BarChart data={incomeVsExpenseData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#6b7280" />

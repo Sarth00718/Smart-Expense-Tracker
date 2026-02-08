@@ -34,19 +34,14 @@ router.get('/', async (req, res) => {
     health.status = 'degraded';
   }
 
-  // Check AI service (OpenAI/Gemini)
+  // Check AI service (Groq)
   try {
-    const aiProvider = process.env.AI_PROVIDER || 'openai';
-    
-    if (aiProvider === 'openai' && process.env.OPENAI_API_KEY) {
+    if (process.env.GROQ_API_KEY) {
       health.services.ai.status = 'configured';
-      health.services.ai.message = 'OpenAI API key configured';
-    } else if (aiProvider === 'gemini' && process.env.GEMINI_API_KEY) {
-      health.services.ai.status = 'configured';
-      health.services.ai.message = 'Gemini API key configured';
+      health.services.ai.message = 'Groq API key configured';
     } else {
       health.services.ai.status = 'not_configured';
-      health.services.ai.message = 'AI service not configured';
+      health.services.ai.message = 'AI service not configured (Groq API key missing)';
     }
   } catch (error) {
     health.services.ai.status = 'error';
