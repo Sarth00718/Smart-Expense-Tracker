@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Goal = require('../models/Goal');
 const auth = require('../middleware/auth');
+const { validateObjectId } = require('../middleware/validateObjectId');
 
 // @route   POST /api/goals
 // @desc    Add savings goal
@@ -78,8 +79,8 @@ router.get('/', auth, async (req, res) => {
     const goals = await Goal.find({ userId: req.userId }).sort({ createdAt: -1 });
 
     const result = goals.map(goal => {
-      const percentage = goal.targetAmount > 0 
-        ? (goal.currentAmount / goal.targetAmount) * 100 
+      const percentage = goal.targetAmount > 0
+        ? (goal.currentAmount / goal.targetAmount) * 100
         : 0;
 
       let daysLeft = null;
@@ -117,7 +118,7 @@ router.get('/', auth, async (req, res) => {
 // @route   PUT /api/goals/:id
 // @desc    Update goal progress
 // @access  Private
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, validateObjectId(), async (req, res) => {
   try {
     const { currentAmount } = req.body;
 
@@ -144,11 +145,11 @@ router.put('/:id', auth, async (req, res) => {
 // @route   DELETE /api/goals/:id
 // @desc    Delete goal
 // @access  Private
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, validateObjectId(), async (req, res) => {
   try {
-    const goal = await Goal.findOneAndDelete({ 
-      _id: req.params.id, 
-      userId: req.userId 
+    const goal = await Goal.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.userId
     });
 
     if (!goal) {

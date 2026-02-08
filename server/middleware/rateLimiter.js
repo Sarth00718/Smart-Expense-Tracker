@@ -11,8 +11,9 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
   skipSuccessfulRequests: true, // Don't count successful requests
   skip: (req) => {
-    // Skip rate limiting in development
-    return process.env.NODE_ENV === 'development'
+    // Only skip in explicit development mode
+    // If NODE_ENV is not set, rate limiting will be enabled (safer default)
+    return process.env.NODE_ENV === 'development';
   }
 });
 

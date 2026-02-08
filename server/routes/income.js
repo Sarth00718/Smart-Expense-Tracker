@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Income = require('../models/Income');
 const auth = require('../middleware/auth');
+const { validateObjectId } = require('../middleware/validateObjectId');
 
 // @route   GET /api/income/sources
 // @desc    Get unique income sources
@@ -22,17 +23,21 @@ router.get('/sources', auth, async (req, res) => {
 router.get('/', auth, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 50;
+    const requestedLimit = parseInt(req.query.limit) || 50;
+    // Enforce maximum limit to prevent abuse
+    const limit = Math.min(requestedLimit, 100);
     const skip = (page - 1) * limit;
 
     // Date filters
     const query = { userId: req.userId };
-    if (req.query.startDate) {
-      query.date = { ...query.date, $gte: new Date(req.query.startDate) };
+
+    // Initialize date object to avoid undefined spreading
+    if (req.query.startDate || req.query.endDate) {
+      query.date = {};
+      if (req.query.startDate) query.date.$gte = new Date(req.query.startDate);
+      if (req.query.endDate) query.date.$lte = new Date(req.query.endDate);
     }
-    if (req.query.endDate) {
-      query.date = { ...query.date, $lte: new Date(req.query.endDate) };
-    }
+
     if (req.query.source) {
       query.source = req.query.source;
     }
@@ -97,7 +102,7 @@ router.post('/', auth, async (req, res) => {
 // @route   PUT /api/income/:id
 // @desc    Update income
 // @access  Private
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, validateObjectId(), async (req, res) => {
   try {
     const { date, source, amount, description, isRecurring } = req.body;
 
@@ -179,11 +184,11 @@ router.get('/summary', auth, async (req, res) => {
 // @route   DELETE /api/income/:id
 // @desc    Delete income
 // @access  Private
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, validateObjectId(), async (req, res) => {
   try {
-    const income = await Income.findOneAndDelete({ 
-      _id: req.params.id, 
-      userId: req.userId 
+    const income = await Income.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.userId
     });
 
     if (!income) {

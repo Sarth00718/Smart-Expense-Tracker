@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
 
           // Only set up Firebase listener if using Firebase auth
           if (authMethod === 'firebase') {
-            setupFirebaseListener()
+            unsubscribe = setupFirebaseListener()
           } else if (authMethod === 'biometric' || authMethod === 'backend') {
             // Backend or biometric auth - no need for Firebase listener
             setLoading(false)
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
               setUser(result.user)
               setLoading(false)
               setInitialCheckDone(true)
-              setupFirebaseListener()
+              unsubscribe = setupFirebaseListener()
               return
             }
           } catch (error) {
@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }) => {
 
         // No stored user, check Firebase auth state (only if Firebase method)
         if (authMethod === 'firebase') {
-          setupFirebaseListener()
+          unsubscribe = setupFirebaseListener()
         } else {
           // Backend auth, no user found
           setLoading(false)
@@ -81,14 +81,9 @@ export const AuthProvider = ({ children }) => {
 
     const setupFirebaseListener = () => {
       // Only set up listener once
-      if (unsubscribe) return
+      if (unsubscribe) return unsubscribe
 
-      // Set loading to false immediately if we already have initial check done
-      if (initialCheckDone) {
-        setLoading(false)
-      }
-
-      unsubscribe = firebaseAuth.onAuthStateChanged(async (firebaseUser) => {
+      return firebaseAuth.onAuthStateChanged(async (firebaseUser) => {
         if (firebaseUser) {
           // User is signed in with Firebase
           try {
@@ -119,10 +114,8 @@ export const AuthProvider = ({ children }) => {
           }
         }
         
-        if (!initialCheckDone) {
-          setLoading(false)
-          setInitialCheckDone(true)
-        }
+        setLoading(false)
+        setInitialCheckDone(true)
       })
     }
 
@@ -134,7 +127,7 @@ export const AuthProvider = ({ children }) => {
         unsubscribe()
       }
     }
-  }, []) // Empty dependency array - only run once on mount
+  }, []) // Dependencies are correct - we only want this to run once on mount
 
   const login = async (email, password) => {
     const data = await authService.login(email, password)

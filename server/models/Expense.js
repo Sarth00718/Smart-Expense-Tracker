@@ -51,5 +51,6 @@ const expenseSchema = new mongoose.Schema({
 // Compound index for efficient queries
 expenseSchema.index({ userId: 1, date: -1 });
 expenseSchema.index({ userId: 1, category: 1 });
+expenseSchema.index({ userId: 1, amount: 1 }); // For amount-based filtering
 
 module.exports = mongoose.model('Expense', expenseSchema);

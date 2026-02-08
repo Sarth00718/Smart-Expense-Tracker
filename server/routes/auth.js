@@ -29,13 +29,30 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Full name is required' });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters' });
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Check password complexity
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    if (!hasUpperCase || !hasLowerCase || !hasNumber || !hasSpecialChar) {
+      return res.status(400).json({
+        error: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+      });
+    }
+
+    // Validate email format with more robust regex
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+
+    // Additional validation: check for common invalid patterns
+    if (email.includes('..') || email.startsWith('.') || email.endsWith('.')) {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
@@ -67,18 +84,18 @@ router.post('/register', async (req, res) => {
     });
   } catch (error) {
     console.error('Register error:', error);
-    
+
     // Handle duplicate key error
     if (error.code === 11000) {
       return res.status(400).json({ error: 'User already exists with this email' });
     }
-    
+
     // Handle validation errors
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(err => err.message);
       return res.status(400).json({ error: messages.join(', ') });
     }
-    
+
     res.status(500).json({ error: 'Server error during registration. Please try again.' });
   }
 });
@@ -215,8 +232,8 @@ router.post('/firebase-sync', async (req, res) => {
       fullName: fullName || email.split('@')[0],
       firebaseUid: uid,
       authProvider: 'firebase',
-      picture: picture,
-      password: Math.random().toString(36).slice(-12) // Random password (won't be used)
+      picture: picture
+      // No password needed for Firebase users
     });
 
     await user.save();
@@ -234,11 +251,11 @@ router.post('/firebase-sync', async (req, res) => {
     });
   } catch (error) {
     console.error('Firebase sync error:', error);
-    
+
     if (error.code === 11000) {
       return res.status(400).json({ error: 'User sync failed: duplicate entry' });
     }
-    
+
     res.status(500).json({ error: 'Server error during Firebase sync' });
   }
 });

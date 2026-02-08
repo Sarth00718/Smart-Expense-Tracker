@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react'
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react'
 import { expenseService } from '../services/expenseService'
 import { useAuth } from './AuthContext'
 
@@ -17,31 +17,47 @@ export const ExpenseProvider = ({ children }) => {
   const [expenses, setExpenses] = useState([])
   const [loading, setLoading] = useState(false)
 
-  const loadExpenses = async () => {
+  const loadExpenses = useCallback(async (signal) => {
     if (!user) {
       setExpenses([])
       return
     }
-    
+
     try {
       setLoading(true)
       const response = await expenseService.getAll()
+
+      // Check if request was aborted
+      if (signal?.aborted) return
+
       // Handle both old format (array) and new format (object with data property)
       const expenseData = response.data.data || response.data
       setExpenses(Array.isArray(expenseData) ? expenseData : [])
     } catch (error) {
+      // Don't set error state if request was aborted
+      if (error.name === 'AbortError' || signal?.aborted) return
+
       console.error('Error loading expenses:', error)
       setExpenses([])
     } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    if (user) {
-      loadExpenses()
+      if (!signal?.aborted) {
+        setLoading(false)
+      }
     }
   }, [user])
+
+  useEffect(() => {
+    const abortController = new AbortController()
+
+    if (user) {
+      loadExpenses(abortController.signal)
+    }
+
+    // Cleanup function to abort pending requests
+    return () => {
+      abortController.abort()
+    }
+  }, [user, loadExpenses])
 
   const addExpense = async (expense) => {
     const response = await expenseService.add(expense)

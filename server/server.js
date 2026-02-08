@@ -59,25 +59,31 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:4173', // Vite preview
   'http://localhost:4174', // Vite preview alternate
-  process.env.CLIENT_URL,
-  'https://smart-expense-tracker-37ahuzung-sarths-projects-b8db4f8c.vercel.app'
+  process.env.CLIENT_URL
+  // Add your production URLs to the CLIENT_URL environment variable
+  // For multiple URLs, you can add them as additional environment variables
 ].filter(Boolean);
 
 app.use(cors({
-  origin: function(origin, callback) {
+  origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, Postman, PWA, etc.)
     if (!origin) return callback(null, true);
-    
-    // Check if origin is allowed or matches Vercel pattern
-    if (allowedOrigins.includes(origin) || 
-        origin.includes('vercel.app') || 
-        origin.includes('localhost') ||
-        origin.includes('render.com')) {
-      callback(null, true);
-    } else {
-      console.warn('CORS blocked origin:', origin);
-      callback(new Error('Not allowed by CORS'));
+
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
+
+    // Check for exact domain matches (prevent subdomain attacks)
+    if (origin.endsWith('.vercel.app') ||
+      origin.endsWith('.render.com') ||
+      origin === 'http://localhost' ||
+      origin.startsWith('http://localhost:')) {
+      return callback(null, true);
+    }
+
+    console.warn('CORS blocked origin:', origin);
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -101,13 +107,13 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/expense-t
   retryWrites: true,
   retryReads: true,
 })
-.then(() => {
-  // MongoDB Connected
-})
-.catch(err => {
-  console.error('❌ MongoDB Connection Error:', err);
-  process.exit(1);
-});
+  .then(() => {
+    // MongoDB Connected
+  })
+  .catch(err => {
+    console.error('❌ MongoDB Connection Error:', err);
+    process.exit(1);
+  });
 
 // Handle MongoDB connection errors after initial connection
 mongoose.connection.on('error', err => {
@@ -157,8 +163,8 @@ app.get('/', (req, res) => {
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'healthy', 
+  res.json({
+    status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
@@ -168,10 +174,10 @@ app.get('/health', (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err.message);
-  
+
   // Don't leak error details in production
   const isDev = process.env.NODE_ENV === 'development';
-  
+
   res.status(err.status || 500).json({
     error: isDev ? err.message : 'Internal Server Error',
     ...(isDev && { stack: err.stack })

@@ -56,7 +56,6 @@ const AdvancedSearch = ({ onSearch, onClose }) => {
         : [...prev[field], value]
     }));
   };
-
   const handleSearch = async () => {
     setIsSearching(true);
     

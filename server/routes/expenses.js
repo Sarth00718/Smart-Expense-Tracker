@@ -4,6 +4,8 @@ const Expense = require('../models/Expense');
 const auth = require('../middleware/auth');
 const { checkAndAwardAchievements } = require('../utils/achievements');
 const { parseNaturalLanguageQuery } = require('../utils/nlp');
+const { escapeRegex, isStringArray } = require('../utils/securityUtils');
+const { validateObjectId } = require('../middleware/validateObjectId');
 
 // IMPORTANT: Specific routes MUST come before parameterized routes like /:id
 // Otherwise Express will match "filter" as an ID parameter
@@ -18,10 +20,19 @@ router.get('/filter', auth, async (req, res) => {
     const query = { userId: req.userId };
 
     if (category) query.category = category;
-    if (startDate) query.date = { ...query.date, $gte: new Date(startDate) };
-    if (endDate) query.date = { ...query.date, $lte: new Date(endDate) };
-    if (minAmount) query.amount = { ...query.amount, $gte: parseFloat(minAmount) };
-    if (maxAmount) query.amount = { ...query.amount, $lte: parseFloat(maxAmount) };
+
+    // Initialize date and amount objects to avoid undefined spreading
+    if (startDate || endDate) {
+      query.date = {};
+      if (startDate) query.date.$gte = new Date(startDate);
+      if (endDate) query.date.$lte = new Date(endDate);
+    }
+
+    if (minAmount || maxAmount) {
+      query.amount = {};
+      if (minAmount) query.amount.$gte = parseFloat(minAmount);
+      if (maxAmount) query.amount.$lte = parseFloat(maxAmount);
+    }
 
     const expenses = await Expense.find(query).sort({ date: -1 });
 
@@ -174,12 +185,12 @@ router.post('/search', auth, async (req, res) => {
     if (filters.category) dbQuery.category = filters.category;
     if (filters.minAmount) dbQuery.amount = { ...dbQuery.amount, $gte: filters.minAmount };
     if (filters.maxAmount) dbQuery.amount = { ...dbQuery.amount, $lte: filters.maxAmount };
-    
+
     // Use startDate and endDate if provided (for year-based queries)
     if (filters.startDate && filters.endDate) {
-      dbQuery.date = { 
-        $gte: filters.startDate, 
-        $lte: filters.endDate 
+      dbQuery.date = {
+        $gte: filters.startDate,
+        $lte: filters.endDate
       };
     } else if (filters.timePeriod) {
       // Fallback to old time period logic
@@ -215,7 +226,15 @@ router.post('/search', auth, async (req, res) => {
     // Search in description if keywords provided AND no category specified
     // If category is specified, description keywords are ignored to avoid over-filtering
     if (filters.descriptionKeywords.length > 0 && !filters.category) {
-      dbQuery.$or = filters.descriptionKeywords.map(keyword => ({
+      // Validate that descriptionKeywords is an array of strings
+      if (!isStringArray(filters.descriptionKeywords)) {
+        return res.status(400).json({ error: 'Invalid search keywords format' });
+      }
+
+      // Escape regex special characters to prevent injection
+      const escapedKeywords = filters.descriptionKeywords.map(keyword => escapeRegex(keyword));
+
+      dbQuery.$or = escapedKeywords.map(keyword => ({
         $or: [
           { description: { $regex: keyword, $options: 'i' } },
           { category: { $regex: keyword, $options: 'i' } }
@@ -272,8 +291,13 @@ router.post('/', auth, async (req, res) => {
 
     await expense.save();
 
-    // Check for achievements
-    await checkAndAwardAchievements(req.userId);
+    // Check for achievements (don't fail request if this errors)
+    try {
+      await checkAndAwardAchievements(req.userId);
+    } catch (achievementError) {
+      console.error('Achievement check failed:', achievementError);
+      // Continue - expense was created successfully
+    }
 
     res.status(201).json(expense);
   } catch (error) {
@@ -288,7 +312,9 @@ router.post('/', auth, async (req, res) => {
 router.get('/', auth, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 50;
+    const requestedLimit = parseInt(req.query.limit) || 50;
+    // Enforce maximum limit to prevent abuse
+    const limit = Math.min(requestedLimit, 100);
     const skip = (page - 1) * limit;
 
     const query = { userId: req.userId };
@@ -320,8 +346,8 @@ router.get('/', auth, async (req, res) => {
 router.delete('/', auth, async (req, res) => {
   try {
     const result = await Expense.deleteMany({ userId: req.userId });
-    
-    res.json({ 
+
+    res.json({
       message: 'All expenses deleted successfully',
       deletedCount: result.deletedCount
     });
@@ -334,7 +360,7 @@ router.delete('/', auth, async (req, res) => {
 // @route   PUT /api/expenses/:id
 // @desc    Update expense
 // @access  Private
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, validateObjectId(), async (req, res) => {
   try {
     const { date, category, amount, description, isRecurring } = req.body;
 
@@ -371,11 +397,11 @@ router.put('/:id', auth, async (req, res) => {
 // @route   DELETE /api/expenses/:id
 // @desc    Delete expense
 // @access  Private
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, validateObjectId(), async (req, res) => {
   try {
-    const expense = await Expense.findOneAndDelete({ 
-      _id: req.params.id, 
-      userId: req.userId 
+    const expense = await Expense.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.userId
     });
 
     if (!expense) {
