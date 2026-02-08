@@ -76,7 +76,6 @@ router.get('/preferences', auth, async (req, res) => {
     
     res.json({
       preferences: user.preferences || {
-        theme: 'auto',
         colorScheme: 'blue'
       }
     });
@@ -92,7 +91,7 @@ router.get('/preferences', auth, async (req, res) => {
  */
 router.patch('/preferences', auth, async (req, res) => {
   try {
-    const { theme, colorScheme } = req.body;
+    const { colorScheme } = req.body;
 
     const user = await User.findById(req.userId);
 
@@ -106,13 +105,6 @@ router.patch('/preferences', auth, async (req, res) => {
     }
 
     // Update preferences
-    if (theme) {
-      if (!['light', 'dark', 'auto'].includes(theme)) {
-        return res.status(400).json({ error: 'Invalid theme value' });
-      }
-      user.preferences.theme = theme;
-    }
-
     if (colorScheme) {
       if (!['blue', 'green', 'purple', 'orange', 'pink'].includes(colorScheme)) {
         return res.status(400).json({ error: 'Invalid color scheme value' });

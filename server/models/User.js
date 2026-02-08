@@ -45,13 +45,8 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: {
     type: Date
   },
-  // Theme preferences
+  // User preferences
   preferences: {
-    theme: {
-      type: String,
-      enum: ['light', 'dark', 'auto'],
-      default: 'auto'
-    },
     colorScheme: {
       type: String,
       enum: ['blue', 'green', 'purple', 'orange', 'pink'],

@@ -220,7 +220,6 @@ All notable changes to the Smart Expense Tracker project.
 - [ ] Advanced analytics (ML predictions)
 - [ ] Social features (shared budgets)
 - [ ] Mobile app (React Native)
-- [ ] Dark mode
 - [ ] Multi-language support
 
 ### Technical Improvements
