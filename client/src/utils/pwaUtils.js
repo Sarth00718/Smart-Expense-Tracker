@@ -237,10 +237,3 @@ export const getNetworkInfo = () => {
 export const prefersReducedMotion = () => {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 };
-
-/**
- * Detect if user prefers dark mode
- */
-export const prefersDarkMode = () => {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches;
-};
