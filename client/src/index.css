@@ -264,6 +264,62 @@
     animation: fade-in 0.3s ease-out;
   }
 
+  /* Blob Animation */
+  @keyframes blob {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    25% {
+      transform: translate(20px, -20px) scale(1.1);
+    }
+    50% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+    75% {
+      transform: translate(20px, 10px) scale(1.05);
+    }
+  }
+
+  .animate-blob {
+    animation: blob 7s ease-in-out infinite;
+  }
+
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  .animation-delay-3000 {
+    animation-delay: 3s;
+  }
+
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+
+  /* Float Animation */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px) translateX(0px);
+    }
+    25% {
+      transform: translateY(-20px) translateX(10px);
+    }
+    50% {
+      transform: translateY(-40px) translateX(-10px);
+    }
+    75% {
+      transform: translateY(-20px) translateX(5px);
+    }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animation-delay-1000 {
+    animation-delay: 1s;
+  }
+
   /* Responsive spacing utilities */
   .space-responsive {
     @apply space-y-4 sm:space-y-5 md:space-y-6;
@@ -272,4 +328,196 @@
   .gap-responsive {
     @apply gap-3 sm:gap-4 md:gap-5 lg:gap-6;
   }
+}
+
+/* Purple Gradient Theme - Vibrant Cyan to Pink */
+.gradient-background {
+  background: linear-gradient(135deg, #00d4ff 0%, #0099ff 25%, #7b2ff7 50%, #f107a3 75%, #ff1744 100%);
+  background-color: #7b2ff7;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.gradient-purple-blue {
+  background: linear-gradient(135deg, #00d4ff 0%, #0099ff 25%, #7b2ff7 50%, #f107a3 75%, #ff1744 100%);
+}
+
+.gradient-purple-pink {
+  background: linear-gradient(135deg, #00d4ff 0%, #7b2ff7 50%, #f107a3 100%);
+}
+
+.gradient-deep-purple {
+  background: linear-gradient(135deg, #0099ff 0%, #7b2ff7 50%, #f107a3 100%);
+}
+
+.gradient-royal-purple {
+  background: linear-gradient(135deg, #00d4ff 0%, #7b2ff7 50%, #ff1744 100%);
+}
+
+/* Purple Button Styles - Vibrant */
+.btn-purple {
+  background: linear-gradient(135deg, #00d4ff 0%, #7b2ff7 50%, #f107a3 100%);
+  color: white;
+  border: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(123, 47, 247, 0.4);
+}
+
+.btn-purple:hover {
+  background: linear-gradient(135deg, #f107a3 0%, #7b2ff7 50%, #00d4ff 100%);
+  box-shadow: 0 6px 20px rgba(123, 47, 247, 0.6);
+  transform: translateY(-2px);
+}
+
+.btn-purple:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(123, 47, 247, 0.4);
+}
+
+/* Purple Outline Button */
+.btn-purple-outline {
+  background: transparent;
+  color: #7b2ff7;
+  border: 2px solid #7b2ff7;
+  transition: all 0.3s ease;
+}
+
+.btn-purple-outline:hover {
+  background: linear-gradient(135deg, #00d4ff 0%, #7b2ff7 50%, #f107a3 100%);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 15px rgba(123, 47, 247, 0.4);
+}
+
+/* Purple Glass Effect */
+.glass-purple {
+  background: rgba(123, 47, 247, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(123, 47, 247, 0.2);
+}
+
+/* Purple Card */
+.card-purple {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(123, 47, 247, 0.05) 50%, rgba(241, 7, 163, 0.05) 100%);
+  border: 1px solid rgba(123, 47, 247, 0.2);
+  transition: all 0.3s ease;
+}
+
+.card-purple:hover {
+  border-color: rgba(123, 47, 247, 0.4);
+  box-shadow: 0 8px 24px rgba(123, 47, 247, 0.15);
+  transform: translateY(-4px);
+}
+
+/* Purple Text Gradient */
+.text-gradient-purple {
+  background: linear-gradient(135deg, #00d4ff 0%, #7b2ff7 50%, #f107a3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Purple Input Focus */
+.input-purple:focus {
+  border-color: #7b2ff7;
+  box-shadow: 0 0 0 4px rgba(123, 47, 247, 0.1);
+}
+
+/* Purple Badge */
+.badge-purple {
+  background: linear-gradient(135deg, #00d4ff 0%, #7b2ff7 50%, #f107a3 100%);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Purple Progress Bar */
+.progress-purple {
+  background: linear-gradient(90deg, #00d4ff 0%, #7b2ff7 50%, #f107a3 100%);
+  height: 8px;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+/* Purple Shimmer Effect */
+@keyframes shimmer-purple {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shimmer-purple {
+  background: linear-gradient(90deg, #00d4ff 0%, #7b2ff7 25%, #f107a3 50%, #7b2ff7 75%, #00d4ff 100%);
+  background-size: 1000px 100%;
+  animation: shimmer-purple 2s infinite;
+}
+
+/* Purple Glow Effect */
+.glow-purple {
+  box-shadow: 0 0 20px rgba(123, 47, 247, 0.5),
+              0 0 40px rgba(241, 7, 163, 0.3);
+}
+
+.glow-purple-hover:hover {
+  box-shadow: 0 0 30px rgba(123, 47, 247, 0.7),
+              0 0 60px rgba(241, 7, 163, 0.5);
+}
+
+/* Purple Animated Background */
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animated-gradient-purple {
+  background: linear-gradient(135deg, #00d4ff, #0099ff, #7b2ff7, #f107a3, #ff1744, #f107a3, #7b2ff7, #0099ff, #00d4ff);
+  background-size: 400% 400%;
+  animation: gradient-shift 15s ease infinite;
+}
+
+/* Purple Floating Animation */
+@keyframes float-purple {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-25px) rotate(5deg);
+  }
+  50% {
+    transform: translateY(-50px) rotate(-5deg);
+  }
+  75% {
+    transform: translateY(-25px) rotate(3deg);
+  }
+}
+
+.float-purple {
+  animation: float-purple 8s ease-in-out infinite;
+}
+
+/* Purple Pulse Animation */
+@keyframes pulse-purple {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(123, 47, 247, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 20px rgba(123, 47, 247, 0);
+  }
+}
+
+.pulse-purple {
+  animation: pulse-purple 2s infinite;
 }

@@ -185,8 +185,6 @@ router.get('/all', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
-
 // @route   GET /api/export/all-csv
 // @desc    Export all financial data to CSV
 // @access  Private
@@ -528,3 +526,5 @@ router.get('/comprehensive-pdf', auth, async (req, res) => {
     }
   }
 });
+
+module.exports = router;

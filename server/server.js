@@ -108,7 +108,8 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/expense-t
   retryReads: true,
 })
   .then(() => {
-    // MongoDB Connected
+    console.log('✅ MongoDB Connected Successfully');
+    console.log(`📊 Database: ${mongoose.connection.name}`);
   })
   .catch(err => {
     console.error('❌ MongoDB Connection Error:', err);
@@ -125,7 +126,7 @@ mongoose.connection.on('disconnected', () => {
 });
 
 mongoose.connection.on('reconnected', () => {
-  // MongoDB reconnected
+  console.log('✅ MongoDB Reconnected Successfully');
 });
 
 // Routes with rate limiting
@@ -205,7 +206,8 @@ process.on('SIGINT', () => {
 // Start server
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
-  // Server started
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 // Handle server errors

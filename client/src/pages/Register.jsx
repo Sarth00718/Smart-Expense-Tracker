@@ -99,7 +99,18 @@ const Register = () => {
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors)
-      toast.error('Please fix the errors in the form')
+      toast.error('Please fix the errors in the form', {
+        duration: 4000,
+        style: {
+          borderRadius: '12px',
+          background: '#fff',
+          color: '#1e293b',
+        },
+        iconTheme: {
+          primary: '#ef4444',
+          secondary: '#fff',
+        },
+      })
       return
     }
 
@@ -117,9 +128,20 @@ const Register = () => {
       })
       navigate('/dashboard')
     } catch (err) {
-      const errorMsg = err.message || 'Registration failed'
+      const errorMsg = err.response?.data?.error || err.message || 'Registration failed'
       setError(errorMsg)
-      toast.error(errorMsg)
+      toast.error(errorMsg, {
+        duration: 5000,
+        style: {
+          borderRadius: '12px',
+          background: '#fff',
+          color: '#1e293b',
+        },
+        iconTheme: {
+          primary: '#ef4444',
+          secondary: '#fff',
+        },
+      })
     } finally {
       setLoading(false)
     }
@@ -141,9 +163,20 @@ const Register = () => {
       })
       navigate('/dashboard')
     } catch (err) {
-      const errorMsg = err.message || 'Google sign-in failed'
+      const errorMsg = err.response?.data?.error || err.message || 'Google sign-in failed'
       setError(errorMsg)
-      toast.error(errorMsg)
+      toast.error(errorMsg, {
+        duration: 5000,
+        style: {
+          borderRadius: '12px',
+          background: '#fff',
+          color: '#1e293b',
+        },
+        iconTheme: {
+          primary: '#ef4444',
+          secondary: '#fff',
+        },
+      })
     } finally {
       setGoogleLoading(false)
     }
@@ -165,17 +198,40 @@ const Register = () => {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#4361ee] via-[#3a0ca3] to-[#7209b7] p-4 relative overflow-hidden">
-      {/* Enhanced Animated Background */}
+    <div className="min-h-screen flex items-center justify-center gradient-purple-blue p-4 relative overflow-hidden">
+      {/* Static Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 -left-4 w-72 h-72 bg-[#4cc9f0] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-        <div className="absolute top-0 -right-4 w-72 h-72 bg-[#f72585] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-[#7209b7] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+        {/* Cyan Blob */}
+        <div className="absolute top-0 -left-4 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-40" 
+             style={{ backgroundColor: '#00d4ff' }}></div>
         
-        {/* Floating particles */}
-        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white/30 rounded-full animate-float"></div>
-        <div className="absolute top-1/3 right-1/4 w-3 h-3 bg-white/20 rounded-full animate-float animation-delay-1000"></div>
-        <div className="absolute bottom-1/4 left-1/3 w-2 h-2 bg-white/25 rounded-full animate-float animation-delay-3000"></div>
+        {/* Magenta/Pink Blob */}
+        <div className="absolute top-0 -right-4 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-40" 
+             style={{ backgroundColor: '#f107a3' }}></div>
+        
+        {/* Purple Blob */}
+        <div className="absolute -bottom-8 left-20 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-40" 
+             style={{ backgroundColor: '#7b2ff7' }}></div>
+        
+        {/* Blue Blob */}
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-30" 
+             style={{ backgroundColor: '#0099ff' }}></div>
+        
+        {/* Red Blob */}
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full mix-blend-multiply filter blur-3xl opacity-35" 
+             style={{ backgroundColor: '#ff1744' }}></div>
+        
+        {/* Static particles */}
+        <div className="absolute top-1/4 left-1/4 w-3 h-3 rounded-full shadow-lg" 
+             style={{ backgroundColor: '#00d4ff', opacity: 0.6, boxShadow: '0 0 20px #00d4ff' }}></div>
+        <div className="absolute top-1/3 right-1/4 w-4 h-4 rounded-full shadow-lg" 
+             style={{ backgroundColor: '#f107a3', opacity: 0.6, boxShadow: '0 0 20px #f107a3' }}></div>
+        <div className="absolute bottom-1/4 left-1/3 w-2 h-2 rounded-full shadow-lg" 
+             style={{ backgroundColor: '#7b2ff7', opacity: 0.6, boxShadow: '0 0 20px #7b2ff7' }}></div>
+        <div className="absolute top-1/2 right-1/3 w-3 h-3 rounded-full shadow-lg" 
+             style={{ backgroundColor: '#0099ff', opacity: 0.6, boxShadow: '0 0 20px #0099ff' }}></div>
+        <div className="absolute bottom-1/3 right-1/2 w-2 h-2 rounded-full shadow-lg" 
+             style={{ backgroundColor: '#ff1744', opacity: 0.6, boxShadow: '0 0 20px #ff1744' }}></div>
       </div>
 
       <div className={`w-full max-w-5xl mx-auto grid lg:grid-cols-2 gap-6 items-center relative z-10 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
@@ -193,7 +249,7 @@ const Register = () => {
           {/* Enhanced Glass Card */}
           <div className="relative bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl p-6 lg:p-8 border border-white/30 overflow-hidden">
             {/* Decorative corner gradient */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#4361ee]/10 to-transparent rounded-bl-full"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-transparent rounded-bl-full"></div>
             
             <div className="relative z-10">
               {/* Header */}
@@ -412,9 +468,9 @@ const Register = () => {
                 <button
                   type="submit"
                   disabled={loading || Object.keys(fieldErrors).some(key => fieldErrors[key])}
-                  className="group relative w-full py-4 bg-gradient-to-r from-[#4361ee] via-[#3a0ca3] to-[#7209b7] text-white font-bold rounded-xl hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-[#4361ee]/50 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
+                  className="group relative w-full py-4 btn-purple font-bold rounded-xl focus:outline-none focus:ring-4 focus:ring-purple-500/50 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#7209b7] via-[#3a0ca3] to-[#4361ee] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="relative flex items-center justify-center gap-2">
                     {loading ? (
                       <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -466,7 +522,7 @@ const Register = () => {
                 <p className="text-sm text-gray-600 mb-2">Already have an account?</p>
                 <Link
                   to="/login"
-                  className="inline-flex items-center gap-2 text-[#4361ee] hover:text-[#3a0ca3] font-bold transition-all group text-lg"
+                  className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 font-bold transition-all group text-lg"
                 >
                   <span>Sign in to your account</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

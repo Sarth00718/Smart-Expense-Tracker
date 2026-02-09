@@ -66,9 +66,12 @@ export const authService = {
       }
       return response.data
     } catch (backendError) {
-      // Fallback to Firebase silently
+      // If backend returns 401 (invalid credentials), throw immediately without Firebase fallback
+      if (backendError.response?.status === 401) {
+        throw backendError
+      }
       
-      // Fallback to Firebase
+      // For other errors, fallback to Firebase
       try {
         const result = await firebaseAuth.login(email, password)
         
