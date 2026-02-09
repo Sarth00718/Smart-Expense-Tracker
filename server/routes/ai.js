@@ -324,6 +324,8 @@ function buildFinancialContext(expenses, incomes, budgets, goals, queryData) {
 // @access  Private
 router.get('/suggestions', auth, async (req, res) => {
   try {
+    const { type = 'general' } = req.query;
+    
     const expenses = await Expense.find({ userId: req.userId })
       .sort({ date: -1 })
       .limit(50);
@@ -338,7 +340,7 @@ router.get('/suggestions', auth, async (req, res) => {
 
     if (!apiKey) {
       return res.json({
-        suggestions: getMockSuggestions(expenses)
+        suggestions: getMockSuggestions(expenses, type)
       });
     }
 
@@ -358,7 +360,48 @@ router.get('/suggestions', auth, async (req, res) => {
       .map(([cat, amt]) => `${cat}: ₹${amt.toFixed(2)}`)
       .join(', ');
 
-    const prompt = `You are a personal finance expert. Analyze these expenses and provide saving tips.
+    // Different prompts based on type
+    let prompt = '';
+    let systemMessage = 'You are a helpful personal finance advisor.';
+
+    if (type === 'budget') {
+      prompt = `You are a budget planning expert. Analyze these expenses and provide budget tips.
+
+EXPENSE DATA:
+Total: ₹${total.toFixed(2)}
+Category Breakdown: ${categoryBreakdown}
+
+Recent Transactions:
+${expenseList}
+
+Provide 7 actionable budget tips based on this data. Focus on:
+- Setting realistic category budgets
+- Identifying areas to reduce spending
+- Budget allocation strategies
+- Tracking methods
+
+Keep response under 200 words, use bullet points with ** for emphasis.`;
+      systemMessage = 'You are a budget planning expert who provides practical, data-driven advice.';
+    } else if (type === 'forecast') {
+      prompt = `You are a financial forecasting expert. Analyze these expenses and predict future spending.
+
+EXPENSE DATA:
+Total: ₹${total.toFixed(2)}
+Category Breakdown: ${categoryBreakdown}
+
+Recent Transactions:
+${expenseList}
+
+Provide spending forecast and predictions:
+- Predict next month's spending by category
+- Identify spending trends (increasing/decreasing)
+- Warn about potential overspending
+- Suggest preventive measures
+
+Keep response under 200 words, use bullet points with ** for emphasis.`;
+      systemMessage = 'You are a financial forecasting expert who analyzes spending patterns.';
+    } else {
+      prompt = `You are a personal finance expert. Analyze these expenses and provide saving tips.
 
 Explain in short bullet point manner, 5-7 points only.
 Don't provide general saving suggestions, provide suggestions from data.
@@ -372,34 +415,28 @@ Recent Transactions:
 ${expenseList}
 ---
 Provide specific, actionable advice. Keep response under 150 words, practical, and friendly.`;
+    }
 
-    // Call Groq API
-    const response = await axios.post(
-      'https://api.groq.com/openai/v1/chat/completions',
-      {
-        model: 'llama-3.1-8b-instant',
-        messages: [
-          { role: 'system', content: 'You are a helpful personal finance advisor.' },
-          { role: 'user', content: prompt }
-        ],
-        max_tokens: 500,
-        temperature: 0.7
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        timeout: 30000
-      }
-    );
+    // Call Groq API with retry logic
+    try {
+      const aiText = await callGroqWithRetry(
+        prompt,
+        systemMessage,
+        { maxTokens: 500, temperature: 0.7 }
+      );
 
-    const aiText = response.data.choices[0].message.content;
-    const score = calculateSpendingScore(expenses);
+      const score = calculateSpendingScore(expenses);
 
-    res.json({
-      suggestions: `🤖 **AI Financial Advisor**:\n\n${aiText}\n\n📊 **Financial Health Score: ${score}/100**`
-    });
+      res.json({
+        suggestions: `🤖 **AI Financial Advisor**:\n\n${aiText}\n\n📊 **Financial Health Score: ${score}/100**`
+      });
+    } catch (llmError) {
+      console.error('LLM error:', llmError.message);
+      // Fallback to mock suggestions
+      res.json({
+        suggestions: getMockSuggestions(expenses, type)
+      });
+    }
 
   } catch (error) {
     console.error('AI suggestions error:', error.message);
@@ -407,13 +444,13 @@ Provide specific, actionable advice. Keep response under 150 words, practical, a
     // Fallback to mock suggestions
     const expenses = await Expense.find({ userId: req.userId }).limit(50);
     res.json({
-      suggestions: getMockSuggestions(expenses)
+      suggestions: getMockSuggestions(expenses, 'general')
     });
   }
 });
 
 // Mock suggestions fallback
-function getMockSuggestions(expenses) {
+function getMockSuggestions(expenses, type = 'general') {
   if (expenses.length === 0) {
     return 'No expenses found. Start tracking to get insights!';
   }
@@ -425,30 +462,88 @@ function getMockSuggestions(expenses) {
     categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
   });
 
-  const highestCategory = Object.entries(categoryTotals)
-    .sort((a, b) => b[1] - a[1])[0];
-
+  const sortedCategories = Object.entries(categoryTotals)
+    .sort((a, b) => b[1] - a[1]);
+  
+  const highestCategory = sortedCategories[0];
   const score = calculateSpendingScore(expenses);
 
-  return `🤖 **AI Financial Advisor**:
+  if (type === 'budget') {
+    return `🤖 **AI Financial Advisor**:
 
-📊 **Financial Health Score: ${score}/100**
+Here are 7 actionable budget tips based on your expense data:
 
-## SPENDING ANALYSIS
-Total: ₹${total.toFixed(2)} across ${expenses.length} transactions.
-Highest category: '${highestCategory[0]}' at ₹${highestCategory[1].toFixed(2)}
+* **Set Category Budgets**: Your top spending is ${highestCategory[0]} (₹${highestCategory[1].toFixed(2)}). Set a monthly limit of ₹${(highestCategory[1] * 0.8).toFixed(2)} to reduce by 20%.
 
-## TOP RECOMMENDATIONS
-1. **Review ${highestCategory[0]} Expenses**: Optimize ₹${highestCategory[1].toFixed(2)} spending
-2. **Weekly Expense Tracking**: Review spending every Sunday
-3. **30-Day Rule**: Wait 30 days for non-essential purchases over ₹500
-4. **Automate Savings**: Set up automatic transfers
-5. **Use Budget Planning**: Set category budgets in the app
+* **Track Daily Expenses**: You've spent ₹${total.toFixed(2)} across ${expenses.length} transactions. Track expenses daily to stay aware of your spending patterns.
 
-## NEXT STEPS
-• Set up budgets for top 3 categories
-• Create a savings goal
-• Track daily expenses consistently`;
+* **Use the 50/30/20 Rule**: Allocate 50% for needs, 30% for wants, and 20% for savings. Based on your spending, aim to save at least ₹${(total * 0.2).toFixed(2)} monthly.
+
+* **Reduce ${highestCategory[0]} Spending**: Consider walking, using public transport, or carpooling instead. Try packing lunch or cooking at home more often.
+
+* **Set Budget Alerts**: Enable notifications when you reach 80% of your category budgets to avoid overspending.
+
+* **Review Weekly**: Every Sunday, review your spending for the week and adjust your budget for the upcoming week.
+
+* **Emergency Fund First**: Before investing, build an emergency fund of 3-6 months of expenses (₹${(total * 4).toFixed(2)} based on current spending).
+
+📊 **Financial Health Score: ${score}/100**`;
+  } else if (type === 'forecast') {
+    const avgDaily = total / Math.max(1, expenses.length / 30);
+    const projectedMonthly = avgDaily * 30;
+    
+    return `🤖 **AI Financial Advisor**:
+
+Here's your spending forecast based on current patterns:
+
+* **Next Month Projection**: Based on your current spending rate of ₹${avgDaily.toFixed(2)}/day, you're projected to spend ₹${projectedMonthly.toFixed(2)} next month.
+
+* **${highestCategory[0]} Trend**: This is your highest category at ₹${highestCategory[1].toFixed(2)}. If this continues, expect ₹${(highestCategory[1] * 1.1).toFixed(2)} next month (10% increase typical).
+
+${sortedCategories.slice(1, 3).map(([cat, amt]) => 
+  `* **${cat} Forecast**: Current spending ₹${amt.toFixed(2)}. Projected: ₹${(amt * 1.05).toFixed(2)} (5% increase).`
+).join('\n\n')}
+
+* **Overspending Risk**: ${projectedMonthly > total * 1.2 ? '⚠️ HIGH - Your spending is accelerating. Take action now!' : projectedMonthly > total ? '⚠️ MODERATE - Spending is increasing slightly.' : '✅ LOW - Spending is stable or decreasing.'}
+
+* **Preventive Measures**: 
+  - Set a daily spending limit of ₹${(projectedMonthly * 0.8 / 30).toFixed(2)} to reduce next month's total by 20%
+  - Review ${highestCategory[0]} expenses and cut unnecessary items
+  - Use cash for discretionary spending to increase awareness
+
+* **Savings Opportunity**: If you reduce spending by 15%, you could save ₹${(projectedMonthly * 0.15).toFixed(2)} next month.
+
+📊 **Financial Health Score: ${score}/100**`;
+  } else {
+    return `🤖 **AI Financial Advisor**:
+
+Here are 7 actionable saving tips based on the expense data:
+
+* **Cut down on ${highestCategory[0]}**: You've spent ₹${highestCategory[1].toFixed(2)} in ${expenses.length} transactions. Consider ${
+  highestCategory[0] === 'Food' ? 'walking, using public transport, or carpooling instead' :
+  highestCategory[0] === 'Travel' ? 'booking in advance or exploring cheaper travel options for your next trip' :
+  highestCategory[0] === 'Shopping' ? 'setting a budget and prioritizing essential purchases' :
+  highestCategory[0] === 'Entertainment' ? 'finding free or low-cost entertainment alternatives' :
+  'reviewing and reducing unnecessary expenses'
+}.
+
+${sortedCategories.slice(1, 3).map(([cat, amt]) => 
+  `* **Opt for cheaper ${cat.toLowerCase()} options**: Your ${cat.toLowerCase()} expenses are ₹${amt.toFixed(2)}. Try ${
+    cat === 'Food' ? 'making your own meals or opting for local street food options' :
+    cat === 'Shopping' ? 'waiting for sales or using cashback apps' :
+    cat === 'Bills' ? 'reviewing subscriptions and canceling unused services' :
+    'finding more cost-effective alternatives'
+  }.`
+).join('\n\n')}
+
+* **Avoid impulse buys**: You've spent a lot on ${sortedCategories.map(([cat]) => cat.toLowerCase()).slice(0, 2).join(' and ')}. Try to make a shopping list before heading out.
+
+* **Use cashback apps**: You've spent a lot on various purchases. Consider using cashback apps like Paytm or Freecharge to earn rewards on your transactions.
+
+* **Track expenses daily**: Review your spending every day to stay aware and make better financial decisions.
+
+📊 **Financial Health Score: ${score}/100**`;
+  }
 }
 
 module.exports = router;

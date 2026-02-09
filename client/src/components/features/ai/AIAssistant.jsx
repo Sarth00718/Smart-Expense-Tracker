@@ -6,13 +6,18 @@ import toast from 'react-hot-toast'
 import api from '../../../services/api'
 
 const AIAssistant = () => {
-  const [suggestions, setSuggestions] = useState('')
   const [loading, setLoading] = useState(false)
   const [chatMessages, setChatMessages] = useState([])
   const [userInput, setUserInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [isVoiceSupported, setIsVoiceSupported] = useState(false)
+  const [tabContent, setTabContent] = useState({
+    general: '',
+    budget: '',
+    forecast: ''
+  })
+  const [currentType, setCurrentType] = useState('general')
   const chatEndRef = useRef(null)
   const recognitionRef = useRef(null)
 
@@ -67,19 +72,33 @@ const AIAssistant = () => {
   const loadSuggestions = async (type = 'general') => {
     try {
       setLoading(true)
-      const response = await analyticsService.getAISuggestions()
-      setSuggestions(response.data.suggestions || 'No suggestions available')
+      setCurrentType(type)
+      const response = await analyticsService.getAISuggestions(type)
+      const content = response.data.suggestions || 'No suggestions available'
+      
+      // Update specific tab content based on type
+      setTabContent(prev => ({
+        ...prev,
+        [type]: content
+      }))
+      
+      return content
     } catch (error) {
       console.error('Error loading suggestions:', error)
-      setSuggestions('Unable to load AI suggestions. Please try again later.')
+      const errorMsg = 'Unable to load AI suggestions. Please try again later.'
+      setTabContent(prev => ({
+        ...prev,
+        [type]: errorMsg
+      }))
+      return errorMsg
     } finally {
       setLoading(false)
     }
   }
 
-  const handleRefresh = () => {
-    toast.promise(
-      loadSuggestions('general'),
+  const handleRefresh = async () => {
+    await toast.promise(
+      loadSuggestions(currentType),
       {
         loading: 'Generating new suggestions...',
         success: 'Suggestions refreshed!',
@@ -88,26 +107,12 @@ const AIAssistant = () => {
     )
   }
 
-  const handleBudgetTips = () => {
-    toast.promise(
-      loadSuggestions('budget'),
-      {
-        loading: 'Getting budget tips...',
-        success: 'Budget tips loaded!',
-        error: 'Failed to load budget tips'
-      }
-    )
+  const handleBudgetTips = async () => {
+    return await loadSuggestions('budget')
   }
 
-  const handleSpendingForecast = () => {
-    toast.promise(
-      loadSuggestions('forecast'),
-      {
-        loading: 'Generating spending forecast...',
-        success: 'Forecast generated!',
-        error: 'Failed to generate forecast'
-      }
-    )
+  const handleSpendingForecast = async () => {
+    return await loadSuggestions('forecast')
   }
 
   const handleChatSubmit = async (e) => {
@@ -187,17 +192,17 @@ const AIAssistant = () => {
         )
       }
       // Check if it's a bullet point
-      if (line.trim().startsWith('•') || line.trim().startsWith('-')) {
+      if (line.trim().startsWith('•') || line.trim().startsWith('-') || line.trim().startsWith('*')) {
         return (
-          <li key={index} className="ml-4 text-gray-700 mb-1">
-            {line.replace(/^[•-]\s*/, '')}
+          <li key={index} className="ml-4 text-gray-700 mb-2 leading-relaxed">
+            {line.replace(/^[•\-*]\s*/, '')}
           </li>
         )
       }
       // Check if it's a numbered point
       if (/^\d+\./.test(line.trim())) {
         return (
-          <li key={index} className="ml-4 text-gray-700 mb-1">
+          <li key={index} className="ml-4 text-gray-700 mb-2 leading-relaxed">
             {line.replace(/^\d+\.\s*/, '')}
           </li>
         )
@@ -205,7 +210,7 @@ const AIAssistant = () => {
       // Regular text
       if (line.trim()) {
         return (
-          <p key={index} className="text-gray-700 mb-2">
+          <p key={index} className="text-gray-700 mb-2 leading-relaxed">
             {line}
           </p>
         )
@@ -348,89 +353,223 @@ const AIAssistant = () => {
         </div>
       </Card>
 
-      {/* AI Suggestions */}
-      <Card 
-        title="Smart Insights" 
-        icon={Lightbulb}
-        subtitle="AI-powered financial recommendations"
-        action={
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleBudgetTips}
-              disabled={loading}
-              icon={Lightbulb}
-            >
-              Budget Tips
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSpendingForecast}
-              disabled={loading}
-              icon={Sparkles}
-            >
-              Forecast
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={loading}
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            </Button>
+      {/* Smart Insights with Tabs */}
+      <SmartInsightsCard 
+        tabContent={tabContent}
+        loading={loading}
+        currentType={currentType}
+        onRefresh={handleRefresh}
+        onBudgetTips={handleBudgetTips}
+        onForecast={handleSpendingForecast}
+        onTabChange={setCurrentType}
+      />
+    </div>
+  )
+}
+
+// Smart Insights Card Component with Tabs
+const SmartInsightsCard = ({ tabContent, loading, currentType, onRefresh, onBudgetTips, onForecast, onTabChange }) => {
+  const [activeTab, setActiveTab] = useState('general')
+  const [tabLoading, setTabLoading] = useState({
+    general: false,
+    budget: false,
+    forecast: false
+  })
+
+  const handleTabClick = async (tab) => {
+    setActiveTab(tab)
+    onTabChange(tab)
+    
+    // Load content if not already loaded
+    if (tab === 'budget' && !tabContent.budget) {
+      setTabLoading(prev => ({ ...prev, budget: true }))
+      await onBudgetTips()
+      setTabLoading(prev => ({ ...prev, budget: false }))
+    } else if (tab === 'forecast' && !tabContent.forecast) {
+      setTabLoading(prev => ({ ...prev, forecast: true }))
+      await onForecast()
+      setTabLoading(prev => ({ ...prev, forecast: false }))
+    }
+  }
+
+  const formatContent = (text) => {
+    if (!text) return null
+    
+    const lines = text.split('\n')
+    return lines.map((line, index) => {
+      // Headers
+      if (line.startsWith('##')) {
+        return (
+          <h3 key={index} className="text-lg font-bold text-gray-800 mt-4 mb-2">
+            {line.replace('##', '').trim()}
+          </h3>
+        )
+      }
+      // Bullet points
+      if (line.trim().startsWith('•') || line.trim().startsWith('-') || line.trim().startsWith('*')) {
+        const content = line.replace(/^[•\-*]\s*/, '').trim()
+        return (
+          <div key={index} className="flex items-start gap-3 mb-3 p-3 bg-white rounded-lg border border-gray-100 hover:border-blue-200 transition-colors">
+            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+            <p className="text-gray-700 leading-relaxed flex-1">{content}</p>
           </div>
-        }
-      >
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-16">
-            <div className="spinner mb-4"></div>
-            <p className="text-gray-500">Analyzing your expenses...</p>
+        )
+      }
+      // Numbered points
+      if (/^\d+\./.test(line.trim())) {
+        const content = line.replace(/^\d+\.\s*/, '').trim()
+        return (
+          <div key={index} className="flex items-start gap-3 mb-3 p-3 bg-white rounded-lg border border-gray-100 hover:border-blue-200 transition-colors">
+            <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
+              {line.match(/^\d+/)[0]}
+            </div>
+            <p className="text-gray-700 leading-relaxed flex-1">{content}</p>
           </div>
-        ) : (
-          <div className="prose max-w-none">
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border border-blue-200">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Lightbulb className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex-1">
-                  {formatSuggestions(suggestions)}
-                </div>
+        )
+      }
+      // Regular text
+      if (line.trim()) {
+        return (
+          <p key={index} className="text-gray-700 mb-3 leading-relaxed">
+            {line}
+          </p>
+        )
+      }
+      return null
+    })
+  }
+
+  const tabs = [
+    { id: 'general', label: 'Smart Insights', icon: Lightbulb },
+    { id: 'budget', label: 'Budget Tips', icon: Lightbulb },
+    { id: 'forecast', label: 'Forecast', icon: Sparkles }
+  ]
+
+  return (
+    <Card>
+      {/* Header with Tabs */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-200">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+            <Lightbulb className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Smart Insights</h2>
+            <p className="text-sm text-gray-600">AI-powered financial recommendations</p>
+          </div>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onRefresh}
+          disabled={loading}
+          className="self-start sm:self-auto"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+        </Button>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+        {tabs.map((tab) => {
+          const Icon = tab.icon
+          return (
+            <button
+              key={tab.id}
+              onClick={() => handleTabClick(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {tab.label}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Content */}
+      {loading || tabLoading[activeTab] ? (
+        <div className="flex flex-col items-center justify-center py-16">
+          <div className="spinner mb-4"></div>
+          <p className="text-gray-500">
+            {activeTab === 'budget' ? 'Generating budget tips...' :
+             activeTab === 'forecast' ? 'Analyzing spending patterns...' :
+             'Analyzing your expenses...'}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {/* Main Content Area */}
+          <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6 rounded-xl border-2 border-blue-200">
+            {activeTab === 'general' && (
+              <div className="space-y-2">
+                {tabContent.general ? (
+                  formatContent(tabContent.general)
+                ) : (
+                  <div className="text-center py-8">
+                    <Lightbulb className="w-12 h-12 text-blue-400 mx-auto mb-3" />
+                    <p className="text-gray-600">Loading smart insights...</p>
+                  </div>
+                )}
+              </div>
+            )}
+            {activeTab === 'budget' && (
+              <div className="space-y-2">
+                {tabContent.budget ? (
+                  formatContent(tabContent.budget)
+                ) : (
+                  <div className="text-center py-8">
+                    <Lightbulb className="w-12 h-12 text-blue-400 mx-auto mb-3" />
+                    <p className="text-gray-600">Click this tab to load personalized budget recommendations</p>
+                  </div>
+                )}
+              </div>
+            )}
+            {activeTab === 'forecast' && (
+              <div className="space-y-2">
+                {tabContent.forecast ? (
+                  formatContent(tabContent.forecast)
+                ) : (
+                  <div className="text-center py-8">
+                    <Sparkles className="w-12 h-12 text-purple-400 mx-auto mb-3" />
+                    <p className="text-gray-600">Click this tab to generate spending predictions</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Pro Tips Section */}
+          <div className="p-5 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-xl">
+            <h4 className="font-bold text-yellow-800 mb-3 flex items-center gap-2">
+              <Lightbulb className="w-5 h-5" />
+              Pro Tips
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex items-start gap-2">
+                <span className="text-yellow-600 mt-0.5">💡</span>
+                <span className="text-sm text-yellow-700">Track expenses daily for better insights</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-yellow-600 mt-0.5">💰</span>
+                <span className="text-sm text-yellow-700">Set realistic budgets for each category</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-yellow-600 mt-0.5">📊</span>
+                <span className="text-sm text-yellow-700">Review your spending patterns weekly</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-yellow-600 mt-0.5">📸</span>
+                <span className="text-sm text-yellow-700">Use the receipt scanner for quick entry</span>
               </div>
             </div>
           </div>
-        )}
-
-        {/* Tips */}
-        <div className="mt-6 p-5 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-xl">
-          <h4 className="font-bold text-yellow-800 mb-3 flex items-center gap-2">
-            <Lightbulb className="w-5 h-5" />
-            Pro Tips
-          </h4>
-          <ul className="text-sm text-yellow-700 space-y-2">
-            <li className="flex items-start gap-2">
-              <span className="text-yellow-600 mt-0.5">•</span>
-              <span>Track expenses daily for better insights</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-yellow-600 mt-0.5">•</span>
-              <span>Set realistic budgets for each category</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-yellow-600 mt-0.5">•</span>
-              <span>Review your spending patterns weekly</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-yellow-600 mt-0.5">•</span>
-              <span>Use the receipt scanner for quick entry</span>
-            </li>
-          </ul>
         </div>
-      </Card>
-    </div>
+      )}
+    </Card>
   )
 }
 

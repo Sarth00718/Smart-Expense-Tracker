@@ -6,6 +6,6 @@ export const analyticsService = {
   getPatterns: () => api.get('/analytics/patterns'),
   getPredictions: (months) => api.get('/analytics/predictions', { params: { months } }),
   getScore: () => api.get('/analytics/score'),
-  getAISuggestions: () => api.get('/ai/suggestions'),
+  getAISuggestions: (type = 'general') => api.get('/ai/suggestions', { params: { type } }),
   getAchievements: () => api.get('/achievements')
 }
