@@ -5,21 +5,50 @@ const Expense = require('../models/Expense');
 const Income = require('../models/Income');
 const Budget = require('../models/Budget');
 const Goal = require('../models/Goal');
+const ChatHistory = require('../models/ChatHistory');
 const auth = require('../middleware/auth');
 const { calculateSpendingScore } = require('../utils/analytics');
 const { parseFinanceQuery, analyzeAffordability } = require('../utils/nlp');
 const { callGroqWithRetry } = require('../utils/llmRetry');
+const { callAIWithRetry } = require('../utils/aiService');
+const { v4: uuidv4 } = require('uuid');
 
 // @route   POST /api/ai/chat
-// @desc    Conversational AI Finance Bot
+// @desc    Conversational AI Finance Bot with History
 // @access  Private
 router.post('/chat', auth, async (req, res) => {
   try {
-    const { message } = req.body;
+    const { message, conversationId } = req.body;
     
     if (!message || !message.trim()) {
       return res.status(400).json({ error: 'Message is required' });
     }
+
+    // Get or create conversation
+    let conversation;
+    if (conversationId) {
+      conversation = await ChatHistory.findOne({ 
+        userId: req.userId, 
+        conversationId 
+      });
+    }
+    
+    if (!conversation) {
+      // Create new conversation
+      conversation = new ChatHistory({
+        userId: req.userId,
+        conversationId: conversationId || uuidv4(),
+        title: message.substring(0, 50) + (message.length > 50 ? '...' : ''),
+        messages: []
+      });
+    }
+
+    // Add user message to history
+    conversation.messages.push({
+      role: 'user',
+      content: message.trim(),
+      timestamp: new Date()
+    });
 
     // Fetch user's financial data
     const expenses = await Expense.find({ userId: req.userId }).sort({ date: -1 });
@@ -32,62 +61,163 @@ router.post('/chat', auth, async (req, res) => {
 
     // Check for specific query patterns
     const lowerMessage = message.toLowerCase();
+    let responseText;
+    let apiUsed = 'fallback';
     
     // Handle "Where did I overspend" queries
     if (lowerMessage.includes('overspend') || lowerMessage.includes('over spend')) {
-      const response = analyzeOverspending(expenses, budgets);
-      return res.json({ response });
+      responseText = analyzeOverspending(expenses, budgets);
     }
-
     // Handle budget plan suggestions
-    if ((lowerMessage.includes('suggest') || lowerMessage.includes('recommend') || lowerMessage.includes('create')) && 
+    else if ((lowerMessage.includes('suggest') || lowerMessage.includes('recommend') || lowerMessage.includes('create')) && 
         (lowerMessage.includes('budget') || lowerMessage.includes('plan'))) {
       const salaryMatch = message.match(/₹?\s*(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:rupees?|rs\.?|inr)?/i);
       const salary = salaryMatch ? parseFloat(salaryMatch[1].replace(/,/g, '')) : null;
       
-      const response = suggestBudgetPlan(salary, expenses, budgets);
-      return res.json({ response });
+      responseText = suggestBudgetPlan(salary, expenses, budgets);
     }
-
     // Check if we can answer with rule-based logic
-    if (queryData.canAnswerDirectly) {
-      return res.json({ response: queryData.directAnswer });
+    else if (queryData.canAnswerDirectly) {
+      responseText = queryData.directAnswer;
     }
-
-    // Use LLM for complex queries with retry logic
-    try {
-      // Prepare context for LLM
-      const context = buildFinancialContext(expenses, incomes, budgets, goals, queryData);
-      
-      const prompt = `You are a helpful personal finance assistant. Answer the user's question based on their financial data.
+    // Use AI for complex queries
+    else {
+      try {
+        // Prepare context for AI including conversation history
+        const context = buildFinancialContext(expenses, incomes, budgets, goals, queryData);
+        
+        // Include recent conversation history for context
+        const recentMessages = conversation.messages.slice(-6, -1); // Last 3 exchanges (excluding current)
+        const conversationContext = recentMessages.length > 0 
+          ? '\n\nRECENT CONVERSATION:\n' + recentMessages.map(msg => 
+              `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
+            ).join('\n')
+          : '';
+        
+        const prompt = `You are a helpful personal finance assistant. Answer the user's question based on their financial data and conversation history.
 
 USER QUESTION: "${message}"
 
 FINANCIAL DATA:
-${context}
+${context}${conversationContext}
 
-Provide a clear, concise, and helpful answer. Use ₹ for currency. Be friendly and actionable.`;
+Provide a clear, concise, and helpful answer. Use ₹ for currency. Be friendly and actionable. If referring to previous conversation, acknowledge it naturally.`;
 
-      const aiResponse = await callGroqWithRetry(
-        prompt,
-        'You are a helpful personal finance assistant. Provide clear, concise answers with specific numbers and actionable advice.',
-        { maxTokens: 400, temperature: 0.7 }
-      );
+        const aiResult = await callAIWithRetry(
+          prompt,
+          'You are a helpful personal finance assistant. Provide clear, concise answers with specific numbers and actionable advice.',
+          { maxTokens: 400, temperature: 0.7 }
+        );
 
-      res.json({ response: aiResponse });
-    } catch (llmError) {
-      // Fallback to rule-based response
-      console.error('LLM error:', llmError.message);
-      return res.json({ 
-        response: queryData.fallbackAnswer || 'I\'m having trouble processing your request right now. Please try asking about specific expenses, budgets, or financial goals.' 
-      });
+        responseText = aiResult.text;
+        apiUsed = aiResult.api;
+      } catch (llmError) {
+        // Fallback to rule-based response
+        console.error('AI error:', llmError.message);
+        responseText = queryData.fallbackAnswer || 'I\'m having trouble processing your request right now. Please try asking about specific expenses, budgets, or financial goals.';
+      }
     }
+
+    // Add assistant response to history
+    conversation.messages.push({
+      role: 'assistant',
+      content: responseText,
+      timestamp: new Date(),
+      apiUsed
+    });
+
+    // Save conversation
+    await conversation.save();
+
+    res.json({ 
+      response: responseText,
+      conversationId: conversation.conversationId,
+      apiUsed
+    });
 
   } catch (error) {
     console.error('Chat error:', error.message);
     res.json({ 
       response: '❌ Sorry, I encountered an error processing your request. Please try again or rephrase your question.' 
     });
+  }
+});
+
+// @route   GET /api/ai/conversations
+// @desc    Get user's conversation history
+// @access  Private
+router.get('/conversations', auth, async (req, res) => {
+  try {
+    const conversations = await ChatHistory.find({ 
+      userId: req.userId,
+      isActive: true
+    })
+    .select('conversationId title lastMessageAt messages')
+    .sort({ lastMessageAt: -1 })
+    .limit(50);
+
+    res.json({ conversations });
+  } catch (error) {
+    console.error('Get conversations error:', error);
+    res.status(500).json({ error: 'Failed to fetch conversations' });
+  }
+});
+
+// @route   GET /api/ai/conversations/:conversationId
+// @desc    Get specific conversation
+// @access  Private
+router.get('/conversations/:conversationId', auth, async (req, res) => {
+  try {
+    const conversation = await ChatHistory.findOne({
+      userId: req.userId,
+      conversationId: req.params.conversationId
+    });
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+
+    res.json({ conversation });
+  } catch (error) {
+    console.error('Get conversation error:', error);
+    res.status(500).json({ error: 'Failed to fetch conversation' });
+  }
+});
+
+// @route   DELETE /api/ai/conversations/:conversationId
+// @desc    Delete conversation
+// @access  Private
+router.delete('/conversations/:conversationId', auth, async (req, res) => {
+  try {
+    const conversation = await ChatHistory.findOne({
+      userId: req.userId,
+      conversationId: req.params.conversationId
+    });
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+
+    conversation.isActive = false;
+    await conversation.save();
+
+    res.json({ message: 'Conversation deleted successfully' });
+  } catch (error) {
+    console.error('Delete conversation error:', error);
+    res.status(500).json({ error: 'Failed to delete conversation' });
+  }
+});
+
+// @route   POST /api/ai/conversations/new
+// @desc    Start new conversation
+// @access  Private
+router.post('/conversations/new', auth, async (req, res) => {
+  try {
+    const conversationId = uuidv4();
+    res.json({ conversationId });
+  } catch (error) {
+    console.error('New conversation error:', error);
+    res.status(500).json({ error: 'Failed to create conversation' });
   }
 });
 
@@ -417,9 +547,9 @@ ${expenseList}
 Provide specific, actionable advice. Keep response under 150 words, practical, and friendly.`;
     }
 
-    // Call Groq API with retry logic
+    // Call AI with retry logic (Gemini primary, Groq fallback)
     try {
-      const aiText = await callGroqWithRetry(
+      const aiResult = await callAIWithRetry(
         prompt,
         systemMessage,
         { maxTokens: 500, temperature: 0.7 }
@@ -428,10 +558,10 @@ Provide specific, actionable advice. Keep response under 150 words, practical, a
       const score = calculateSpendingScore(expenses);
 
       res.json({
-        suggestions: `🤖 **AI Financial Advisor**:\n\n${aiText}\n\n📊 **Financial Health Score: ${score}/100**`
+        suggestions: `🤖 **AI Financial Advisor** (${aiResult.api}):\n\n${aiResult.text}\n\n📊 **Financial Health Score: ${score}/100**`
       });
     } catch (llmError) {
-      console.error('LLM error:', llmError.message);
+      console.error('AI error:', llmError.message);
       // Fallback to mock suggestions
       res.json({
         suggestions: getMockSuggestions(expenses, type)
