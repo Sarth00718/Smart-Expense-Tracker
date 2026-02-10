@@ -226,9 +226,13 @@ function parseFinanceQuery(query, expenses, incomes, budgets, goals) {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth();
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+  const currentMonthName = monthNames[currentMonth];
   
   const startOfMonth = new Date(currentYear, currentMonth, 1);
   const startOfWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   
   const lastMonthIndex = currentMonth - 1;
   const lastMonthYear = lastMonthIndex < 0 ? currentYear - 1 : currentYear;
@@ -249,7 +253,9 @@ function parseFinanceQuery(query, expenses, incomes, budgets, goals) {
 
   const spendingMatch = lowerQuery.match(/how much.*spend.*on\s+(\w+)/i) || 
                         lowerQuery.match(/(\w+)\s+spending/i) ||
-                        lowerQuery.match(/spent.*on\s+(\w+)/i);
+                        lowerQuery.match(/(\w+)\s+expense/i) ||
+                        lowerQuery.match(/spent.*on\s+(\w+)/i) ||
+                        lowerQuery.match(/current\s+(\w+)\s+expense/i);
   
   if (spendingMatch) {
     const categoryQuery = spendingMatch[1].toLowerCase();
@@ -270,25 +276,37 @@ function parseFinanceQuery(query, expenses, incomes, budgets, goals) {
     if (category) {
       let filteredExpenses = expenses.filter(exp => exp.category === category);
       let timePeriod = 'total';
+      let timeDescription = 'all time';
       
-      if (lowerQuery.includes('last month')) {
+      // Check for time period in query
+      if (lowerQuery.includes('today')) {
+        filteredExpenses = filteredExpenses.filter(exp => {
+          const expDate = new Date(exp.date);
+          return expDate >= startOfToday;
+        });
+        timePeriod = 'today';
+        timeDescription = 'today';
+      } else if (lowerQuery.includes('last month')) {
         filteredExpenses = filteredExpenses.filter(exp => {
           const expDate = new Date(exp.date);
           return expDate >= startOfLastMonth && expDate <= endOfLastMonth;
         });
         timePeriod = 'last month';
-      } else if (lowerQuery.includes('this month')) {
+        timeDescription = `last month (${monthNames[lastMonthMonth]} ${lastMonthYear})`;
+      } else if (lowerQuery.includes('this month') || lowerQuery.includes('current month') || lowerQuery.includes('these month')) {
         filteredExpenses = filteredExpenses.filter(exp => {
           const expDate = new Date(exp.date);
           return expDate >= startOfMonth;
         });
         timePeriod = 'this month';
+        timeDescription = `this month (${currentMonthName} ${currentYear})`;
       } else if (lowerQuery.includes('this week') || lowerQuery.includes('last week')) {
         filteredExpenses = filteredExpenses.filter(exp => {
           const expDate = new Date(exp.date);
           return expDate >= startOfWeek;
         });
         timePeriod = 'this week';
+        timeDescription = 'this week';
       }
       
       const total = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
@@ -297,13 +315,43 @@ function parseFinanceQuery(query, expenses, incomes, budgets, goals) {
       result.canAnswerDirectly = true;
       
       if (count === 0) {
-        result.directAnswer = `📊 You haven't spent anything on ${category} ${timePeriod}.`;
+        result.directAnswer = `📊 You haven't spent anything on ${category} ${timeDescription}.`;
       } else {
-        result.directAnswer = `💰 You spent ₹${total.toFixed(2)} on ${category} ${timePeriod}.\n\n📊 That's across ${count} transaction${count !== 1 ? 's' : ''}.`;
+        result.directAnswer = `💰 **${category} Spending - ${timeDescription.charAt(0).toUpperCase() + timeDescription.slice(1)}**\n\n`;
+        result.directAnswer += `Total: ₹${total.toFixed(2)}\n`;
+        result.directAnswer += `Transactions: ${count}\n`;
         
         if (count > 0) {
           const avg = total / count;
-          result.directAnswer += `\n📈 Average: ₹${avg.toFixed(2)} per transaction.`;
+          result.directAnswer += `Average: ₹${avg.toFixed(2)} per transaction\n\n`;
+        }
+        
+        // Add budget comparison if available and it's current month
+        if (timePeriod === 'this month' && budgets.length > 0) {
+          const budget = budgets.find(b => b.category === category);
+          if (budget) {
+            const remaining = budget.monthlyBudget - total;
+            const percentUsed = ((total / budget.monthlyBudget) * 100).toFixed(1);
+            result.directAnswer += `📊 Budget Status:\n`;
+            result.directAnswer += `• Budget: ₹${budget.monthlyBudget}\n`;
+            result.directAnswer += `• Used: ${percentUsed}%\n`;
+            result.directAnswer += `• Remaining: ₹${remaining.toFixed(2)}\n`;
+            
+            if (total > budget.monthlyBudget) {
+              result.directAnswer += `\n⚠️ You're over budget by ₹${(total - budget.monthlyBudget).toFixed(2)}!`;
+            } else if (total > budget.monthlyBudget * 0.8) {
+              result.directAnswer += `\n⚠️ Warning: You've used ${percentUsed}% of your budget!`;
+            }
+          }
+        }
+        
+        // Show recent transactions
+        if (filteredExpenses.length > 0 && filteredExpenses.length <= 5) {
+          result.directAnswer += `\n📝 Transactions:\n`;
+          filteredExpenses.forEach(exp => {
+            const expDate = new Date(exp.date);
+            result.directAnswer += `• ${expDate.toLocaleDateString()}: ₹${exp.amount.toFixed(2)} - ${exp.description || 'No description'}\n`;
+          });
         }
       }
       

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Sparkles, RefreshCw, Lightbulb, Send, Bot, User, Mic, MicOff } from 'lucide-react'
+import { Sparkles, RefreshCw, Lightbulb, Send, Bot, User, Mic, MicOff, MessageSquare, Plus, Trash2, Clock } from 'lucide-react'
 import { analyticsService } from '../../../services/analyticsService'
 import { Card, Button } from '../../ui'
 import toast from 'react-hot-toast'
@@ -18,11 +18,15 @@ const AIAssistant = () => {
     forecast: ''
   })
   const [currentType, setCurrentType] = useState('general')
+  const [conversationId, setConversationId] = useState(null)
+  const [conversations, setConversations] = useState([])
+  const [showHistory, setShowHistory] = useState(false)
   const chatEndRef = useRef(null)
   const recognitionRef = useRef(null)
 
   useEffect(() => {
     loadSuggestions()
+    loadConversations()
     // Add welcome message
     setChatMessages([{
       role: 'assistant',
@@ -68,6 +72,64 @@ const AIAssistant = () => {
       }
     }
   }, [])
+
+  const loadConversations = async () => {
+    try {
+      const response = await api.get('/ai/conversations')
+      setConversations(response.data.conversations || [])
+    } catch (error) {
+      console.error('Error loading conversations:', error)
+    }
+  }
+
+  const loadConversation = async (convId) => {
+    try {
+      const response = await api.get(`/ai/conversations/${convId}`)
+      const conv = response.data.conversation
+      
+      setConversationId(conv.conversationId)
+      setChatMessages(conv.messages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      })))
+      setShowHistory(false)
+      toast.success('Conversation loaded!')
+    } catch (error) {
+      console.error('Error loading conversation:', error)
+      toast.error('Failed to load conversation')
+    }
+  }
+
+  const startNewConversation = async () => {
+    try {
+      const response = await api.post('/ai/conversations/new')
+      setConversationId(response.data.conversationId)
+      setChatMessages([{
+        role: 'assistant',
+        content: '👋 Hi! I\'m your AI Finance Assistant. Ask me anything about your expenses!'
+      }])
+      toast.success('New conversation started!')
+    } catch (error) {
+      console.error('Error starting new conversation:', error)
+      setConversationId(null)
+    }
+  }
+
+  const deleteConversation = async (convId) => {
+    try {
+      await api.delete(`/ai/conversations/${convId}`)
+      setConversations(prev => prev.filter(c => c.conversationId !== convId))
+      
+      if (conversationId === convId) {
+        startNewConversation()
+      }
+      
+      toast.success('Conversation deleted!')
+    } catch (error) {
+      console.error('Error deleting conversation:', error)
+      toast.error('Failed to delete conversation')
+    }
+  }
 
   const loadSuggestions = async (type = 'general') => {
     try {
@@ -122,18 +184,29 @@ const AIAssistant = () => {
     const userMessage = userInput.trim()
     setUserInput('')
     
-    // Add user message to chat
+    // Add user message to chat immediately
     setChatMessages(prev => [...prev, { role: 'user', content: userMessage }])
     setChatLoading(true)
 
     try {
-      const response = await api.post('/ai/chat', { message: userMessage })
+      const response = await api.post('/ai/chat', { 
+        message: userMessage,
+        conversationId: conversationId
+      })
+
+      // Update conversation ID if new
+      if (response.data.conversationId && !conversationId) {
+        setConversationId(response.data.conversationId)
+      }
 
       // Add AI response to chat
       setChatMessages(prev => [...prev, { 
         role: 'assistant', 
         content: response.data.response 
       }])
+
+      // Reload conversations list
+      loadConversations()
     } catch (error) {
       console.error('Chat error:', error)
       setChatMessages(prev => [...prev, { 
@@ -222,13 +295,77 @@ const AIAssistant = () => {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-          <Bot className="w-8 h-8 text-primary" />
-          AI Finance Assistant
-        </h1>
-        <p className="text-gray-600 text-lg">Get personalized financial insights and advice powered by AI</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+            <Bot className="w-8 h-8 text-primary" />
+            AI Finance Assistant
+          </h1>
+          <p className="text-gray-600 text-lg">Get personalized financial insights and advice powered by AI</p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowHistory(!showHistory)}
+            icon={MessageSquare}
+          >
+            History ({conversations.length})
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={startNewConversation}
+            icon={Plus}
+          >
+            New Chat
+          </Button>
+        </div>
       </div>
+
+      {/* Conversation History Sidebar */}
+      {showHistory && (
+        <Card title="Conversation History" icon={Clock}>
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {conversations.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">No previous conversations</p>
+            ) : (
+              conversations.map((conv) => (
+                <div
+                  key={conv.conversationId}
+                  className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                    conversationId === conv.conversationId
+                      ? 'border-primary bg-blue-50'
+                      : 'border-gray-200 hover:border-blue-300 bg-white'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div 
+                      className="flex-1 min-w-0"
+                      onClick={() => loadConversation(conv.conversationId)}
+                    >
+                      <p className="font-medium text-gray-900 truncate">{conv.title}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(conv.lastMessageAt).toLocaleDateString()} • {conv.messages.length} messages
+                      </p>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        deleteConversation(conv.conversationId)
+                      }}
+                      className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors"
+                      title="Delete conversation"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </Card>
+      )}
 
       {/* Conversational Finance Bot */}
       <Card 

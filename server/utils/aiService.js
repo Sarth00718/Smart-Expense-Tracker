@@ -1,69 +1,21 @@
 const axios = require('axios');
 
 /**
- * Call Gemini API
- */
-async function callGemini(prompt, systemMessage, options = {}) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  
-  if (!apiKey) {
-    throw new Error('Gemini API key not configured');
-  }
-
-  const { maxTokens = 500, temperature = 0.7 } = options;
-
-  try {
-    const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
-      {
-        contents: [{
-          parts: [{
-            text: `${systemMessage}\n\n${prompt}`
-          }]
-        }],
-        generationConfig: {
-          temperature,
-          maxOutputTokens: maxTokens,
-          topP: 0.95,
-          topK: 40
-        }
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        timeout: 15000
-      }
-    );
-
-    if (response.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-      return {
-        success: true,
-        text: response.data.candidates[0].content.parts[0].text.trim(),
-        api: 'gemini'
-      };
-    }
-
-    throw new Error('Invalid Gemini response format');
-  } catch (error) {
-    console.error('Gemini API error:', error.response?.data || error.message);
-    throw new Error(`Gemini failed: ${error.message}`);
-  }
-}
-
-/**
- * Call Groq API
+ * Call Groq API (Primary and only AI provider)
  */
 async function callGroq(prompt, systemMessage, options = {}) {
   const apiKey = process.env.GROQ_API_KEY;
   
   if (!apiKey) {
+    console.error('❌ Groq API key not configured in environment variables');
     throw new Error('Groq API key not configured');
   }
 
   const { maxTokens = 500, temperature = 0.7 } = options;
 
   try {
+    console.log('🤖 Calling Groq API...');
+    
     const response = await axios.post(
       'https://api.groq.com/openai/v1/chat/completions',
       {
@@ -80,22 +32,48 @@ async function callGroq(prompt, systemMessage, options = {}) {
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
         },
-        timeout: 15000
+        timeout: 30000 // Increased timeout to 30 seconds
       }
     );
 
     if (response.data?.choices?.[0]?.message?.content) {
+      const text = response.data.choices[0].message.content.trim();
+      console.log('✅ Groq API response received:', text.substring(0, 100) + '...');
+      
       return {
         success: true,
-        text: response.data.choices[0].message.content.trim(),
+        text: text,
         api: 'groq'
       };
     }
 
+    console.error('❌ Invalid Groq response format:', JSON.stringify(response.data));
     throw new Error('Invalid Groq response format');
   } catch (error) {
-    console.error('Groq API error:', error.response?.data || error.message);
-    throw new Error(`Groq failed: ${error.message}`);
+    // Detailed error logging
+    if (error.response) {
+      console.error('❌ Groq API HTTP error:', {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data
+      });
+      
+      // Handle specific error cases
+      if (error.response.status === 401) {
+        throw new Error('Invalid Groq API key. Please check your GROQ_API_KEY environment variable.');
+      } else if (error.response.status === 429) {
+        throw new Error('Groq API rate limit exceeded. Please try again later.');
+      } else if (error.response.status === 500) {
+        throw new Error('Groq API server error. Please try again later.');
+      }
+    } else if (error.request) {
+      console.error('❌ Groq API network error:', error.message);
+      throw new Error('Network error connecting to Groq API. Please check your internet connection.');
+    } else {
+      console.error('❌ Groq API error:', error.message);
+    }
+    
+    throw new Error(`Groq API failed: ${error.message}`);
   }
 }
 
@@ -134,78 +112,42 @@ function evaluateResponse(text, userMessage) {
 }
 
 /**
- * Call AI with Gemini primary, Groq fallback, and best response selection
+ * Call AI using Groq (simplified - no fallback needed)
  */
 async function callAIWithFallback(prompt, systemMessage, options = {}) {
-  const results = [];
-  
-  // Try Gemini first
-  try {
-    const geminiResult = await callGemini(prompt, systemMessage, options);
-    results.push(geminiResult);
-  } catch (geminiError) {
-    console.log('Gemini failed, trying Groq:', geminiError.message);
-  }
-  
-  // Try Groq as fallback or for comparison
-  try {
-    const groqResult = await callGroq(prompt, systemMessage, options);
-    results.push(groqResult);
-  } catch (groqError) {
-    console.log('Groq also failed:', groqError.message);
-  }
-  
-  // If both failed, throw error
-  if (results.length === 0) {
-    throw new Error('Both Gemini and Groq APIs failed');
-  }
-  
-  // If only one succeeded, return it
-  if (results.length === 1) {
-    return results[0];
-  }
-  
-  // Both succeeded - evaluate and return best
-  const geminiScore = evaluateResponse(results[0].text, prompt);
-  const groqScore = evaluateResponse(results[1].text, prompt);
-  
-  console.log(`Response scores - Gemini: ${geminiScore}, Groq: ${groqScore}`);
-  
-  // Return the better response
-  if (geminiScore >= groqScore) {
-    console.log('Selected Gemini response');
-    return results[0];
-  } else {
-    console.log('Selected Groq response');
-    return results[1];
-  }
+  // Directly call Groq - it's our only provider
+  return await callGroq(prompt, systemMessage, options);
 }
 
 /**
  * Call AI with retry logic
  */
-async function callAIWithRetry(prompt, systemMessage, options = {}, maxRetries = 2) {
+async function callAIWithRetry(prompt, systemMessage, options = {}, maxRetries = 3) {
   let lastError;
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      return await callAIWithFallback(prompt, systemMessage, options);
+      console.log(`🔄 AI call attempt ${attempt}/${maxRetries}`);
+      const result = await callAIWithFallback(prompt, systemMessage, options);
+      console.log(`✅ AI call succeeded on attempt ${attempt}`);
+      return result;
     } catch (error) {
       lastError = error;
-      console.error(`AI call attempt ${attempt} failed:`, error.message);
+      console.error(`❌ AI call attempt ${attempt}/${maxRetries} failed:`, error.message);
       
       if (attempt < maxRetries) {
-        // Wait before retry (exponential backoff)
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        const waitTime = 1000 * Math.pow(2, attempt - 1); // Exponential backoff: 1s, 2s, 4s
+        console.log(`⏳ Waiting ${waitTime}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
       }
     }
   }
   
+  console.error(`❌ All ${maxRetries} AI call attempts failed`);
   throw lastError;
 }
 
 module.exports = {
-  callGemini,
   callGroq,
   callAIWithFallback,
   callAIWithRetry,

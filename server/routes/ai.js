@@ -83,6 +83,15 @@ router.post('/chat', auth, async (req, res) => {
     // Use AI for complex queries
     else {
       try {
+        console.log('🤖 Processing AI query:', message.substring(0, 50) + '...');
+        
+        // Get current date info for prompt
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                            'July', 'August', 'September', 'October', 'November', 'December'];
+        const currentMonthName = monthNames[now.getMonth()];
+        
         // Prepare context for AI including conversation history
         const context = buildFinancialContext(expenses, incomes, budgets, goals, queryData);
         
@@ -101,20 +110,45 @@ USER QUESTION: "${message}"
 FINANCIAL DATA:
 ${context}${conversationContext}
 
-Provide a clear, concise, and helpful answer. Use ₹ for currency. Be friendly and actionable. If referring to previous conversation, acknowledge it naturally.`;
+IMPORTANT INSTRUCTIONS:
+- Provide a clear, concise, and helpful answer
+- Use ₹ for currency (Indian Rupees)
+- Be friendly and actionable
+- Use bullet points (•) for lists
+- Keep response under 300 words
+- If referring to previous conversation, acknowledge it naturally
+- Focus on specific numbers and data from the user's financial records
+- Provide actionable advice based on the data
+- When user asks about "this month" or "current month", use the data from THIS MONTH section
+- When user asks about "today" or "current", refer to the CURRENT DATE CONTEXT
+- Always specify the time period you're referring to (e.g., "In ${currentMonthName} ${currentYear}...")
+- If user asks about a specific category, look at both THIS MONTH'S and ALL TIME data`;
 
+        console.log('📤 Sending request to Groq API...');
+        
         const aiResult = await callAIWithRetry(
           prompt,
-          'You are a helpful personal finance assistant. Provide clear, concise answers with specific numbers and actionable advice.',
-          { maxTokens: 400, temperature: 0.7 }
+          'You are a helpful personal finance assistant specializing in Indian personal finance. Provide clear, concise answers with specific numbers and actionable advice. Always use ₹ for currency.',
+          { maxTokens: 500, temperature: 0.7 }
         );
 
+        console.log('✅ Received AI response');
         responseText = aiResult.text;
         apiUsed = aiResult.api;
       } catch (llmError) {
         // Fallback to rule-based response
-        console.error('AI error:', llmError.message);
-        responseText = queryData.fallbackAnswer || 'I\'m having trouble processing your request right now. Please try asking about specific expenses, budgets, or financial goals.';
+        console.error('❌ AI error:', llmError.message);
+        console.error('Stack:', llmError.stack);
+        
+        // Provide a more helpful error message
+        responseText = queryData.fallbackAnswer || 
+          `I'm having trouble processing your request right now. Here's what I can tell you:\n\n` +
+          `📊 You have ${expenses.length} expenses totaling ₹${expenses.reduce((sum, exp) => sum + exp.amount, 0).toFixed(2)}\n` +
+          `💰 You have ${incomes.length} income records totaling ₹${incomes.reduce((sum, inc) => sum + inc.amount, 0).toFixed(2)}\n\n` +
+          `Try asking:\n• "Where did I overspend this month?"\n• "What are my top spending categories?"\n• "How much did I spend on food?"\n\n` +
+          `Error: ${llmError.message}`;
+        
+        apiUsed = 'fallback';
       }
     }
 
@@ -375,11 +409,42 @@ function suggestBudgetPlan(salary, expenses, budgets) {
 function buildFinancialContext(expenses, incomes, budgets, goals, queryData) {
   let context = '';
 
-  // Total expenses and income
+  // Current date and time information
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const currentDay = now.getDate();
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+  const currentMonthName = monthNames[currentMonth];
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const daysRemaining = daysInMonth - currentDay;
+
+  context += `CURRENT DATE CONTEXT:\n`;
+  context += `Today's Date: ${currentMonthName} ${currentDay}, ${currentYear}\n`;
+  context += `Current Month: ${currentMonthName} ${currentYear}\n`;
+  context += `Days in this month: ${daysInMonth}\n`;
+  context += `Days remaining in month: ${daysRemaining}\n\n`;
+
+  // Calculate current month data
+  const startOfMonth = new Date(currentYear, currentMonth, 1);
+  const monthExpenses = expenses.filter(exp => new Date(exp.date) >= startOfMonth);
+  const monthIncome = incomes.filter(inc => new Date(inc.date) >= startOfMonth);
+  const monthExpenseTotal = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const monthIncomeTotal = monthIncome.reduce((sum, inc) => sum + inc.amount, 0);
+
+  context += `THIS MONTH (${currentMonthName} ${currentYear}):\n`;
+  context += `Income: ₹${monthIncomeTotal.toFixed(2)}\n`;
+  context += `Expenses: ₹${monthExpenseTotal.toFixed(2)}\n`;
+  context += `Balance: ₹${(monthIncomeTotal - monthExpenseTotal).toFixed(2)}\n`;
+  context += `Transactions: ${monthExpenses.length} expenses, ${monthIncome.length} income\n\n`;
+
+  // Total expenses and income (all time)
   const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
   const totalIncome = incomes.reduce((sum, inc) => sum + inc.amount, 0);
   const netBalance = totalIncome - totalExpenses;
 
+  context += `ALL TIME TOTALS:\n`;
   context += `Total Income: ₹${totalIncome.toFixed(2)}\n`;
   context += `Total Expenses: ₹${totalExpenses.toFixed(2)}\n`;
   context += `Net Balance: ₹${netBalance.toFixed(2)}\n`;
@@ -401,34 +466,56 @@ function buildFinancialContext(expenses, incomes, budgets, goals, queryData) {
     context += '\n';
   }
 
-  // Category breakdown
+  // Category breakdown for current month
+  const monthCategoryTotals = {};
+  monthExpenses.forEach(exp => {
+    monthCategoryTotals[exp.category] = (monthCategoryTotals[exp.category] || 0) + exp.amount;
+  });
+  
+  if (Object.keys(monthCategoryTotals).length > 0) {
+    context += `THIS MONTH'S EXPENSE CATEGORIES:\n`;
+    Object.entries(monthCategoryTotals)
+      .sort((a, b) => b[1] - a[1])
+      .forEach(([cat, amt]) => {
+        const percentage = ((amt / monthExpenseTotal) * 100).toFixed(1);
+        context += `- ${cat}: ₹${amt.toFixed(2)} (${percentage}% of monthly expenses)\n`;
+      });
+    context += '\n';
+  }
+
+  // All-time category breakdown
   const categoryTotals = {};
   expenses.forEach(exp => {
     categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
   });
   
-  context += 'EXPENSE CATEGORIES:\n';
+  context += 'ALL TIME EXPENSE CATEGORIES:\n';
   Object.entries(categoryTotals)
     .sort((a, b) => b[1] - a[1])
     .forEach(([cat, amt]) => {
       context += `- ${cat}: ₹${amt.toFixed(2)}\n`;
     });
 
-  // Recent expenses (last 10)
-  if (expenses.length > 0) {
-    context += '\nRECENT EXPENSES:\n';
-    expenses.slice(0, 10).forEach(exp => {
-      context += `- ${exp.date.toISOString().split('T')[0]}: ${exp.category} - ₹${exp.amount.toFixed(2)} (${exp.description || 'No description'})\n`;
+  // Recent expenses (last 10 from current month)
+  if (monthExpenses.length > 0) {
+    context += '\nRECENT EXPENSES THIS MONTH:\n';
+    monthExpenses.slice(0, 10).forEach(exp => {
+      const expDate = new Date(exp.date);
+      const dayOfMonth = expDate.getDate();
+      context += `- ${currentMonthName} ${dayOfMonth}: ${exp.category} - ₹${exp.amount.toFixed(2)} (${exp.description || 'No description'})\n`;
     });
   }
 
-  // Budgets
+  // Budgets (current month)
   if (budgets.length > 0) {
-    context += '\nBUDGETS:\n';
+    context += '\nMONTHLY BUDGETS (for ' + currentMonthName + '):\n';
     budgets.forEach(budget => {
-      const spent = categoryTotals[budget.category] || 0;
+      const spent = monthCategoryTotals[budget.category] || 0;
       const remaining = budget.monthlyBudget - spent;
-      context += `- ${budget.category}: Budget ₹${budget.monthlyBudget}, Spent ₹${spent.toFixed(2)}, Remaining ₹${remaining.toFixed(2)}\n`;
+      const percentUsed = ((spent / budget.monthlyBudget) * 100).toFixed(1);
+      const status = spent > budget.monthlyBudget ? '⚠️ OVER BUDGET' : 
+                     spent > budget.monthlyBudget * 0.8 ? '⚠️ WARNING' : '✅ ON TRACK';
+      context += `- ${budget.category}: Budget ₹${budget.monthlyBudget}, Spent ₹${spent.toFixed(2)} (${percentUsed}%), Remaining ₹${remaining.toFixed(2)} ${status}\n`;
     });
   }
 
@@ -547,22 +634,29 @@ ${expenseList}
 Provide specific, actionable advice. Keep response under 150 words, practical, and friendly.`;
     }
 
-    // Call AI with retry logic (Gemini primary, Groq fallback)
+    // Call AI with retry logic (using Groq)
     try {
+      console.log(`🤖 Generating ${type} suggestions...`);
+      
       const aiResult = await callAIWithRetry(
         prompt,
         systemMessage,
-        { maxTokens: 500, temperature: 0.7 }
+        { maxTokens: 600, temperature: 0.7 }
       );
 
       const score = calculateSpendingScore(expenses);
+
+      console.log(`✅ ${type} suggestions generated successfully`);
 
       res.json({
         suggestions: `🤖 **AI Financial Advisor** (${aiResult.api}):\n\n${aiResult.text}\n\n📊 **Financial Health Score: ${score}/100**`
       });
     } catch (llmError) {
-      console.error('AI error:', llmError.message);
+      console.error('❌ AI suggestions error:', llmError.message);
+      console.error('Stack:', llmError.stack);
+      
       // Fallback to mock suggestions
+      console.log('⚠️ Falling back to mock suggestions');
       res.json({
         suggestions: getMockSuggestions(expenses, type)
       });
