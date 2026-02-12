@@ -10,13 +10,14 @@ const Button = ({
   className = '',
   ...props 
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 no-select tap-target'
+  const baseStyles = 'inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 no-select tap-target'
   
   const variants = {
-    primary: 'bg-primary text-white hover:bg-[#3a0ca3] focus:ring-primary/20 shadow-sm hover:shadow-md',
-    secondary: 'bg-white text-primary border-2 border-primary hover:bg-primary hover:text-white focus:ring-primary/20',
-    success: 'bg-success text-white hover:bg-green-600 focus:ring-success/20 shadow-sm hover:shadow-md',
-    danger: 'bg-danger text-white hover:bg-red-600 focus:ring-danger/20 shadow-sm hover:shadow-md',
+    primary: 'bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700 focus:ring-primary-500/20 shadow-md hover:shadow-lg',
+    secondary: 'bg-white text-primary-600 border-2 border-primary-500 hover:bg-primary-500 hover:text-white focus:ring-primary-500/20',
+    success: 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 focus:ring-green-500/20 shadow-md hover:shadow-lg',
+    danger: 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 focus:ring-red-500/20 shadow-md hover:shadow-lg',
+    warning: 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 focus:ring-orange-500/20 shadow-md hover:shadow-lg',
     ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-200',
     outline: 'bg-transparent border-2 border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50 focus:ring-gray-200'
   }

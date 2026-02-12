@@ -73,11 +73,12 @@ const Login = () => {
     try {
       await login(email, password)
       toast.success('Welcome back!', {
-        icon: '👋',
+        icon: '🔓',
         style: {
           borderRadius: '12px',
-          background: '#10b981',
+          background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
           color: '#fff',
+          boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
         },
       })
       
@@ -113,6 +114,8 @@ const Login = () => {
           borderRadius: '12px',
           background: '#fff',
           color: '#1e293b',
+          border: '2px solid #ef4444',
+          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)',
         },
         iconTheme: {
           primary: '#ef4444',
@@ -131,11 +134,12 @@ const Login = () => {
     try {
       await loginWithGoogle()
       toast.success('Welcome back!', {
-        icon: '🎉',
+        icon: '✨',
         style: {
           borderRadius: '12px',
-          background: '#10b981',
+          background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
           color: '#fff',
+          boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
         },
       })
       
@@ -163,6 +167,8 @@ const Login = () => {
           borderRadius: '12px',
           background: '#fff',
           color: '#1e293b',
+          border: '2px solid #ef4444',
+          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)',
         },
         iconTheme: {
           primary: '#ef4444',
@@ -189,8 +195,9 @@ const Login = () => {
         icon: '🔐',
         style: {
           borderRadius: '12px',
-          background: '#10b981',
+          background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
           color: '#fff',
+          boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
         },
       })
       
@@ -208,6 +215,8 @@ const Login = () => {
           borderRadius: '12px',
           background: '#fff',
           color: '#1e293b',
+          border: '2px solid #ef4444',
+          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)',
         },
         iconTheme: {
           primary: '#ef4444',
@@ -227,40 +236,13 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center gradient-purple-blue p-4 sm:p-6 lg:p-6 xl:p-8 relative overflow-hidden">
-      {/* Static Background */}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-purple p-4 sm:p-6 lg:p-6 xl:p-8 relative overflow-hidden">
+      {/* Animated Background Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Cyan Blob */}
-        <div className="absolute top-0 -left-4 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-40" 
-             style={{ backgroundColor: '#00d4ff' }}></div>
-        
-        {/* Magenta/Pink Blob */}
-        <div className="absolute top-0 -right-4 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-40" 
-             style={{ backgroundColor: '#f107a3' }}></div>
-        
-        {/* Purple Blob */}
-        <div className="absolute -bottom-8 left-20 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-40" 
-             style={{ backgroundColor: '#7b2ff7' }}></div>
-        
-        {/* Blue Blob */}
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-30" 
-             style={{ backgroundColor: '#0099ff' }}></div>
-        
-        {/* Red Blob */}
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full mix-blend-multiply filter blur-3xl opacity-35" 
-             style={{ backgroundColor: '#ff1744' }}></div>
-        
-        {/* Static particles */}
-        <div className="absolute top-1/4 left-1/4 w-3 h-3 rounded-full shadow-lg" 
-             style={{ backgroundColor: '#00d4ff', opacity: 0.6, boxShadow: '0 0 20px #00d4ff' }}></div>
-        <div className="absolute top-1/3 right-1/4 w-4 h-4 rounded-full shadow-lg" 
-             style={{ backgroundColor: '#f107a3', opacity: 0.6, boxShadow: '0 0 20px #f107a3' }}></div>
-        <div className="absolute bottom-1/4 left-1/3 w-2 h-2 rounded-full shadow-lg" 
-             style={{ backgroundColor: '#7b2ff7', opacity: 0.6, boxShadow: '0 0 20px #7b2ff7' }}></div>
-        <div className="absolute top-1/2 right-1/3 w-3 h-3 rounded-full shadow-lg" 
-             style={{ backgroundColor: '#0099ff', opacity: 0.6, boxShadow: '0 0 20px #0099ff' }}></div>
-        <div className="absolute bottom-1/3 right-1/2 w-2 h-2 rounded-full shadow-lg" 
-             style={{ backgroundColor: '#ff1744', opacity: 0.6, boxShadow: '0 0 20px #ff1744' }}></div>
+        <div className="absolute top-0 -left-4 w-96 h-96 bg-primary-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div className="absolute top-0 -right-4 w-96 h-96 bg-accent-pink rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-96 h-96 bg-secondary-purple rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-accent-cyan rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-3000"></div>
       </div>
 
       <div className={`w-full max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center relative z-10 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
@@ -368,7 +350,7 @@ const Login = () => {
                   </label>
                   <div className="relative group">
                     <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-all duration-300 ${
-                      emailError ? 'text-red-500' : focusedField === 'email' ? 'text-[#4361ee] scale-110' : email ? 'text-[#4361ee]' : 'text-gray-400'
+                      emailError ? 'text-red-500' : focusedField === 'email' ? 'text-primary-500 scale-110' : email ? 'text-primary-500' : 'text-gray-400'
                     }`} />
                     <input
                       type="email"
@@ -382,14 +364,10 @@ const Login = () => {
                       onBlur={handleEmailBlur}
                       required
                       placeholder="you@example.com"
-                      className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all text-sm font-medium ${
-                        emailError
-                          ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20 bg-red-50'
-                          : 'border-gray-200 focus:border-[#4361ee] focus:ring-[#4361ee]/20 hover:border-gray-300'
-                      }`}
+                      className={`input-auth ${emailError ? 'input-auth-error' : ''}`}
                     />
                     {focusedField === 'email' && !emailError && (
-                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#4361ee]/5 to-[#7209b7]/5 pointer-events-none"></div>
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/5 to-secondary-purple/5 pointer-events-none"></div>
                     )}
                   </div>
                   {emailError && (
@@ -407,7 +385,7 @@ const Login = () => {
                   </label>
                   <div className="relative group">
                     <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-all duration-300 ${
-                      passwordError ? 'text-red-500' : focusedField === 'password' ? 'text-[#4361ee] scale-110' : password ? 'text-[#4361ee]' : 'text-gray-400'
+                      passwordError ? 'text-red-500' : focusedField === 'password' ? 'text-primary-500 scale-110' : password ? 'text-primary-500' : 'text-gray-400'
                     }`} />
                     <input
                       type={showPassword ? "text" : "password"}
@@ -421,21 +399,17 @@ const Login = () => {
                       onBlur={handlePasswordBlur}
                       required
                       placeholder="Enter your password"
-                      className={`w-full pl-12 pr-12 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all text-sm font-medium ${
-                        passwordError
-                          ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20 bg-red-50'
-                          : 'border-gray-200 focus:border-[#4361ee] focus:ring-[#4361ee]/20 hover:border-gray-300'
-                      }`}
+                      className={`input-auth ${passwordError ? 'input-auth-error' : ''}`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#4361ee] transition-all hover:scale-110"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary-500 transition-all hover:scale-110"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                     {focusedField === 'password' && !passwordError && (
-                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#4361ee]/5 to-[#7209b7]/5 pointer-events-none"></div>
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/5 to-secondary-purple/5 pointer-events-none"></div>
                     )}
                   </div>
                   {passwordError && (
@@ -450,9 +424,9 @@ const Login = () => {
                 <button
                   type="submit"
                   disabled={loading || emailError || passwordError}
-                  className="group relative w-full py-4 btn-purple font-bold rounded-xl focus:outline-none focus:ring-4 focus:ring-purple-500/50 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
+                  className="group relative w-full py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-500/50 transition-all duration-300 hover:scale-[1.02] hover:from-primary-600 hover:to-primary-700 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary-600 via-secondary-purple to-primary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="relative flex items-center justify-center gap-2">
                     {loading ? (
                       <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -482,7 +456,7 @@ const Login = () => {
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={googleLoading}
-                className="group w-full py-4 bg-white border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 hover:border-[#4361ee] hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-gray-200 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
+                className="group w-full py-4 bg-white border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 hover:border-primary-500 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-gray-200 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
               >
                 {googleLoading ? (
                   <div className="w-5 h-5 border-3 border-gray-300 border-t-gray-700 rounded-full animate-spin"></div>
@@ -505,7 +479,7 @@ const Login = () => {
                   type="button"
                   onClick={handleBiometricLogin}
                   disabled={biometricLoading}
-                  className="group w-full py-4 btn-purple-outline font-bold rounded-xl hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-500/50 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3 mt-3"
+                  className="group w-full py-4 bg-white border-2 border-primary-500 text-primary-600 font-bold rounded-xl hover:bg-primary-500 hover:text-white hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-primary-500/50 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3 mt-3"
                 >
                   {biometricLoading ? (
                     <div className="w-5 h-5 border-3 border-purple-600/30 border-t-purple-600 rounded-full animate-spin"></div>
@@ -523,7 +497,7 @@ const Login = () => {
                 <p className="text-gray-600 mb-3">Don't have an account?</p>
                 <Link
                   to="/register"
-                  className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 font-bold transition-all group text-lg"
+                  className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-bold transition-all group text-lg"
                 >
                   <span>Create an account</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

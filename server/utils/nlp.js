@@ -10,7 +10,7 @@ function parseNaturalLanguageQuery(query) {
     throw new Error('Invalid query: must be a non-empty string');
   }
 
-  // Limit query length to prevent DoS
+  // Limit query length tocontinoue prevent DoS
   if (query.length > 500) {
     throw new Error('Query too long: maximum 500 characters');
   }

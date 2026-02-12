@@ -279,9 +279,9 @@ const DashboardHome = () => {
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => navigate('/dashboard/analytics')}
-              className="flex flex-col items-center justify-center p-4 rounded-xl hover:bg-blue-50 transition-all group border-2 border-transparent hover:border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100"
+              className="flex flex-col items-center justify-center p-4 rounded-xl transition-all group bg-blue-50/80 hover:bg-blue-100/80"
             >
-              <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-md">
+              <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-sm">
                 <TrendingUp className="w-6 h-6 text-white" />
               </div>
               <span className="font-semibold text-gray-900 text-sm text-center">Analytics</span>
@@ -291,9 +291,9 @@ const DashboardHome = () => {
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => navigate('/dashboard/budgets')}
-              className="flex flex-col items-center justify-center p-4 rounded-xl hover:bg-purple-50 transition-all group border-2 border-transparent hover:border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100"
+              className="flex flex-col items-center justify-center p-4 rounded-xl transition-all group bg-purple-50/80 hover:bg-purple-100/80"
             >
-              <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-md">
+              <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-sm">
                 <Wallet className="w-6 h-6 text-white" />
               </div>
               <span className="font-semibold text-gray-900 text-sm text-center">Budgets</span>
@@ -303,9 +303,9 @@ const DashboardHome = () => {
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => navigate('/dashboard/goals')}
-              className="flex flex-col items-center justify-center p-4 rounded-xl hover:bg-green-50 transition-all group border-2 border-transparent hover:border-green-200 bg-gradient-to-br from-green-50 to-green-100"
+              className="flex flex-col items-center justify-center p-4 rounded-xl transition-all group bg-green-50/80 hover:bg-green-100/80"
             >
-              <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-md">
+              <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-sm">
                 <TrendingUp className="w-6 h-6 text-white" />
               </div>
               <span className="font-semibold text-gray-900 text-sm text-center">Goals</span>
@@ -315,9 +315,9 @@ const DashboardHome = () => {
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => navigate('/dashboard/income')}
-              className="flex flex-col items-center justify-center p-4 rounded-xl hover:bg-emerald-50 transition-all group border-2 border-transparent hover:border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100"
+              className="flex flex-col items-center justify-center p-4 rounded-xl transition-all group bg-teal-50/80 hover:bg-teal-100/80"
             >
-              <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-md">
+              <div className="w-12 h-12 bg-teal-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-sm">
                 <DollarSign className="w-6 h-6 text-white" />
               </div>
               <span className="font-semibold text-gray-900 text-sm text-center">Income</span>
@@ -327,9 +327,9 @@ const DashboardHome = () => {
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => navigate('/dashboard/analytics?view=heatmap')}
-              className="flex flex-col items-center justify-center p-4 rounded-xl hover:bg-rose-50 transition-all group border-2 border-transparent hover:border-rose-200 bg-gradient-to-br from-rose-50 to-rose-100"
+              className="flex flex-col items-center justify-center p-4 rounded-xl transition-all group bg-rose-50/80 hover:bg-rose-100/80"
             >
-              <div className="w-12 h-12 bg-rose-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-md">
+              <div className="w-12 h-12 bg-rose-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-sm">
                 <Calendar className="w-6 h-6 text-white" />
               </div>
               <span className="font-semibold text-gray-900 text-sm text-center">Heatmap</span>

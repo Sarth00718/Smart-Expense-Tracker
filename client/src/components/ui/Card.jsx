@@ -16,17 +16,19 @@ const Card = ({
     lg: 'p-6 sm:p-8'
   }
   
+  const hoverClass = hover ? 'hover:shadow-card-lg transition-shadow' : ''
+  
   return (
     <div 
       id={id} 
-      className={`bg-white rounded-lg sm:rounded-xl shadow-card ${paddingClasses[padding]} ${className}`}
+      className={`bg-white rounded-lg sm:rounded-xl shadow-card ${paddingClasses[padding]} ${hoverClass} ${className}`}
     >
       {(title || action) && (
         <div className="flex items-start justify-between mb-4 sm:mb-6 gap-3">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {Icon && (
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
+                <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
             )}
             <div className="min-w-0">
