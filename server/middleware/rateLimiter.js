@@ -1,9 +1,9 @@
 const rateLimit = require('express-rate-limit');
 
-// Auth routes: more lenient limits for development
+// Auth routes: strict limits for security
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 50, // Increased from 10 to 50 requests per window
+  max: process.env.NODE_ENV === 'development' ? 50 : 10, // Strict in production
   message: {
     error: 'Too many authentication attempts. Please try again after 15 minutes.'
   },
@@ -11,37 +11,36 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
   skipSuccessfulRequests: true, // Don't count successful requests
   skip: (req) => {
-    // Only skip in explicit development mode
-    // If NODE_ENV is not set, rate limiting will be enabled (safer default)
-    return process.env.NODE_ENV === 'development';
+    // Only skip if explicitly set to 'development'
+    return process.env.NODE_ENV === 'development' && process.env.DISABLE_RATE_LIMIT === 'true';
   }
 });
 
 // AI routes: moderate limits (chatbot, recommendations)
 const aiLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 30, // Increased from 20 to 30 requests per minute
+  max: process.env.NODE_ENV === 'development' ? 30 : 20, // Stricter in production
   message: {
     error: 'Too many AI requests. Please slow down and try again in a minute.'
   },
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => {
-    return process.env.NODE_ENV === 'development'
+    return process.env.NODE_ENV === 'development' && process.env.DISABLE_RATE_LIMIT === 'true';
   }
 });
 
 // General API routes: generous limits
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 200, // Increased from 100 to 200 requests per minute
+  max: process.env.NODE_ENV === 'development' ? 200 : 100, // Stricter in production
   message: {
     error: 'Too many requests. Please try again in a minute.'
   },
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => {
-    return process.env.NODE_ENV === 'development'
+    return process.env.NODE_ENV === 'development' && process.env.DISABLE_RATE_LIMIT === 'true';
   }
 });
 

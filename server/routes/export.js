@@ -7,12 +7,6 @@ const Income = require('../models/Income');
 const Budget = require('../models/Budget');
 const Goal = require('../models/Goal');
 const auth = require('../middleware/auth');
-const {
-  generateCategoryPieChart,
-  generateSpendingTrendChart,
-  generateIncomeVsExpenseChart,
-  generateMonthlyComparisonChart
-} = require('../utils/chartGenerator');
 
 // @route   GET /api/export/expenses
 // @desc    Export expenses to CSV/JSON
@@ -309,13 +303,8 @@ router.get('/comprehensive-pdf', auth, async (req, res) => {
       .map(([month, data]) => ({ month, ...data }))
       .slice(0, 6);
 
-    // Generate charts
-    const [categoryChart, trendChart, incomeVsExpenseChart, monthlyChart] = await Promise.all([
-      categoryData.length > 0 ? generateCategoryPieChart(categoryData) : null,
-      trendData.length > 0 ? generateSpendingTrendChart(trendData) : null,
-      generateIncomeVsExpenseChart(totalIncome, totalExpenses),
-      monthlyData.length > 0 ? generateMonthlyComparisonChart(monthlyData) : null
-    ]);
+    // Note: Chart generation removed to reduce dependencies
+    // Charts can be generated on the frontend using recharts
 
     // Create PDF
     const doc = new PDFDocument({ 
@@ -367,37 +356,23 @@ router.get('/comprehensive-pdf', auth, async (req, res) => {
     doc.fillColor('#666').text(`Transactions:`, 70, summaryY + 100);
     doc.fillColor('#000').text(`${expenses.length + income.length}`, 250, summaryY + 100);
 
-    // New page for charts
+    // Visual Summary (text-based)
     doc.addPage();
     doc.fontSize(20).font('Helvetica-Bold').fillColor('#4361ee')
-       .text('Financial Analytics & Visualizations', { align: 'center' });
+       .text('Financial Summary', { align: 'center' });
     doc.moveDown(2);
 
-    // Income vs Expense Chart
-    if (incomeVsExpenseChart) {
-      doc.image(incomeVsExpenseChart, 50, doc.y, { width: 495, height: 250 });
-      doc.moveDown(13);
-    }
-
-    // Category Pie Chart
-    if (categoryChart) {
-      if (doc.y > 500) doc.addPage();
-      doc.image(categoryChart, 50, doc.y, { width: 495, height: 250 });
-      doc.moveDown(13);
-    }
-
-    // Spending Trend Chart
-    if (trendChart) {
-      doc.addPage();
-      doc.image(trendChart, 50, 50, { width: 495, height: 250 });
-      doc.moveDown(13);
-    }
-
-    // Monthly Comparison Chart
-    if (monthlyChart) {
-      if (doc.y > 500) doc.addPage();
-      doc.image(monthlyChart, 50, doc.y, { width: 495, height: 250 });
-    }
+    // Income vs Expense Summary
+    doc.fontSize(14).font('Helvetica-Bold').fillColor('#000')
+       .text('Income vs Expenses Overview');
+    doc.moveDown(0.5);
+    doc.fontSize(11).font('Helvetica').fillColor('#10b981')
+       .text(`Total Income: ₹${totalIncome.toFixed(2)}`);
+    doc.fillColor('#ef4444')
+       .text(`Total Expenses: ₹${totalExpenses.toFixed(2)}`);
+    doc.fillColor(netBalance >= 0 ? '#10b981' : '#ef4444')
+       .text(`Net Savings: ₹${netBalance.toFixed(2)}`);
+    doc.moveDown(2);
 
     // Detailed Breakdown
     doc.addPage();

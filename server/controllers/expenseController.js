@@ -2,6 +2,13 @@ const Expense = require('../models/Expense');
 const { checkAndAwardAchievements } = require('../utils/achievements');
 const { parseNaturalLanguageQuery } = require('../utils/nlp');
 const { escapeRegex, isStringArray } = require('../utils/securityUtils');
+const { 
+  getSummaryStats, 
+  validateAmount, 
+  buildDateFilter, 
+  buildPagination, 
+  formatPaginationResponse 
+} = require('../utils/sharedControllers');
 
 // @desc    Filter expenses
 // @access  Private
@@ -50,39 +57,15 @@ exports.getCategories = async (req, res) => {
 // @access  Private
 exports.getSummary = async (req, res) => {
   try {
-    const totalResult = await Expense.aggregate([
-      { $match: { userId: req.userId } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
-    const total = totalResult[0]?.total || 0;
-
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const monthResult = await Expense.aggregate([
-      { $match: { userId: req.userId, date: { $gte: startOfMonth } } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
-    const thisMonth = monthResult[0]?.total || 0;
-
-    const categories = await Expense.aggregate([
-      { $match: { userId: req.userId } },
-      {
-        $group: {
-          _id: '$category',
-          total: { $sum: '$amount' },
-          count: { $sum: 1 }
-        }
-      },
-      { $sort: { total: -1 } }
-    ]);
-
+    const summary = await getSummaryStats(Expense, req.userId, 'category');
+    
     res.json({
-      total_expenses: Math.round(total * 100) / 100,
-      this_month: Math.round(thisMonth * 100) / 100,
-      categories: categories.map(cat => ({
-        category: cat._id,
-        total: Math.round(cat.total * 100) / 100,
-        count: cat.count
+      total_expenses: summary.total,
+      this_month: summary.thisMonth,
+      categories: summary.groups.map(g => ({
+        category: g.category,
+        total: g.total,
+        count: g.count
       }))
     });
   } catch (error) {
@@ -244,19 +227,16 @@ exports.createExpense = async (req, res) => {
       return res.status(400).json({ error: 'Date, category, and amount are required' });
     }
 
-    if (amount <= 0) {
-      return res.status(400).json({ error: 'Amount must be positive' });
-    }
-
-    if (amount > 999999999) {
-      return res.status(400).json({ error: 'Amount is too large' });
+    const amountValidation = validateAmount(amount);
+    if (!amountValidation.valid) {
+      return res.status(400).json({ error: amountValidation.error });
     }
 
     const expense = new Expense({
       userId: req.userId,
       date: new Date(date),
       category,
-      amount: parseFloat(amount),
+      amount: amountValidation.value,
       description: description || '',
       isRecurring: isRecurring || false
     });
@@ -280,11 +260,7 @@ exports.createExpense = async (req, res) => {
 // @access  Private
 exports.getAllExpenses = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const requestedLimit = parseInt(req.query.limit) || 50;
-    const limit = Math.min(requestedLimit, 100);
-    const skip = (page - 1) * limit;
-
+    const { page, limit, skip } = buildPagination(req.query);
     const query = { userId: req.userId };
 
     const total = await Expense.countDocuments(query);
@@ -295,12 +271,7 @@ exports.getAllExpenses = async (req, res) => {
 
     res.json({
       data: expenses,
-      pagination: {
-        total,
-        page,
-        limit,
-        pages: Math.ceil(total / limit)
-      }
+      pagination: formatPaginationResponse(total, page, limit)
     });
   } catch (error) {
     console.error('Get expenses error:', error);
@@ -339,13 +310,11 @@ exports.updateExpense = async (req, res) => {
     if (date) expense.date = new Date(date);
     if (category) expense.category = category;
     if (amount !== undefined) {
-      if (amount <= 0) {
-        return res.status(400).json({ error: 'Amount must be positive' });
+      const amountValidation = validateAmount(amount);
+      if (!amountValidation.valid) {
+        return res.status(400).json({ error: amountValidation.error });
       }
-      if (amount > 999999999) {
-        return res.status(400).json({ error: 'Amount is too large' });
-      }
-      expense.amount = parseFloat(amount);
+      expense.amount = amountValidation.value;
     }
     if (description !== undefined) expense.description = description;
     if (isRecurring !== undefined) expense.isRecurring = isRecurring;

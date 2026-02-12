@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const axios = require('axios');
 const Expense = require('../models/Expense');
 const Income = require('../models/Income');
 const Budget = require('../models/Budget');
@@ -8,10 +7,9 @@ const Goal = require('../models/Goal');
 const ChatHistory = require('../models/ChatHistory');
 const auth = require('../middleware/auth');
 const { calculateSpendingScore } = require('../utils/analytics');
-const { parseFinanceQuery, analyzeAffordability } = require('../utils/nlp');
-const { callGroqWithRetry } = require('../utils/llmRetry');
+const { parseFinanceQuery } = require('../utils/nlp');
 const { callAIWithRetry } = require('../utils/aiService');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
 // @route   POST /api/ai/chat
 // @desc    Conversational AI Finance Bot with History
@@ -34,10 +32,10 @@ router.post('/chat', auth, async (req, res) => {
     }
     
     if (!conversation) {
-      // Create new conversation
+      // Create new conversation with crypto-based UUID
       conversation = new ChatHistory({
         userId: req.userId,
-        conversationId: conversationId || uuidv4(),
+        conversationId: conversationId || crypto.randomUUID(),
         title: message.substring(0, 50) + (message.length > 50 ? '...' : ''),
         messages: []
       });
@@ -247,7 +245,7 @@ router.delete('/conversations/:conversationId', auth, async (req, res) => {
 // @access  Private
 router.post('/conversations/new', auth, async (req, res) => {
   try {
-    const conversationId = uuidv4();
+    const conversationId = crypto.randomUUID();
     res.json({ conversationId });
   } catch (error) {
     console.error('New conversation error:', error);

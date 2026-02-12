@@ -1,9 +1,8 @@
 /**
  * Voice Command Parser for Expense Entry
  * Extracts amount, category, and description from voice transcripts
+ * Uses regex-based parsing for better performance
  */
-
-const nlp = require('compromise');
 
 // Category keywords mapping
 const CATEGORY_KEYWORDS = {
@@ -43,10 +42,9 @@ function parseVoiceCommand(transcript) {
   }
 
   const lowerTranscript = transcript.toLowerCase().trim();
-  const doc = nlp(lowerTranscript);
 
   // Extract amount
-  const amount = extractAmount(lowerTranscript, doc);
+  const amount = extractAmount(lowerTranscript);
   
   // Extract category
   const category = extractCategory(lowerTranscript);
@@ -69,23 +67,32 @@ function parseVoiceCommand(transcript) {
 /**
  * Extract amount from transcript
  */
-function extractAmount(transcript, doc) {
-  // Pattern 1: Direct numbers (50, 100, 1000)
-  const numberMatch = transcript.match(/\b(\d+(?:\.\d{1,2})?)\b/);
-  if (numberMatch) {
-    return parseFloat(numberMatch[1]);
-  }
-
-  // Pattern 2: Written numbers (fifty, hundred)
-  const values = doc.values().json();
-  if (values.length > 0) {
-    return parseFloat(values[0].number);
-  }
-
-  // Pattern 3: Currency symbols
-  const currencyMatch = transcript.match(/[₹$€£]\s*(\d+(?:\.\d{1,2})?)/);
+function extractAmount(transcript) {
+  // Pattern 1: Currency symbols with numbers
+  const currencyMatch = transcript.match(/[₹$€£]\s*(\d+(?:[,\s]\d+)*(?:\.\d{1,2})?)/);
   if (currencyMatch) {
-    return parseFloat(currencyMatch[1]);
+    return parseFloat(currencyMatch[1].replace(/[,\s]/g, ''));
+  }
+
+  // Pattern 2: Direct numbers (50, 100, 1000, 1,000)
+  const numberMatch = transcript.match(/\b(\d+(?:[,\s]\d+)*(?:\.\d{1,2})?)\b/);
+  if (numberMatch) {
+    return parseFloat(numberMatch[1].replace(/[,\s]/g, ''));
+  }
+
+  // Pattern 3: Written numbers (basic support)
+  const writtenNumbers = {
+    'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+    'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
+    'twenty': 20, 'thirty': 30, 'forty': 40, 'fifty': 50,
+    'sixty': 60, 'seventy': 70, 'eighty': 80, 'ninety': 90,
+    'hundred': 100, 'thousand': 1000
+  };
+
+  for (const [word, value] of Object.entries(writtenNumbers)) {
+    if (transcript.includes(word)) {
+      return value;
+    }
   }
 
   return null;
