@@ -93,7 +93,6 @@ const sendErrorDev = (err, res) => {
  * Send error response in production
  */
 const sendErrorProd = (err, res) => {
-  // Operational, trusted error: send message to client
   if (err.isOperational) {
     res.status(err.statusCode).json({
       status: 'error',
@@ -101,8 +100,6 @@ const sendErrorProd = (err, res) => {
       ...(err.details && { details: err.details })
     })
   } else {
-    // Programming or unknown error: don't leak error details
-    console.error('ERROR 💥', err)
     res.status(500).json({
       status: 'error',
       message: 'Something went wrong'

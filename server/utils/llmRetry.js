@@ -57,12 +57,8 @@ async function callGroqWithRetry(userPrompt, systemPrompt, options = {}) {
         throw new Error(`AI service error: ${error.response.data?.error?.message || 'Invalid request'}`);
       }
 
-      // Calculate exponential backoff delay
       const delay = Math.min(initialDelay * Math.pow(2, attempt), maxDelay);
-      
-      console.warn(`LLM API attempt ${attempt + 1} failed. Retrying in ${delay}ms...`, error.message);
 
-      // Wait before retrying (except on last attempt)
       if (attempt < maxRetries - 1) {
         await new Promise(resolve => setTimeout(resolve, delay));
       }
@@ -130,8 +126,6 @@ async function callOpenAIWithRetry(userPrompt, systemPrompt, options = {}) {
       }
 
       const delay = Math.min(initialDelay * Math.pow(2, attempt), maxDelay);
-      
-      console.warn(`OpenAI API attempt ${attempt + 1} failed. Retrying in ${delay}ms...`, error.message);
 
       if (attempt < maxRetries - 1) {
         await new Promise(resolve => setTimeout(resolve, delay));

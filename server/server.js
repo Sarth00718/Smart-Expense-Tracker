@@ -12,14 +12,10 @@ const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET'];
 const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
 if (missingEnvVars.length > 0) {
-  console.error(' Missing required environment variables:', missingEnvVars.join(', '));
-  console.error('Please check your .env file');
   process.exit(1);
 }
 
-// Validate JWT_SECRET length
 if (process.env.JWT_SECRET.length < 32) {
-  console.error('JWT_SECRET must be at least 32 characters long');
   process.exit(1);
 }
 
@@ -57,24 +53,19 @@ app.use(securityHeaders);
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
-  'http://localhost:4173', // Vite preview
-  'http://localhost:4174', // Vite preview alternate
+  'http://localhost:4173',
+  'http://localhost:4174',
   process.env.CLIENT_URL
-  // Add your production URLs to the CLIENT_URL environment variable
-  // For multiple URLs, you can add them as additional environment variables
 ].filter(Boolean);
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, Postman, PWA, etc.)
     if (!origin) return callback(null, true);
 
-    // Check if origin is in allowed list
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
 
-    // Check for exact domain matches (prevent subdomain attacks)
     if (origin.endsWith('.vercel.app') ||
       origin.endsWith('.render.com') ||
       origin === 'http://localhost' ||
@@ -82,13 +73,12 @@ app.use(cors({
       return callback(null, true);
     }
 
-    console.warn('CORS blocked origin:', origin);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  maxAge: 86400 // 24 hours
+  maxAge: 86400
 }));
 
 app.use(express.json({ limit: '1mb' }));
@@ -101,32 +91,36 @@ app.use(sanitizeInput);
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/expense-tracker', {
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
-  family: 4, // Use IPv4, skip trying IPv6
+  family: 4,
   maxPoolSize: 10,
   minPoolSize: 5,
   retryWrites: true,
   retryReads: true,
 })
   .then(() => {
-    console.log('✅ MongoDB Connected Successfully');
-    console.log(`📊 Database: ${mongoose.connection.name}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('MongoDB Connected');
+    }
   })
   .catch(err => {
-    console.error('❌ MongoDB Connection Error:', err);
+    console.error('MongoDB Connection Error:', err);
     process.exit(1);
   });
 
-// Handle MongoDB connection errors after initial connection
 mongoose.connection.on('error', err => {
-  console.error('❌ MongoDB connection error:', err);
+  console.error('MongoDB connection error:', err);
 });
 
 mongoose.connection.on('disconnected', () => {
-  console.warn('⚠️ MongoDB disconnected. Attempting to reconnect...');
+  if (process.env.NODE_ENV === 'development') {
+    console.log('MongoDB disconnected. Reconnecting...');
+  }
 });
 
 mongoose.connection.on('reconnected', () => {
-  console.log('✅ MongoDB Reconnected Successfully');
+  if (process.env.NODE_ENV === 'development') {
+    console.log('MongoDB Reconnected');
+  }
 });
 
 // Routes with rate limiting
@@ -206,16 +200,15 @@ process.on('SIGINT', () => {
 // Start server
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
-// Handle server errors
 server.on('error', (error) => {
   if (error.code === 'EADDRINUSE') {
-    console.error(`❌ Port ${PORT} is already in use`);
+    console.error(`Port ${PORT} is already in use`);
   } else {
-    console.error('❌ Server error:', error);
+    console.error('Server error:', error);
   }
   process.exit(1);
 });

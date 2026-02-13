@@ -81,20 +81,15 @@ router.post('/chat', auth, async (req, res) => {
     // Use AI for complex queries
     else {
       try {
-        console.log('🤖 Processing AI query:', message.substring(0, 50) + '...');
-        
-        // Get current date info for prompt
         const now = new Date();
         const currentYear = now.getFullYear();
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
                             'July', 'August', 'September', 'October', 'November', 'December'];
         const currentMonthName = monthNames[now.getMonth()];
         
-        // Prepare context for AI including conversation history
         const context = buildFinancialContext(expenses, incomes, budgets, goals, queryData);
         
-        // Include recent conversation history for context
-        const recentMessages = conversation.messages.slice(-6, -1); // Last 3 exchanges (excluding current)
+        const recentMessages = conversation.messages.slice(-6, -1);
         const conversationContext = recentMessages.length > 0 
           ? '\n\nRECENT CONVERSATION:\n' + recentMessages.map(msg => 
               `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
@@ -122,21 +117,15 @@ IMPORTANT INSTRUCTIONS:
 - Always specify the time period you're referring to (e.g., "In ${currentMonthName} ${currentYear}...")
 - If user asks about a specific category, look at both THIS MONTH'S and ALL TIME data`;
 
-        console.log('📤 Sending request to Groq API...');
-        
         const aiResult = await callAIWithRetry(
           prompt,
           'You are a helpful personal finance assistant specializing in Indian personal finance. Provide clear, concise answers with specific numbers and actionable advice. Always use ₹ for currency.',
           { maxTokens: 500, temperature: 0.7 }
         );
 
-        console.log('✅ Received AI response');
         responseText = aiResult.text;
         apiUsed = aiResult.api;
       } catch (llmError) {
-        // Fallback to rule-based response
-        console.error('❌ AI error:', llmError.message);
-        console.error('Stack:', llmError.stack);
         
         // Provide a more helpful error message
         responseText = queryData.fallbackAnswer || 
@@ -168,7 +157,6 @@ IMPORTANT INSTRUCTIONS:
     });
 
   } catch (error) {
-    console.error('Chat error:', error.message);
     res.json({ 
       response: '❌ Sorry, I encountered an error processing your request. Please try again or rephrase your question.' 
     });
@@ -190,7 +178,6 @@ router.get('/conversations', auth, async (req, res) => {
 
     res.json({ conversations });
   } catch (error) {
-    console.error('Get conversations error:', error);
     res.status(500).json({ error: 'Failed to fetch conversations' });
   }
 });
@@ -211,7 +198,6 @@ router.get('/conversations/:conversationId', auth, async (req, res) => {
 
     res.json({ conversation });
   } catch (error) {
-    console.error('Get conversation error:', error);
     res.status(500).json({ error: 'Failed to fetch conversation' });
   }
 });
@@ -235,7 +221,6 @@ router.delete('/conversations/:conversationId', auth, async (req, res) => {
 
     res.json({ message: 'Conversation deleted successfully' });
   } catch (error) {
-    console.error('Delete conversation error:', error);
     res.status(500).json({ error: 'Failed to delete conversation' });
   }
 });
@@ -248,7 +233,6 @@ router.post('/conversations/new', auth, async (req, res) => {
     const conversationId = crypto.randomUUID();
     res.json({ conversationId });
   } catch (error) {
-    console.error('New conversation error:', error);
     res.status(500).json({ error: 'Failed to create conversation' });
   }
 });

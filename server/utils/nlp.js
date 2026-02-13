@@ -1,16 +1,10 @@
 // Natural Language Processing utilities for expense tracking
 
-/**
- * Parse natural language query for expense search
- * Handles: categories, amounts, dates, years, months, descriptions
- */
 function parseNaturalLanguageQuery(query) {
-  // Input validation
   if (!query || typeof query !== 'string') {
     throw new Error('Invalid query: must be a non-empty string');
   }
 
-  // Limit query length tocontinoue prevent DoS
   if (query.length > 500) {
     throw new Error('Query too long: maximum 500 characters');
   }
@@ -30,7 +24,6 @@ function parseNaturalLanguageQuery(query) {
   };
 
   try {
-    // ===== YEAR EXTRACTION =====
     const yearMatch = lowerQuery.match(/\b(20\d{2})\b/);
     if (yearMatch) {
       const year = parseInt(yearMatch[1]);
@@ -70,7 +63,6 @@ function parseNaturalLanguageQuery(query) {
       }
     }
 
-    // ===== RELATIVE TIME PERIODS =====
     if (!filters.startDate && !filters.endDate) {
       const now = new Date();
       const currentYear = now.getFullYear();
@@ -126,7 +118,6 @@ function parseNaturalLanguageQuery(query) {
       }
     }
 
-    // ===== CATEGORY EXTRACTION =====
     const categoryKeywords = {
       'Food': ['food', 'restaurant', 'grocery', 'groceries', 'eat', 'eating', 'dining', 'lunch', 'dinner', 'breakfast', 'meal', 'snack'],
       'Travel': ['travel', 'flight', 'flights', 'hotel', 'hotels', 'trip', 'vacation', 'holiday'],
@@ -145,7 +136,6 @@ function parseNaturalLanguageQuery(query) {
       }
     }
 
-    // ===== AMOUNT EXTRACTION =====
     const amountPatterns = [
       { pattern: /over\s*[₹$]?\s*([\d,]+)/i, type: 'min' },
       { pattern: /more\s+than\s*[₹$]?\s*([\d,]+)/i, type: 'min' },
@@ -172,7 +162,6 @@ function parseNaturalLanguageQuery(query) {
       }
     }
 
-    // ===== DESCRIPTION KEYWORDS =====
     const commonWords = new Set([
       'show', 'find', 'list', 'get', 'fetch', 'display', 'search',
       'expense', 'expenses', 'spending', 'spent', 'total', 'all',
@@ -181,7 +170,6 @@ function parseNaturalLanguageQuery(query) {
       'last', 'this', 'year', 'month', 'week', 'day', 'my', 'me', 'i',
       'what', 'when', 'where', 'how', 'much', 'many', 'did', 'was', 'were',
       'matching', 'related', 'regarding',
-      // Add category names to avoid duplication
       'food', 'travel', 'transport', 'shopping', 'bills', 'entertainment', 
       'healthcare', 'education', 'restaurant', 'grocery', 'flight', 'hotel',
       'taxi', 'uber', 'mall', 'store', 'movie', 'cinema', 'doctor', 'hospital'
@@ -199,16 +187,12 @@ function parseNaturalLanguageQuery(query) {
     }
 
   } catch (error) {
-    console.error('❌ Error parsing query:', error);
   }
 
   return filters;
 }
 
-/**
- * Parse finance-specific queries for chatbot
- */
-function parseFinanceQuery(query, expenses, incomes, budgets, goals) {
+function parseFinanceQuery(query, expenses, incomes, budgets) {
   const lowerQuery = query.toLowerCase();
   const result = {
     canAnswerDirectly: false,
@@ -233,14 +217,12 @@ function parseFinanceQuery(query, expenses, incomes, budgets, goals) {
   const startOfMonth = new Date(currentYear, currentMonth, 1);
   const startOfWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  
   const lastMonthIndex = currentMonth - 1;
   const lastMonthYear = lastMonthIndex < 0 ? currentYear - 1 : currentYear;
   const lastMonthMonth = lastMonthIndex < 0 ? 11 : lastMonthIndex;
   const startOfLastMonth = new Date(lastMonthYear, lastMonthMonth, 1);
   const endOfLastMonth = new Date(lastMonthYear, lastMonthMonth + 1, 0, 23, 59, 59);
 
-  // Net balance query
   if (lowerQuery.includes('net balance') || lowerQuery.includes('balance') || lowerQuery.includes('net worth')) {
     const totalIncome = incomes.reduce((sum, inc) => sum + inc.amount, 0);
     const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
@@ -425,7 +407,6 @@ function analyzeAffordability(amount, expenses, incomes, budgets) {
   const startOfMonth = new Date(currentYear, currentMonth, 1);
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const daysRemaining = daysInMonth - now.getDate();
-  
   const monthExpenses = expenses.filter(exp => new Date(exp.date) >= startOfMonth);
   const monthIncome = incomes.filter(inc => new Date(inc.date) >= startOfMonth);
   
@@ -436,7 +417,6 @@ function analyzeAffordability(amount, expenses, incomes, budgets) {
   
   const daysPassed = now.getDate();
   const avgDailySpending = monthExpenseTotal / daysPassed;
-  const projectedMonthSpending = avgDailySpending * daysInMonth;
   
   const totalBudget = budgets.reduce((sum, b) => sum + b.monthlyBudget, 0);
   

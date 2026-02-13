@@ -1,23 +1,17 @@
-// Analytics utility functions
-
 function calculateSpendingScore(expenses) {
   if (!expenses || expenses.length === 0) {
-    return 80; // Default good score
+    return 80;
   }
 
   try {
-    // Ensure all expenses have valid amounts
     const validExpenses = expenses.filter(exp => exp && typeof exp.amount === 'number' && !isNaN(exp.amount));
     
     if (validExpenses.length === 0) {
       return 80;
     }
 
-    const total = validExpenses.reduce((sum, exp) => sum + exp.amount, 0);
     const count = validExpenses.length;
-    const avgAmount = count > 0 ? total / count : 0;
 
-    // Analyze categories
     const categoryTotals = {};
     validExpenses.forEach(exp => {
       if (exp.category) {
@@ -25,9 +19,8 @@ function calculateSpendingScore(expenses) {
       }
     });
 
-    let score = 70; // Base score
+    let score = 70;
 
-    // 1. Spending consistency
     if (count > 1) {
       const amounts = validExpenses.map(exp => exp.amount);
       const mean = amounts.reduce((a, b) => a + b, 0) / amounts.length;
@@ -41,7 +34,6 @@ function calculateSpendingScore(expenses) {
       }
     }
 
-    // 2. Category diversity
     const numCategories = Object.keys(categoryTotals).length;
     if (numCategories >= 3) {
       score += 5;
@@ -49,16 +41,14 @@ function calculateSpendingScore(expenses) {
       score -= 5;
     }
 
-    // 3. Recent spending patterns
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const recentExpenses = validExpenses.filter(exp => exp.date && new Date(exp.date) >= sevenDaysAgo);
 
     if (recentExpenses.length > 10) {
-      score -= 8; // Too many transactions
+      score -= 8;
     }
 
-    // 4. High-value expenses
     const highValue = validExpenses.filter(exp => exp.amount > 5000).length;
     if (highValue > 3) {
       score -= 7;
@@ -66,7 +56,6 @@ function calculateSpendingScore(expenses) {
 
     return Math.max(0, Math.min(100, Math.round(score)));
   } catch (error) {
-    console.error('Error calculating spending score:', error);
     return 70;
   }
 }
@@ -142,7 +131,7 @@ function detectBehavioralPatterns(expenses) {
     }
 
   } catch (error) {
-    console.error('Error detecting patterns:', error);
+    return patterns;
   }
 
   return patterns;
@@ -197,7 +186,7 @@ function predictFutureExpenses(expenses, months = 3) {
     }
 
   } catch (error) {
-    console.error('Error predicting expenses:', error);
+    return predictions;
   }
 
   return predictions;
@@ -267,7 +256,6 @@ function getHeatmapData(expenses, year, month) {
     };
 
   } catch (error) {
-    console.error('Error generating heatmap:', error);
     return {
       year,
       month,

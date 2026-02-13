@@ -1,12 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const axios = require('axios');
 
-// @route   GET /api/health
-// @desc    Comprehensive health check
-// @access  Public
-router.get('/', async (req, res) => {
+router.get('/', async (_req, res) => {
   const health = {
     status: 'healthy',
     timestamp: new Date().toISOString(),

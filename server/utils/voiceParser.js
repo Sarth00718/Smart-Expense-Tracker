@@ -31,28 +31,20 @@ const CURRENCY_PATTERNS = {
  * @returns {Object} Parsed expense data
  */
 function parseVoiceCommand(transcript) {
-  // Input validation
   if (!transcript || typeof transcript !== 'string') {
     throw new Error('Invalid transcript: must be a non-empty string');
   }
 
-  // Limit transcript length to prevent DoS
   if (transcript.length > 1000) {
     throw new Error('Transcript too long: maximum 1000 characters');
   }
 
   const lowerTranscript = transcript.toLowerCase().trim();
 
-  // Extract amount
   const amount = extractAmount(lowerTranscript);
-  
-  // Extract category
   const category = extractCategory(lowerTranscript);
-  
-  // Extract description
   const description = extractDescription(lowerTranscript, amount, category);
 
-  // Validation
   const result = {
     amount: amount || null,
     category: category || 'Other',
@@ -68,19 +60,16 @@ function parseVoiceCommand(transcript) {
  * Extract amount from transcript
  */
 function extractAmount(transcript) {
-  // Pattern 1: Currency symbols with numbers
   const currencyMatch = transcript.match(/[₹$€£]\s*(\d+(?:[,\s]\d+)*(?:\.\d{1,2})?)/);
   if (currencyMatch) {
     return parseFloat(currencyMatch[1].replace(/[,\s]/g, ''));
   }
 
-  // Pattern 2: Direct numbers (50, 100, 1000, 1,000)
   const numberMatch = transcript.match(/\b(\d+(?:[,\s]\d+)*(?:\.\d{1,2})?)\b/);
   if (numberMatch) {
     return parseFloat(numberMatch[1].replace(/[,\s]/g, ''));
   }
 
-  // Pattern 3: Written numbers (basic support)
   const writtenNumbers = {
     'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
     'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
@@ -127,7 +116,6 @@ function extractCategory(transcript) {
 function extractDescription(transcript, amount, category) {
   let description = transcript;
 
-  // Remove amount mentions
   if (amount) {
     description = description
       .replace(/\b\d+(?:\.\d{1,2})?\b/g, '')
@@ -135,17 +123,14 @@ function extractDescription(transcript, amount, category) {
       .replace(/rupees?|dollars?|euros?|pounds?/gi, '');
   }
 
-  // Remove command words
   description = description
     .replace(/^(add|spent|paid|expense|for)\s+/i, '')
     .replace(/\s+(expense|spent|paid)$/i, '');
 
-  // Clean up
   description = description
     .replace(/\s+/g, ' ')
     .trim();
 
-  // Capitalize first letter
   if (description) {
     description = description.charAt(0).toUpperCase() + description.slice(1);
   }

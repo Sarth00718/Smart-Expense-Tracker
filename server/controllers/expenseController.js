@@ -10,8 +10,6 @@ const {
   formatPaginationResponse 
 } = require('../utils/sharedControllers');
 
-// @desc    Filter expenses
-// @access  Private
 exports.filterExpenses = async (req, res) => {
   try {
     const { category, startDate, endDate, minAmount, maxAmount } = req.query;
@@ -36,25 +34,19 @@ exports.filterExpenses = async (req, res) => {
 
     res.json(expenses);
   } catch (error) {
-    console.error('Filter expenses error:', error);
     res.status(500).json({ error: 'Failed to filter expenses' });
   }
 };
 
-// @desc    Get unique categories
-// @access  Private
 exports.getCategories = async (req, res) => {
   try {
     const categories = await Expense.distinct('category', { userId: req.userId });
     res.json({ categories: categories.sort() });
   } catch (error) {
-    console.error('Get categories error:', error);
     res.status(500).json({ error: 'Failed to fetch categories' });
   }
 };
 
-// @desc    Get expense summary statistics
-// @access  Private
 exports.getSummary = async (req, res) => {
   try {
     const summary = await getSummaryStats(Expense, req.userId, 'category');
@@ -69,13 +61,10 @@ exports.getSummary = async (req, res) => {
       }))
     });
   } catch (error) {
-    console.error('Get summary error:', error);
     res.status(500).json({ error: 'Failed to fetch summary' });
   }
 };
 
-// @desc    Get total of all expenses
-// @access  Private
 exports.getTotal = async (req, res) => {
   try {
     const result = await Expense.aggregate([
@@ -85,13 +74,10 @@ exports.getTotal = async (req, res) => {
     const total = result[0]?.total || 0;
     res.json({ total_expense: Math.round(total * 100) / 100 });
   } catch (error) {
-    console.error('Get total error:', error);
     res.status(500).json({ error: 'Failed to fetch total' });
   }
 };
 
-// @desc    Get summary by category
-// @access  Private
 exports.getCategorySummary = async (req, res) => {
   try {
     const summary = await Expense.aggregate([
@@ -112,13 +98,10 @@ exports.getCategorySummary = async (req, res) => {
 
     res.json(result);
   } catch (error) {
-    console.error('Get category summary error:', error);
     res.status(500).json({ error: 'Failed to fetch category summary' });
   }
 };
 
-// @desc    Get recent expenses with limit
-// @access  Private
 exports.getRecentExpenses = async (req, res) => {
   try {
     const limit = parseInt(req.params.limit) || 10;
@@ -127,13 +110,10 @@ exports.getRecentExpenses = async (req, res) => {
       .limit(limit);
     res.json(expenses);
   } catch (error) {
-    console.error('Get recent expenses error:', error);
     res.status(500).json({ error: 'Failed to fetch recent expenses' });
   }
 };
 
-// @desc    Natural language search
-// @access  Private
 exports.searchExpenses = async (req, res) => {
   try {
     const { query } = req.body;
@@ -212,13 +192,10 @@ exports.searchExpenses = async (req, res) => {
       results: expenses
     });
   } catch (error) {
-    console.error('Search error:', error);
     res.status(500).json({ error: 'Search failed' });
   }
 };
 
-// @desc    Add new expense
-// @access  Private
 exports.createExpense = async (req, res) => {
   try {
     const { date, category, amount, description, isRecurring } = req.body;
@@ -246,18 +223,14 @@ exports.createExpense = async (req, res) => {
     try {
       await checkAndAwardAchievements(req.userId);
     } catch (achievementError) {
-      console.error('Achievement check failed:', achievementError);
     }
 
     res.status(201).json(expense);
   } catch (error) {
-    console.error('Add expense error:', error);
     res.status(500).json({ error: 'Failed to add expense' });
   }
 };
 
-// @desc    Get all expenses for user with pagination
-// @access  Private
 exports.getAllExpenses = async (req, res) => {
   try {
     const { page, limit, skip } = buildPagination(req.query);
@@ -274,13 +247,10 @@ exports.getAllExpenses = async (req, res) => {
       pagination: formatPaginationResponse(total, page, limit)
     });
   } catch (error) {
-    console.error('Get expenses error:', error);
     res.status(500).json({ error: 'Failed to fetch expenses' });
   }
 };
 
-// @desc    Delete all expenses for user
-// @access  Private
 exports.deleteAllExpenses = async (req, res) => {
   try {
     const result = await Expense.deleteMany({ userId: req.userId });
@@ -290,13 +260,10 @@ exports.deleteAllExpenses = async (req, res) => {
       deletedCount: result.deletedCount
     });
   } catch (error) {
-    console.error('Delete all expenses error:', error);
     res.status(500).json({ error: 'Failed to delete expenses' });
   }
 };
 
-// @desc    Update expense
-// @access  Private
 exports.updateExpense = async (req, res) => {
   try {
     const { date, category, amount, description, isRecurring } = req.body;
@@ -323,13 +290,10 @@ exports.updateExpense = async (req, res) => {
 
     res.json(expense);
   } catch (error) {
-    console.error('Update expense error:', error);
     res.status(500).json({ error: 'Failed to update expense' });
   }
 };
 
-// @desc    Delete expense
-// @access  Private
 exports.deleteExpense = async (req, res) => {
   try {
     const expense = await Expense.findOneAndDelete({
@@ -343,7 +307,6 @@ exports.deleteExpense = async (req, res) => {
 
     res.json({ message: 'Expense deleted successfully' });
   } catch (error) {
-    console.error('Delete expense error:', error);
     res.status(500).json({ error: 'Failed to delete expense' });
   }
 };
