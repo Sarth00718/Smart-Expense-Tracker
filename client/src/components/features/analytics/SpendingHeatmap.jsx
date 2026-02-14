@@ -80,11 +80,11 @@ const SpendingHeatmap = () => {
     .filter(day => day.day !== null).length
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6 font-sans">
       <div className="card">
         {/* Header with Month Navigation */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+          <h2 className="text-xl sm:text-2xl font-semibold flex items-center gap-2 tracking-tight">
             <CalendarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             <span className="hidden sm:inline">Spending Heatmap</span>
             <span className="sm:hidden">Heatmap</span>
@@ -180,20 +180,20 @@ const SpendingHeatmap = () => {
         {/* Stats */}
         <div className="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <div className="p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-xs sm:text-sm text-blue-600 font-semibold">Total This Month</p>
-            <p className="text-xl sm:text-2xl font-bold text-blue-900">
+            <p className="text-xs sm:text-sm text-blue-600 font-semibold tracking-tight">Total This Month</p>
+            <p className="text-xl sm:text-2xl font-semibold text-blue-900 tabular-nums tracking-tight">
               ₹{totalAmount.toFixed(2)}
             </p>
           </div>
           <div className="p-3 sm:p-4 bg-purple-50 rounded-lg border border-purple-200">
-            <p className="text-xs sm:text-sm text-purple-600 font-semibold">Days with Expenses</p>
-            <p className="text-xl sm:text-2xl font-bold text-purple-900">
+            <p className="text-xs sm:text-sm text-purple-600 font-semibold tracking-tight">Days with Expenses</p>
+            <p className="text-xl sm:text-2xl font-semibold text-purple-900 tabular-nums tracking-tight">
               {totalCount}
             </p>
           </div>
           <div className="p-3 sm:p-4 bg-green-50 rounded-lg border border-green-200">
-            <p className="text-xs sm:text-sm text-green-600 font-semibold">Daily Average</p>
-            <p className="text-xl sm:text-2xl font-bold text-green-900">
+            <p className="text-xs sm:text-sm text-green-600 font-semibold tracking-tight">Daily Average</p>
+            <p className="text-xl sm:text-2xl font-semibold text-green-900 tabular-nums tracking-tight">
               ₹{(totalAmount / daysInMonth).toFixed(2)}
             </p>
           </div>

@@ -228,15 +228,15 @@ const Expenses = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto font-sans">
       {/* Header Section */}
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 mb-2 tracking-tight">
               Expense Tracker
             </h1>
-            <p className="text-gray-600 text-lg">Manage and track all your expenses</p>
+            <p className="text-gray-600 text-sm sm:text-base lg:text-lg leading-relaxed">Manage and track all your expenses</p>
           </div>
           
           {/* Secondary Actions */}
@@ -332,8 +332,8 @@ const Expenses = () => {
                 <Search className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-blue-900 mb-1">🔍 AI-Powered Search</h3>
-                <p className="text-sm text-blue-700">
+                <h3 className="font-semibold text-blue-900 mb-1 tracking-tight">🔍 AI-Powered Search</h3>
+                <p className="text-sm text-blue-700 leading-snug">
                   Try: "food over 500 last week" or "shopping this month" or "travel expenses"
                 </p>
               </div>
@@ -434,7 +434,7 @@ const Expenses = () => {
                 <Filter className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-green-900 mb-1">Advanced Search Results</h3>
+                <h3 className="font-semibold text-green-900 mb-1 tracking-tight">Advanced Search Results</h3>
                 <div className="flex gap-6 text-sm">
                   <div>
                     <span className="text-green-700">Total: </span>
@@ -475,8 +475,8 @@ const Expenses = () => {
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Calendar className="w-10 h-10 text-gray-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No expenses yet</h3>
-            <p className="text-gray-500 mb-6">Start tracking your expenses to see them here</p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2 tracking-tight">No expenses yet</h3>
+            <p className="text-sm text-gray-500 mb-6 leading-relaxed">Start tracking your expenses to see them here</p>
             <Button 
               variant="primary" 
               size="md"
@@ -490,11 +490,11 @@ const Expenses = () => {
             <table className="w-full">
               <thead className="bg-gray-50 border-y border-gray-200">
                 <tr>
-                  <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-wider">Date</th>
-                  <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-wider">Category</th>
-                  <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-wider">Description</th>
-                  <th className="text-right py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-wider">Amount</th>
-                  <th className="text-center py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-wider">Actions</th>
+                  <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest">Date</th>
+                  <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest">Category</th>
+                  <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest">Description</th>
+                  <th className="text-right py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest">Amount</th>
+                  <th className="text-center py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -504,7 +504,7 @@ const Expenses = () => {
                         <td colSpan="5" className="py-5 px-6">
                           <form onSubmit={handleUpdate} className="grid grid-cols-1 md:grid-cols-5 gap-4">
                             <div>
-                              <label className="block text-xs font-semibold text-gray-700 mb-1">Date</label>
+                              <label className="block text-xs font-semibold text-gray-700 mb-1 tracking-tight">Date</label>
                               <input
                                 type="date"
                                 value={editForm.date}
@@ -514,7 +514,7 @@ const Expenses = () => {
                               />
                             </div>
                             <div>
-                              <label className="block text-xs font-semibold text-gray-700 mb-1">Category</label>
+                              <label className="block text-xs font-semibold text-gray-700 mb-1 tracking-tight">Category</label>
                               <select
                                 value={editForm.category}
                                 onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
@@ -533,7 +533,7 @@ const Expenses = () => {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-xs font-semibold text-gray-700 mb-1">Description</label>
+                              <label className="block text-xs font-semibold text-gray-700 mb-1 tracking-tight">Description</label>
                               <input
                                 type="text"
                                 value={editForm.description}
@@ -543,7 +543,7 @@ const Expenses = () => {
                               />
                             </div>
                             <div>
-                              <label className="block text-xs font-semibold text-gray-700 mb-1">Amount (₹)</label>
+                              <label className="block text-xs font-semibold text-gray-700 mb-1 tracking-tight">Amount (₹)</label>
                               <input
                                 type="number"
                                 step="0.01"
@@ -582,7 +582,7 @@ const Expenses = () => {
                         <td className="py-4 px-6 text-gray-600">
                           {expense.description || <span className="text-gray-400 italic">No description</span>}
                         </td>
-                        <td className="py-4 px-6 text-right font-bold text-gray-900 text-lg">
+                        <td className="py-4 px-6 text-right font-semibold text-gray-900 text-base sm:text-lg tabular-nums tracking-tight">
                           ₹{expense.amount.toFixed(2)}
                         </td>
                         <td className="py-4 px-6 text-center">

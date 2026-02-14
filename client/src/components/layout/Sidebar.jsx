@@ -41,7 +41,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       {/* Sidebar */}
       <aside 
         className={`
-          fixed lg:static inset-y-0 left-0 z-50
+          fixed lg:static inset-y-0 left-0 z-50 font-sans
           w-64 sm:w-72 lg:w-64 xl:w-72 bg-white border-r border-gray-200
           flex flex-col shadow-xl lg:shadow-none
           transition-transform duration-300 ease-out
@@ -55,8 +55,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               <Wallet className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
             </div>
             <div className="min-w-0 flex-1">
-              <span className="font-bold text-base sm:text-lg lg:text-xl text-gray-900 block truncate">Smart Expense</span>
-              <p className="text-xs text-gray-500 hidden sm:block">Tracker</p>
+              <span className="font-semibold text-base sm:text-lg text-gray-900 block truncate tracking-tight">Smart Expense</span>
+              <p className="text-xs text-gray-500 hidden sm:block tracking-tight">Tracker</p>
             </div>
           </div>
           <button
@@ -85,7 +85,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               `}
             >
               <item.icon className="w-5 h-5 flex-shrink-0" />
-              <span className="font-medium text-sm sm:text-base truncate">{item.label}</span>
+              <span className="font-medium text-sm sm:text-base truncate tracking-tight">{item.label}</span>
             </NavLink>
           ))}
         </nav>
@@ -93,8 +93,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         {/* Footer */}
         <div className="p-3 sm:p-4 border-t border-gray-200 flex-shrink-0">
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-3 sm:p-4">
-            <p className="text-xs sm:text-sm font-semibold text-gray-900 mb-1">💡 Pro Tip</p>
-            <p className="text-xs text-gray-600">Track daily for better insights!</p>
+            <p className="text-xs sm:text-sm font-semibold text-gray-900 mb-1 tracking-tight">💡 Pro Tip</p>
+            <p className="text-xs text-gray-600 leading-snug">Track daily for better insights!</p>
           </div>
         </div>
       </aside>

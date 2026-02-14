@@ -6,6 +6,34 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        display: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        body: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+      },
+      fontSize: {
+        'xs': ['0.75rem', { lineHeight: '1.5', letterSpacing: '-0.006em' }],
+        'sm': ['0.875rem', { lineHeight: '1.5', letterSpacing: '-0.008em' }],
+        'base': ['1rem', { lineHeight: '1.6', letterSpacing: '-0.011em' }],
+        'lg': ['1.125rem', { lineHeight: '1.6', letterSpacing: '-0.014em' }],
+        'xl': ['1.25rem', { lineHeight: '1.5', letterSpacing: '-0.017em' }],
+        '2xl': ['1.5rem', { lineHeight: '1.4', letterSpacing: '-0.019em' }],
+        '3xl': ['1.875rem', { lineHeight: '1.3', letterSpacing: '-0.021em' }],
+        '4xl': ['2.25rem', { lineHeight: '1.2', letterSpacing: '-0.022em' }],
+        '5xl': ['3rem', { lineHeight: '1.1', letterSpacing: '-0.024em' }],
+        '6xl': ['3.75rem', { lineHeight: '1', letterSpacing: '-0.025em' }],
+      },
+      fontWeight: {
+        thin: '100',
+        extralight: '200',
+        light: '300',
+        normal: '400',
+        medium: '500',
+        semibold: '600',
+        bold: '700',
+        extrabold: '800',
+        black: '900',
+      },
       screens: {
         'xs': '475px',
         // sm: 640px (default)

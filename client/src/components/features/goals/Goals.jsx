@@ -97,11 +97,11 @@ const Goals = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto font-sans">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 mb-2 flex items-center gap-3 tracking-tight">
             <Target className="w-8 h-8 text-primary" />
             Savings Goals
           </h1>
@@ -127,7 +127,7 @@ const Goals = () => {
         >
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                 Goal Name
               </label>
               <input
@@ -142,7 +142,7 @@ const Goals = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                   Target Amount (₹)
                 </label>
                 <input
@@ -157,7 +157,7 @@ const Goals = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                   Current Amount (₹)
                 </label>
                 <input
@@ -173,7 +173,7 @@ const Goals = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                 Deadline (Optional)
               </label>
               <input
@@ -205,7 +205,7 @@ const Goals = () => {
               <div key={goal.id} className="p-6 border-2 border-gray-200 rounded-xl hover:border-primary hover:shadow-lg transition-all">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{goal.name}</h3>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2 tracking-tight">{goal.name}</h3>
                     {goal.deadline && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Calendar className="w-4 h-4" />
@@ -300,14 +300,14 @@ const Goals = () => {
                 <DollarSign className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-gray-900">Update Progress</h3>
+                <h3 className="text-2xl font-semibold text-gray-900 tracking-tight">Update Progress</h3>
                 <p className="text-gray-600">{selectedGoal.name}</p>
               </div>
             </div>
             
             <form onSubmit={handleUpdate} className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                   Current Amount (₹)
                 </label>
                 <input

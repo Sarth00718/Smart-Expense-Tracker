@@ -50,7 +50,7 @@ const BudgetRecommendations = () => {
   if (!recommendations || !recommendations.hasData) {
     return (
       <div className="p-4 sm:p-6">
-        <h2 className="text-xl sm:text-2xl font-bold mb-6">🎯 AI Budget Recommendations</h2>
+        <h2 className="text-xl sm:text-2xl font-semibold mb-6 tracking-tight font-sans">🎯 AI Budget Recommendations</h2>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 sm:p-6">
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0">
@@ -76,7 +76,7 @@ const BudgetRecommendations = () => {
   return (
     <div className="p-4 sm:p-6">
       <div className="mb-6">
-        <h2 className="text-xl sm:text-2xl font-bold mb-2">🎯 AI Budget Recommendations</h2>
+        <h2 className="text-xl sm:text-2xl font-semibold mb-2 tracking-tight font-sans">🎯 AI Budget Recommendations</h2>
         <p className="text-sm sm:text-base text-gray-600">
           Based on {recommendations.monthsAnalyzed} months of spending analysis
         </p>

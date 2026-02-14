@@ -47,7 +47,7 @@ const Modal = ({
           {/* Modal */}
           <div className="flex min-h-full items-center justify-center p-3 sm:p-4">
             <motion.div 
-              className={`relative bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full ${sizes[size]} max-h-[90vh] overflow-y-auto smooth-scroll`}
+              className={`relative bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full font-sans ${sizes[size]} max-h-[90vh] overflow-y-auto smooth-scroll`}
               onClick={(e) => e.stopPropagation()}
               variants={modalContent}
               initial="initial"
@@ -59,7 +59,7 @@ const Modal = ({
                 <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
                   {title && (
                     <motion.h3 
-                      className="text-lg sm:text-xl font-bold text-gray-900 truncate pr-2"
+                      className="text-lg sm:text-xl font-semibold text-gray-900 truncate pr-2 tracking-tight"
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.1 }}

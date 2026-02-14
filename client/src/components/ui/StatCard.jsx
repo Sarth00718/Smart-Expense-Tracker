@@ -31,7 +31,7 @@ const StatCard = ({
 
   return (
     <motion.div 
-      className={`bg-gradient-to-br ${colors[color]} text-white rounded-lg sm:rounded-xl shadow-card p-4 sm:p-6 relative overflow-hidden ${className}`}
+      className={`bg-gradient-to-br ${colors[color]} text-white rounded-lg sm:rounded-xl shadow-card p-4 sm:p-6 relative overflow-hidden font-sans ${className}`}
       initial={fadeInUp.initial}
       animate={fadeInUp.animate}
       transition={{ ...fadeInUp.transition, delay }}
@@ -67,7 +67,7 @@ const StatCard = ({
           )}
           {trend && (
             <motion.span 
-              className={`text-xs font-medium px-2 py-1 rounded-full ${
+              className={`text-xs font-medium tracking-tight px-2 py-1 rounded-full ${
                 trend === 'up' ? 'bg-white/20' : 'bg-white/20'
               }`}
               initial={{ scale: 0, opacity: 0 }}
@@ -78,9 +78,9 @@ const StatCard = ({
             </motion.span>
           )}
         </div>
-        <p className="text-white/80 text-xs sm:text-sm mb-1">{title}</p>
+        <p className="text-white/80 text-xs sm:text-sm mb-1 tracking-tight">{title}</p>
         <motion.p 
-          className="text-xl sm:text-2xl lg:text-3xl font-bold truncate"
+          className="text-xl sm:text-2xl lg:text-3xl font-semibold truncate tracking-tight tabular-nums"
           variants={counterVariants}
           initial="initial"
           animate="animate"

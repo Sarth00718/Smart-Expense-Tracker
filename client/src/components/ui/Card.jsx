@@ -21,7 +21,7 @@ const Card = ({
   return (
     <div 
       id={id} 
-      className={`bg-white rounded-lg sm:rounded-xl shadow-card ${paddingClasses[padding]} ${hoverClass} ${className}`}
+      className={`bg-white rounded-lg sm:rounded-xl shadow-card font-sans ${paddingClasses[padding]} ${hoverClass} ${className}`}
     >
       {(title || action) && (
         <div className="flex items-start justify-between mb-4 sm:mb-6 gap-3">
@@ -32,8 +32,8 @@ const Card = ({
               </div>
             )}
             <div className="min-w-0">
-              {title && <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">{title}</h3>}
-              {subtitle && <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1 truncate">{subtitle}</p>}
+              {title && <h3 className="text-lg sm:text-xl font-semibold text-gray-900 truncate tracking-tight">{title}</h3>}
+              {subtitle && <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1 truncate leading-snug">{subtitle}</p>}
             </div>
           </div>
           {action && <div className="flex-shrink-0">{action}</div>}

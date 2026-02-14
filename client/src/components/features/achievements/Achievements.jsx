@@ -70,14 +70,14 @@ const Achievements = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto font-sans">
       {/* Header */}
       <div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 mb-2 flex items-center gap-3 tracking-tight">
           <Trophy className="w-8 h-8 text-yellow-600" />
           Achievements
         </h1>
-        <p className="text-gray-600 text-lg">Track your financial milestones and earn rewards</p>
+        <p className="text-gray-600 text-sm sm:text-base lg:text-lg leading-relaxed">Track your financial milestones and earn rewards</p>
       </div>
 
       {/* Financial Health Score */}
@@ -107,17 +107,17 @@ const Achievements = () => {
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-5xl font-bold">{score.score}</span>
+                <span className="text-5xl font-semibold tabular-nums tracking-tight">{score.score}</span>
                 <span className="text-sm opacity-90">/ {score.maxScore}</span>
               </div>
             </div>
             <div className="flex-1 text-center md:text-left">
-              <h3 className="text-3xl font-bold mb-2 flex items-center gap-3 justify-center md:justify-start">
+              <h3 className="text-2xl sm:text-3xl font-semibold mb-2 flex items-center gap-3 justify-center md:justify-start tracking-tight">
                 <Trophy className="w-8 h-8" />
                 Financial Health Score
               </h3>
-              <p className="text-3xl font-bold mb-2">{score.rating}</p>
-              <p className="text-white/80 text-lg">
+              <p className="text-2xl sm:text-3xl font-semibold mb-2 tracking-tight">{score.rating}</p>
+              <p className="text-white/80 text-base sm:text-lg leading-relaxed">
                 Keep tracking expenses to improve your score!
               </p>
             </div>
@@ -166,7 +166,7 @@ const Achievements = () => {
                   <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${getBadgeColor(achievement.badgeType)} flex items-center justify-center text-white mb-4 mx-auto shadow-lg`}>
                     <span className="text-4xl">{achievement.icon}</span>
                   </div>
-                  <h3 className="text-xl font-bold text-center mb-2 text-gray-900">
+                  <h3 className="text-xl font-semibold text-center mb-2 text-gray-900 tracking-tight">
                     {achievement.title}
                   </h3>
                   <p className="text-sm text-gray-600 text-center mb-4">
@@ -186,7 +186,7 @@ const Achievements = () => {
 
         {/* Available Achievements Info */}
         <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl">
-          <h4 className="font-bold text-blue-900 mb-4 text-lg flex items-center gap-2">
+          <h4 className="font-semibold text-blue-900 mb-4 text-lg flex items-center gap-2 tracking-tight">
             <Target className="w-5 h-5" />
             Available Achievements
           </h4>

@@ -204,12 +204,12 @@ const Budgets = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto font-sans">
       {/* Header with Tabs */}
       <div>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 mb-2 flex items-center gap-3 tracking-tight">
               <PieChart className="w-8 h-8 text-primary" />
               Budget Management
             </h1>
@@ -267,7 +267,7 @@ const Budgets = () => {
         <div className="space-y-4">
           <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6">
-              <h3 className="text-lg sm:text-xl font-semibold">Your Budgets</h3>
+              <h3 className="text-lg sm:text-xl font-semibold tracking-tight">Your Budgets</h3>
               <button
                 onClick={() => setShowForm(!showForm)}
                 className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
@@ -282,7 +282,7 @@ const Budgets = () => {
               <form onSubmit={handleSubmit} className="mb-6 p-4 bg-gray-50 rounded-lg">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                       Category
                     </label>
                     <select
@@ -304,7 +304,7 @@ const Budgets = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                       Monthly Budget (₹)
                     </label>
                     <input
@@ -410,7 +410,7 @@ const Budgets = () => {
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <h3 className="text-lg sm:text-xl font-bold">
+              <h3 className="text-lg sm:text-xl font-semibold tracking-tight">
                 {format(selectedMonth, 'MMMM yyyy')}
               </h3>
               <button
@@ -442,14 +442,14 @@ const Budgets = () => {
                 {/* Summary Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                   <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                    <h4 className="text-sm text-blue-600 font-semibold mb-1">Total Budget</h4>
-                    <p className="text-2xl font-bold text-blue-900">
+                    <h4 className="text-sm text-blue-600 font-semibold mb-1 tracking-tight">Total Budget</h4>
+                    <p className="text-2xl font-semibold text-blue-900 tabular-nums tracking-tight">
                       ₹{historyData.reduce((sum, item) => sum + item.budget, 0).toFixed(2)}
                     </p>
                   </div>
                   <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                    <h4 className="text-sm text-purple-600 font-semibold mb-1">Total Spent</h4>
-                    <p className="text-2xl font-bold text-purple-900">
+                    <h4 className="text-sm text-purple-600 font-semibold mb-1 tracking-tight">Total Spent</h4>
+                    <p className="text-2xl font-semibold text-purple-900 tabular-nums tracking-tight">
                       ₹{historyData.reduce((sum, item) => sum + item.spent, 0).toFixed(2)}
                     </p>
                   </div>

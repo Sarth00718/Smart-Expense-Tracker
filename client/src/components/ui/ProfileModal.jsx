@@ -4,7 +4,7 @@ import { Modal } from './index'
 const ProfileModal = ({ isOpen, onClose, user }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="sm">
-      <div className="space-y-6">
+      <div className="space-y-6 font-sans">
         {/* Header */}
         <div className="text-center">
           <div className="w-20 h-20 bg-gradient-to-br from-primary to-[#3a0ca3] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -18,14 +18,14 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
               <User className="w-10 h-10 text-white" />
             )}
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-1">
+          <h2 className="text-xl font-semibold text-gray-900 mb-1 tracking-tight">
             {user?.fullName || 'User'}
           </h2>
           <div className="flex gap-2 justify-center">
-            <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+            <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full tracking-tight">
               Premium
             </span>
-            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full tracking-tight">
               Verified
             </span>
           </div>
@@ -38,8 +38,8 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
               <Mail className="w-5 h-5 text-blue-600" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-gray-500 mb-0.5">Email</p>
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="text-xs text-gray-500 mb-0.5 tracking-tight">Email</p>
+              <p className="text-sm font-medium text-gray-900 truncate tracking-tight">
                 {user?.email || 'Not provided'}
               </p>
             </div>
@@ -50,8 +50,8 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
               <Calendar className="w-5 h-5 text-green-600" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-gray-500 mb-0.5">Member Since</p>
-              <p className="text-sm font-medium text-gray-900">
+              <p className="text-xs text-gray-500 mb-0.5 tracking-tight">Member Since</p>
+              <p className="text-sm font-medium text-gray-900 tracking-tight">
                 {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
               </p>
             </div>
@@ -62,8 +62,8 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
               <Shield className="w-5 h-5 text-purple-600" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-gray-500 mb-0.5">Account Status</p>
-              <p className="text-sm font-medium text-gray-900">Active & Secure</p>
+              <p className="text-xs text-gray-500 mb-0.5 tracking-tight">Account Status</p>
+              <p className="text-sm font-medium text-gray-900 tracking-tight">Active & Secure</p>
             </div>
           </div>
         </div>
@@ -71,23 +71,23 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 pt-4 border-t border-gray-200">
           <div className="text-center">
-            <p className="text-2xl font-bold text-primary">24</p>
-            <p className="text-xs text-gray-600">Expenses</p>
+            <p className="text-2xl font-semibold text-primary tabular-nums tracking-tight">24</p>
+            <p className="text-xs text-gray-600 tracking-tight">Expenses</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-green-600">5</p>
-            <p className="text-xs text-gray-600">Budgets</p>
+            <p className="text-2xl font-semibold text-green-600 tabular-nums tracking-tight">5</p>
+            <p className="text-xs text-gray-600 tracking-tight">Budgets</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-orange-600">3</p>
-            <p className="text-xs text-gray-600">Goals</p>
+            <p className="text-2xl font-semibold text-orange-600 tabular-nums tracking-tight">3</p>
+            <p className="text-xs text-gray-600 tracking-tight">Goals</p>
           </div>
         </div>
 
         {/* Action Button */}
         <button
           onClick={onClose}
-          className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
+          className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium text-sm rounded-lg transition-colors tracking-tight"
         >
           Close
         </button>

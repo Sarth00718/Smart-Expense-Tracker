@@ -29,7 +29,7 @@ const Header = ({ toggleSidebar }) => {
   }
 
   return (
-    <header className="h-14 sm:h-16 bg-white border-b border-gray-200 flex items-center justify-between px-3 sm:px-4 md:px-6 flex-shrink-0 shadow-sm relative z-50">
+    <header className="h-14 sm:h-16 bg-white border-b border-gray-200 flex items-center justify-between px-3 sm:px-4 md:px-6 flex-shrink-0 shadow-sm relative z-50 font-sans">
       {/* Left: Menu Button */}
       <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
         <button
@@ -63,10 +63,10 @@ const Header = ({ toggleSidebar }) => {
             )}
           </div>
           <div className="hidden md:block cursor-pointer min-w-0" onClick={() => setShowUserMenu(!showUserMenu)}>
-            <p className="text-sm font-semibold text-gray-900 truncate max-w-[120px] lg:max-w-[180px]">
+            <p className="text-sm font-semibold text-gray-900 truncate max-w-[120px] lg:max-w-[180px] tracking-tight">
               {user?.fullName || 'User'}
             </p>
-            <p className="text-xs text-gray-500 truncate max-w-[120px] lg:max-w-[180px]">{user?.email || ''}</p>
+            <p className="text-xs text-gray-500 truncate max-w-[120px] lg:max-w-[180px] tracking-tight">{user?.email || ''}</p>
           </div>
 
           {/* User Dropdown Menu */}
@@ -81,10 +81,10 @@ const Header = ({ toggleSidebar }) => {
               <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] max-w-[280px] sm:w-72 bg-white rounded-xl shadow-2xl border border-gray-200 z-[101]">
                 {/* User Info */}
                 <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
-                  <p className="font-semibold text-sm text-gray-900 truncate">
+                  <p className="font-semibold text-sm text-gray-900 truncate tracking-tight">
                     {user?.fullName || 'User'}
                   </p>
-                  <p className="text-xs text-gray-600 truncate">
+                  <p className="text-xs text-gray-600 truncate tracking-tight">
                     {user?.email || ''}
                   </p>
                 </div>
@@ -98,7 +98,7 @@ const Header = ({ toggleSidebar }) => {
                     <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors flex-shrink-0">
                       <User className="w-4 h-4 text-blue-600" />
                     </div>
-                    <span className="font-medium">My Profile</span>
+                    <span className="font-medium text-sm tracking-tight">My Profile</span>
                   </button>
                   
                   <button
@@ -108,7 +108,7 @@ const Header = ({ toggleSidebar }) => {
                     <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors flex-shrink-0">
                       <Settings className="w-4 h-4 text-purple-600" />
                     </div>
-                    <span className="font-medium">Settings</span>
+                    <span className="font-medium text-sm tracking-tight">Settings</span>
                   </button>
                 </div>
 
@@ -121,7 +121,7 @@ const Header = ({ toggleSidebar }) => {
                     <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 transition-colors flex-shrink-0">
                       <LogOut className="w-4 h-4 text-red-600" />
                     </div>
-                    <span className="font-medium">Logout</span>
+                    <span className="font-medium text-sm tracking-tight">Logout</span>
                   </button>
                 </div>
               </div>

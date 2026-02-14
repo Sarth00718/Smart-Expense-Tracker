@@ -107,7 +107,7 @@ const CommonExport = () => {
                     <Download className="w-6 h-6" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold">Export Financial Data</h2>
+                    <h2 className="text-2xl font-semibold tracking-tight font-sans">Export Financial Data</h2>
                     <p className="text-white/80 text-sm mt-1">Download your financial data in multiple formats</p>
                   </div>
                 </div>

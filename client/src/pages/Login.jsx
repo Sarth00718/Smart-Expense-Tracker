@@ -236,7 +236,7 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-purple p-4 sm:p-6 lg:p-6 xl:p-8 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-purple p-4 sm:p-6 lg:p-6 xl:p-8 relative overflow-hidden font-sans antialiased">
       {/* Animated Background Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 -left-4 w-96 h-96 bg-primary-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
@@ -255,15 +255,15 @@ const Login = () => {
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles className="w-5 h-5 text-yellow-300 animate-pulse" />
-                <span className="text-xs font-semibold text-yellow-300 uppercase tracking-wider">Welcome Back</span>
+                <span className="text-xs font-semibold text-yellow-300 uppercase tracking-widest">Welcome Back</span>
               </div>
-              <h1 className="text-4xl font-bold leading-tight mb-3">
+              <h1 className="text-3xl sm:text-4xl font-bold leading-tight tracking-tight mb-3">
                 Smart Expense
                 <span className="block bg-gradient-to-r from-yellow-200 via-pink-200 to-purple-200 bg-clip-text text-transparent mt-1 animate-gradient">
                   Tracker
                 </span>
               </h1>
-              <p className="text-base text-white/90 leading-relaxed">
+              <p className="text-sm sm:text-base text-white/90 leading-relaxed tracking-normal">
                 AI-powered expense tracking with voice input, receipt scanning, and smart analytics
               </p>
             </div>
@@ -284,8 +284,8 @@ const Login = () => {
                   <feature.icon className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm mb-0.5">{feature.title}</h3>
-                  <p className="text-xs text-white/80">{feature.desc}</p>
+                  <h3 className="font-semibold text-sm tracking-tight mb-0.5">{feature.title}</h3>
+                  <p className="text-xs text-white/80 leading-snug">{feature.desc}</p>
                 </div>
               </div>
             ))}
@@ -301,7 +301,7 @@ const Login = () => {
             ].map((feature, index) => (
               <div key={index} className="text-center p-2 bg-white/5 rounded-lg backdrop-blur-sm">
                 <div className="text-2xl mb-1">{feature.icon}</div>
-                <div className="text-xs text-white/90 font-medium">{feature.label}</div>
+                <div className="text-xs text-white/90 font-medium tracking-tight">{feature.label}</div>
               </div>
             ))}
           </div>
@@ -314,30 +314,30 @@ const Login = () => {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-lg rounded-2xl shadow-2xl mb-4">
               <Wallet className="w-8 h-8 text-white" />
             </div>
-            <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
-            <p className="text-white/80">Sign in to continue your journey</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2 tracking-tight">Welcome Back</h2>
+            <p className="text-sm text-white/80 tracking-normal">Sign in to continue your journey</p>
           </div>
 
           {/* Enhanced Glass Card */}
-          <div className="relative bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl p-6 lg:p-8 border border-white/30 overflow-hidden">
+          <div className="relative bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl p-6 lg:p-8 border border-white/30 overflow-hidden font-sans">
             {/* Decorative corner gradient */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-transparent rounded-bl-full"></div>
             
             <div className="relative z-10">
               {/* Header */}
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-1 flex items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 flex items-center gap-2 tracking-tight">
                   Sign In
                   <span className="text-xl">👋</span>
                 </h2>
-                <p className="text-sm text-gray-600">Enter your credentials to access your account</p>
+                <p className="text-sm text-gray-600 leading-relaxed">Enter your credentials to access your account</p>
               </div>
 
               {/* Error Message */}
               {error && (
                 <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500 rounded-xl flex items-start gap-3 animate-shake shadow-sm">
                   <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-red-800 font-medium">{error}</p>
+                  <p className="text-sm text-red-800 font-medium tracking-tight">{error}</p>
                 </div>
               )}
 
@@ -345,7 +345,7 @@ const Login = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Email */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-bold text-gray-700 mb-2">
+                  <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                     Email Address
                   </label>
                   <div className="relative group">
@@ -380,7 +380,7 @@ const Login = () => {
 
                 {/* Password */}
                 <div>
-                  <label htmlFor="password" className="block text-sm font-bold text-gray-700 mb-2">
+                  <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                     Password
                   </label>
                   <div className="relative group">
@@ -424,7 +424,7 @@ const Login = () => {
                 <button
                   type="submit"
                   disabled={loading || emailError || passwordError}
-                  className="group relative w-full py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-500/50 transition-all duration-300 hover:scale-[1.02] hover:from-primary-600 hover:to-primary-700 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
+                  className="group relative w-full py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold text-base rounded-xl tracking-tight focus:outline-none focus:ring-4 focus:ring-primary-500/50 transition-all duration-300 hover:scale-[1.02] hover:from-primary-600 hover:to-primary-700 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-primary-600 via-secondary-purple to-primary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="relative flex items-center justify-center gap-2">
@@ -447,7 +447,7 @@ const Login = () => {
                   <div className="w-full border-t-2 border-gray-200"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-gray-500 font-bold">Or continue with</span>
+                  <span className="px-4 bg-white text-gray-500 font-semibold text-sm tracking-tight">Or continue with</span>
                 </div>
               </div>
 
@@ -456,7 +456,7 @@ const Login = () => {
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={googleLoading}
-                className="group w-full py-4 bg-white border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 hover:border-primary-500 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-gray-200 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
+                className="group w-full py-4 bg-white border-2 border-gray-300 text-gray-700 font-semibold text-base rounded-xl tracking-tight hover:bg-gray-50 hover:border-primary-500 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-gray-200 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
               >
                 {googleLoading ? (
                   <div className="w-5 h-5 border-3 border-gray-300 border-t-gray-700 rounded-full animate-spin"></div>
@@ -479,7 +479,7 @@ const Login = () => {
                   type="button"
                   onClick={handleBiometricLogin}
                   disabled={biometricLoading}
-                  className="group w-full py-4 bg-white border-2 border-primary-500 text-primary-600 font-bold rounded-xl hover:bg-primary-500 hover:text-white hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-primary-500/50 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3 mt-3"
+                  className="group w-full py-4 bg-white border-2 border-primary-500 text-primary-600 font-semibold text-base rounded-xl tracking-tight hover:bg-primary-500 hover:text-white hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-primary-500/50 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3 mt-3"
                 >
                   {biometricLoading ? (
                     <div className="w-5 h-5 border-3 border-purple-600/30 border-t-purple-600 rounded-full animate-spin"></div>
@@ -494,10 +494,10 @@ const Login = () => {
 
               {/* Register Link */}
               <div className="mt-8 text-center">
-                <p className="text-gray-600 mb-3">Don't have an account?</p>
+                <p className="text-sm text-gray-600 mb-3 tracking-normal">Don't have an account?</p>
                 <Link
                   to="/register"
-                  className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-bold transition-all group text-lg"
+                  className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-semibold text-base sm:text-lg transition-all group tracking-tight"
                 >
                   <span>Create an account</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -507,7 +507,7 @@ const Login = () => {
           </div>
 
           {/* Footer */}
-          <p className="text-center text-white/90 text-xs mt-4 font-medium">
+          <p className="text-center text-white/90 text-xs mt-4 font-medium tracking-tight">
             Smart tracking with AI, voice & receipt scanning 💰✨
           </p>
         </div>

@@ -149,7 +149,7 @@ const DashboardHome = () => {
 
   return (
     <motion.div 
-      className="p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6 lg:space-y-8 max-w-[1600px] mx-auto"
+      className="p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6 lg:space-y-8 max-w-[1600px] mx-auto font-sans"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
@@ -160,10 +160,10 @@ const DashboardHome = () => {
         {...fadeInUp}
       >
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 mb-1 sm:mb-2 tracking-tight">
             Welcome back! 👋
           </h1>
-          <p className="text-gray-600 text-sm sm:text-base lg:text-lg">Here's your financial overview for today</p>
+          <p className="text-gray-600 text-sm sm:text-base lg:text-lg leading-relaxed">Here's your financial overview for today</p>
         </div>
       </motion.div>
 
@@ -219,7 +219,7 @@ const DashboardHome = () => {
         transition={{ delay: 0.3, duration: 0.4 }}
       >
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2 tracking-tight">
             <Zap className="w-4 h-4 text-blue-600" />
             Quick Actions
           </h3>
@@ -403,7 +403,7 @@ const DashboardHome = () => {
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0 ml-2 sm:ml-4">
-                      <p className="font-bold text-gray-900 text-base sm:text-lg">₹{expense.amount.toFixed(2)}</p>
+                      <p className="font-semibold text-gray-900 text-base sm:text-lg tabular-nums tracking-tight">₹{expense.amount.toFixed(2)}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -475,7 +475,7 @@ const DashboardHome = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                 Date
               </label>
               <input
@@ -487,7 +487,7 @@ const DashboardHome = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                 Category
               </label>
               <select
@@ -511,7 +511,7 @@ const DashboardHome = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
               Amount (₹)
             </label>
             <input
@@ -527,7 +527,7 @@ const DashboardHome = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
               Description (Optional)
             </label>
             <input
@@ -582,7 +582,7 @@ const DashboardHome = () => {
         <form onSubmit={handleIncomeSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                 Date
               </label>
               <input
@@ -594,7 +594,7 @@ const DashboardHome = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                 Source
               </label>
               <select
@@ -616,7 +616,7 @@ const DashboardHome = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
               Amount (₹)
             </label>
             <input
@@ -632,7 +632,7 @@ const DashboardHome = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
               Description (Optional)
             </label>
             <input

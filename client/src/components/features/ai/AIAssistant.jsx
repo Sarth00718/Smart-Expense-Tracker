@@ -259,7 +259,7 @@ const AIAssistant = () => {
       // Check if it's a header (starts with ##)
       if (line.startsWith('##')) {
         return (
-          <h3 key={index} className="text-lg font-bold text-gray-800 mt-4 mb-2">
+          <h3 key={index} className="text-lg font-semibold text-gray-800 mt-4 mb-2 tracking-tight">
             {line.replace('##', '').trim()}
           </h3>
         )
@@ -293,15 +293,15 @@ const AIAssistant = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto font-sans">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 mb-2 flex items-center gap-3 tracking-tight">
             <Bot className="w-8 h-8 text-primary" />
             AI Finance Assistant
           </h1>
-          <p className="text-gray-600 text-lg">Get personalized financial insights and advice powered by AI</p>
+          <p className="text-gray-600 text-sm sm:text-base lg:text-lg leading-relaxed">Get personalized financial insights and advice powered by AI</p>
         </div>
         <div className="flex gap-2">
           <Button
@@ -537,7 +537,7 @@ const SmartInsightsCard = ({ tabContent, loading, currentType, onRefresh, onBudg
       // Headers
       if (line.startsWith('##')) {
         return (
-          <h3 key={index} className="text-lg font-bold text-gray-800 mt-4 mb-2">
+          <h3 key={index} className="text-lg font-semibold text-gray-800 mt-4 mb-2 tracking-tight">
             {line.replace('##', '').trim()}
           </h3>
         )
@@ -591,7 +591,7 @@ const SmartInsightsCard = ({ tabContent, loading, currentType, onRefresh, onBudg
             <Lightbulb className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Smart Insights</h2>
+            <h2 className="text-xl font-semibold text-gray-900 tracking-tight">Smart Insights</h2>
             <p className="text-sm text-gray-600">AI-powered financial recommendations</p>
           </div>
         </div>
@@ -681,7 +681,7 @@ const SmartInsightsCard = ({ tabContent, loading, currentType, onRefresh, onBudg
 
           {/* Pro Tips Section */}
           <div className="p-5 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-xl">
-            <h4 className="font-bold text-yellow-800 mb-3 flex items-center gap-2">
+            <h4 className="font-semibold text-yellow-800 mb-3 flex items-center gap-2 tracking-tight">
               <Lightbulb className="w-5 h-5" />
               Pro Tips
             </h4>

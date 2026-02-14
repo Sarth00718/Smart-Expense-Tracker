@@ -177,10 +177,10 @@ const Settings = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1400px] mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1400px] mx-auto font-sans">
       {/* Header */}
       <div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Settings</h1>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 mb-2 tracking-tight">Settings</h1>
         <p className="text-gray-600 text-lg">Manage your account and preferences</p>
       </div>
 
@@ -278,7 +278,7 @@ const Settings = () => {
                   )}
                 </div>
                 <div>
-                  <h4 className="text-xl font-bold text-gray-900 mb-1">
+                  <h4 className="text-xl font-semibold text-gray-900 mb-1 tracking-tight">
                     {user?.fullName || 'User'}
                   </h4>
                   <p className="text-gray-600 mb-3">{user?.email}</p>
@@ -293,7 +293,7 @@ const Settings = () => {
               {/* Profile Form */}
               <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                     Full Name
                   </label>
                   <input
@@ -306,7 +306,7 @@ const Settings = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                     Email Address
                   </label>
                   <input
@@ -324,7 +324,7 @@ const Settings = () => {
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                     Account Type
                   </label>
                   <input
@@ -339,17 +339,17 @@ const Settings = () => {
 
             {/* Account Stats */}
             <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200">
-              <h4 className="font-bold text-blue-900 mb-4 text-lg">Account Information</h4>
+              <h4 className="font-semibold text-blue-900 mb-4 text-lg tracking-tight">Account Information</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <p className="text-blue-700 mb-2 font-medium">Member Since</p>
-                  <p className="text-xl font-bold text-blue-900">
+                  <p className="text-xl font-semibold text-blue-900 tracking-tight">
                     {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                   </p>
                 </div>
                 <div>
                   <p className="text-blue-700 mb-2 font-medium">Last Login</p>
-                  <p className="text-xl font-bold text-blue-900">
+                  <p className="text-xl font-semibold text-blue-900 tracking-tight">
                     {user?.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'N/A'}
                   </p>
                 </div>
@@ -370,7 +370,7 @@ const Settings = () => {
                       <Lock className="w-7 h-7 text-purple-600" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">
+                      <h3 className="text-xl font-semibold text-gray-900 tracking-tight">
                         Password
                       </h3>
                       <p className="text-sm text-gray-500">
@@ -405,7 +405,7 @@ const Settings = () => {
                       <Monitor className="w-7 h-7 text-green-600" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">
+                      <h3 className="text-xl font-semibold text-gray-900 tracking-tight">
                         Active Sessions
                       </h3>
                       <p className="text-sm text-gray-500">
@@ -446,7 +446,7 @@ const Settings = () => {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
               Current Password
             </label>
             <div className="relative">
@@ -468,7 +468,7 @@ const Settings = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
               New Password
             </label>
             <div className="relative">
@@ -490,7 +490,7 @@ const Settings = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
               Confirm New Password
             </label>
             <div className="relative">

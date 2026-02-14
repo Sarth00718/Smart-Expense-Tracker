@@ -147,14 +147,14 @@ const Analytics = () => {
   }, [filteredData])
 
   return (
-    <div className="p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6 lg:space-y-8 max-w-[1600px] mx-auto">
+    <div className="p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6 lg:space-y-8 max-w-[1600px] mx-auto font-sans">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 mb-1 sm:mb-2 tracking-tight">
             Analytics Dashboard
           </h1>
-          <p className="text-gray-600 text-sm sm:text-base lg:text-lg">
+          <p className="text-gray-600 text-sm sm:text-base lg:text-lg leading-relaxed">
             Insights into your spending patterns
           </p>
         </div>
@@ -186,33 +186,33 @@ const Analytics = () => {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
         <div className="card bg-gradient-to-br from-blue-500 to-blue-600 text-white p-3 sm:p-4">
           <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
-          <p className="text-white/80 text-xs sm:text-sm">Total Income</p>
-          <p className="text-lg sm:text-xl lg:text-2xl font-bold mt-1">₹{statistics.totalIncome.toFixed(0)}</p>
+          <p className="text-white/80 text-xs sm:text-sm tracking-tight">Total Income</p>
+          <p className="text-lg sm:text-xl lg:text-2xl font-semibold mt-1 tabular-nums tracking-tight">₹{statistics.totalIncome.toFixed(0)}</p>
         </div>
         <div className="card bg-gradient-to-br from-red-500 to-red-600 text-white p-3 sm:p-4">
           <TrendingDown className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
-          <p className="text-white/80 text-xs sm:text-sm">Total Expenses</p>
-          <p className="text-lg sm:text-xl lg:text-2xl font-bold mt-1">₹{statistics.totalExpenses.toFixed(0)}</p>
+          <p className="text-white/80 text-xs sm:text-sm tracking-tight">Total Expenses</p>
+          <p className="text-lg sm:text-xl lg:text-2xl font-semibold mt-1 tabular-nums tracking-tight">₹{statistics.totalExpenses.toFixed(0)}</p>
         </div>
         <div className="card bg-gradient-to-br from-green-500 to-green-600 text-white p-3 sm:p-4">
           <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
-          <p className="text-white/80 text-xs sm:text-sm">Net Savings</p>
-          <p className="text-lg sm:text-xl lg:text-2xl font-bold mt-1">₹{statistics.netSavings.toFixed(0)}</p>
+          <p className="text-white/80 text-xs sm:text-sm tracking-tight">Net Savings</p>
+          <p className="text-lg sm:text-xl lg:text-2xl font-semibold mt-1 tabular-nums tracking-tight">₹{statistics.netSavings.toFixed(0)}</p>
         </div>
         <div className="card bg-gradient-to-br from-orange-500 to-orange-600 text-white p-3 sm:p-4">
           <Activity className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
-          <p className="text-white/80 text-xs sm:text-sm">Avg Daily</p>
-          <p className="text-lg sm:text-xl lg:text-2xl font-bold mt-1">₹{statistics.avgDaily.toFixed(0)}</p>
+          <p className="text-white/80 text-xs sm:text-sm tracking-tight">Avg Daily</p>
+          <p className="text-lg sm:text-xl lg:text-2xl font-semibold mt-1 tabular-nums tracking-tight">₹{statistics.avgDaily.toFixed(0)}</p>
         </div>
         <div className="card bg-gradient-to-br from-purple-500 to-purple-600 text-white p-3 sm:p-4">
           <PieChart className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
-          <p className="text-white/80 text-xs sm:text-sm">Categories</p>
-          <p className="text-lg sm:text-xl lg:text-2xl font-bold mt-1">{statistics.categoryCount}</p>
+          <p className="text-white/80 text-xs sm:text-sm tracking-tight">Categories</p>
+          <p className="text-lg sm:text-xl lg:text-2xl font-semibold mt-1 tabular-nums tracking-tight">{statistics.categoryCount}</p>
         </div>
         <div className="card bg-gradient-to-br from-indigo-500 to-indigo-600 text-white p-3 sm:p-4">
           <Calendar className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
-          <p className="text-white/80 text-xs sm:text-sm">Transactions</p>
-          <p className="text-lg sm:text-xl lg:text-2xl font-bold mt-1">{statistics.transactionCount}</p>
+          <p className="text-white/80 text-xs sm:text-sm tracking-tight">Transactions</p>
+          <p className="text-lg sm:text-xl lg:text-2xl font-semibold mt-1 tabular-nums tracking-tight">{statistics.transactionCount}</p>
         </div>
       </div>
 
@@ -312,7 +312,7 @@ const Analytics = () => {
               <div key={index}>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs sm:text-sm font-medium text-gray-700">{cat.name}</span>
-                  <span className="text-xs sm:text-sm font-bold text-gray-900">₹{cat.value.toFixed(0)}</span>
+                  <span className="text-xs sm:text-sm font-semibold text-gray-900 tabular-nums">₹{cat.value.toFixed(0)}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div

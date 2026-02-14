@@ -119,11 +119,11 @@ const Income = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto font-sans">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 mb-2 flex items-center gap-3 tracking-tight">
             <DollarSign className="w-8 h-8 text-green-600" />
             Income Tracker
           </h1>
@@ -174,7 +174,7 @@ const Income = () => {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                   Date
                 </label>
                 <input
@@ -187,7 +187,7 @@ const Income = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                   Source
                 </label>
                 <select
@@ -204,7 +204,7 @@ const Income = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                 Amount (₹)
               </label>
               <input
@@ -220,7 +220,7 @@ const Income = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
                 Description (Optional)
               </label>
               <input
@@ -277,12 +277,12 @@ const Income = () => {
             <table className="w-full">
               <thead className="bg-gray-50 border-y border-gray-200">
                 <tr>
-                  <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-wider">Date</th>
-                  <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-wider">Source</th>
-                  <th className="text-right py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-wider">Amount</th>
-                  <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-wider hidden sm:table-cell">Description</th>
-                  <th className="text-center py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-wider hidden md:table-cell">Recurring</th>
-                  <th className="text-center py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-wider">Actions</th>
+                  <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest">Date</th>
+                  <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest">Source</th>
+                  <th className="text-right py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest">Amount</th>
+                  <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest hidden sm:table-cell">Description</th>
+                  <th className="text-center py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest hidden md:table-cell">Recurring</th>
+                  <th className="text-center py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -296,7 +296,7 @@ const Income = () => {
                         {incomeItem.source}
                       </span>
                     </td>
-                    <td className="py-4 px-6 text-right font-bold text-green-600 text-lg">
+                    <td className="py-4 px-6 text-right font-semibold text-green-600 text-base sm:text-lg tabular-nums tracking-tight">
                       ₹{incomeItem.amount.toFixed(2)}
                     </td>
                     <td className="py-4 px-6 text-gray-600 hidden sm:table-cell">
