@@ -7,12 +7,14 @@ export const authService = {
     // Try backend authentication first
     try {
       const response = await api.post('/auth/register', { email, password, fullName })
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token)
-        localStorage.setItem('user', JSON.stringify(response.data.user))
+      // Backend returns data in response.data.data structure
+      const { token, user } = response.data.data || response.data
+      if (token) {
+        localStorage.setItem('token', token)
+        localStorage.setItem('user', JSON.stringify(user))
         localStorage.setItem('authMethod', 'backend')
       }
-      return response.data
+      return { token, user }
     } catch (backendError) {
       // Fallback to Firebase silently
       
@@ -35,12 +37,13 @@ export const authService = {
           })
           
           // Use backend token and user data if sync successful
-          if (syncResponse.data.token) {
-            localStorage.setItem('token', syncResponse.data.token)
-            localStorage.setItem('user', JSON.stringify(syncResponse.data.user))
+          const syncData = syncResponse.data.data || syncResponse.data
+          if (syncData.token) {
+            localStorage.setItem('token', syncData.token)
+            localStorage.setItem('user', JSON.stringify(syncData.user))
             return {
-              token: syncResponse.data.token,
-              user: syncResponse.data.user
+              token: syncData.token,
+              user: syncData.user
             }
           }
         } catch (error) {
@@ -59,12 +62,14 @@ export const authService = {
     // Try backend authentication first
     try {
       const response = await api.post('/auth/login', { email, password })
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token)
-        localStorage.setItem('user', JSON.stringify(response.data.user))
+      // Backend returns data in response.data.data structure
+      const { token, user } = response.data.data || response.data
+      if (token) {
+        localStorage.setItem('token', token)
+        localStorage.setItem('user', JSON.stringify(user))
         localStorage.setItem('authMethod', 'backend')
       }
-      return response.data
+      return { token, user }
     } catch (backendError) {
       // If backend returns 401 (invalid credentials), throw immediately without Firebase fallback
       if (backendError.response?.status === 401) {
@@ -90,12 +95,13 @@ export const authService = {
           })
           
           // Use backend token and user data if sync successful
-          if (syncResponse.data.token) {
-            localStorage.setItem('token', syncResponse.data.token)
-            localStorage.setItem('user', JSON.stringify(syncResponse.data.user))
+          const syncData = syncResponse.data.data || syncResponse.data
+          if (syncData.token) {
+            localStorage.setItem('token', syncData.token)
+            localStorage.setItem('user', JSON.stringify(syncData.user))
             return {
-              token: syncResponse.data.token,
-              user: syncResponse.data.user
+              token: syncData.token,
+              user: syncData.user
             }
           }
         } catch (error) {
@@ -130,12 +136,13 @@ export const authService = {
         })
         
         // Use backend token and user data if sync successful
-        if (syncResponse.data.token) {
-          localStorage.setItem('token', syncResponse.data.token)
-          localStorage.setItem('user', JSON.stringify(syncResponse.data.user))
+        const syncData = syncResponse.data.data || syncResponse.data
+        if (syncData.token) {
+          localStorage.setItem('token', syncData.token)
+          localStorage.setItem('user', JSON.stringify(syncData.user))
           return {
-            token: syncResponse.data.token,
-            user: syncResponse.data.user
+            token: syncData.token,
+            user: syncData.user
           }
         }
       } catch (error) {

@@ -45,11 +45,8 @@ const Login = () => {
 
   const handlePasswordBlur = () => {
     setFocusedField(null)
-    if (password && password.length < 6) {
-      setPasswordError('Password must be at least 6 characters')
-    } else {
-      setPasswordError('')
-    }
+    // Don't validate password length on login - backend will handle it
+    // Only validate on registration
   }
 
   const handleSubmit = async (e) => {
@@ -63,8 +60,8 @@ const Login = () => {
       return
     }
 
-    if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters')
+    if (!password) {
+      setPasswordError('Password is required')
       return
     }
 

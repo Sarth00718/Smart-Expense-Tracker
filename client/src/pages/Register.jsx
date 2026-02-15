@@ -30,8 +30,8 @@ const Register = () => {
   useEffect(() => {
     const password = formData.password
     let strength = 0
-    if (password.length >= 6) strength++
-    if (password.length >= 10) strength++
+    if (password.length >= 8) strength++
+    if (password.length >= 12) strength++
     if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++
     if (/\d/.test(password)) strength++
     if (/[^a-zA-Z0-9]/.test(password)) strength++
@@ -65,7 +65,11 @@ const Register = () => {
         break
       case 'password':
         if (!value) error = 'Password is required'
-        else if (value.length < 6) error = 'Password must be at least 6 characters'
+        else if (value.length < 8) error = 'Password must be at least 8 characters'
+        else if (!/[A-Z]/.test(value)) error = 'Password must contain an uppercase letter'
+        else if (!/[a-z]/.test(value)) error = 'Password must contain a lowercase letter'
+        else if (!/\d/.test(value)) error = 'Password must contain a number'
+        else if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) error = 'Password must contain a special character'
         break
       case 'confirmPassword':
         if (!value) error = 'Please confirm your password'
