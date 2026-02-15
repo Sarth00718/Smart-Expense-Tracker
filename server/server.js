@@ -44,6 +44,9 @@ const { authLimiter, aiLimiter, apiLimiter } = require('./middleware/rateLimiter
 // Import security middleware
 const { securityHeaders, sanitizeInput } = require('./middleware/security');
 
+// Import error handler
+const errorHandler = require('./middleware/errorHandler');
+
 const app = express();
 
 // Security headers
@@ -166,23 +169,13 @@ app.get('/health', (_req, res) => {
   });
 });
 
-// Error handling middleware
-app.use((err, _req, res, _next) => {
-  console.error('Error:', err.message);
-
-  // Don't leak error details in production
-  const isDev = process.env.NODE_ENV === 'development';
-
-  res.status(err.status || 500).json({
-    error: isDev ? err.message : 'Internal Server Error',
-    ...(isDev && { stack: err.stack })
-  });
-});
-
-// 404 handler
+// 404 handler - must be before error handler
 app.use((_req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
+
+// Centralized error handling middleware
+app.use(errorHandler);
 
 // Graceful shutdown
 process.on('SIGTERM', () => {

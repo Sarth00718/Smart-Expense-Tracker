@@ -5,7 +5,7 @@ const {
   buildDateFilter, 
   buildPagination, 
   formatPaginationResponse 
-} = require('../utils/sharedControllers');
+} = require('../utils/helpers');
 
 // @desc    Get unique income sources
 // @access  Private

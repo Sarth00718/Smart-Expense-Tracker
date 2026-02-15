@@ -212,7 +212,7 @@ const Budgets = () => {
           >
             <span className="flex items-center gap-2">
               <Lightbulb className="w-5 h-5" />
-              AI Recommendations
+              Smart Recommendations
             </span>
           </button>
         </div>

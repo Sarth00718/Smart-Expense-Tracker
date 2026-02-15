@@ -658,11 +658,12 @@ Provide specific, actionable advice. Keep response under 150 words, practical, a
       );
 
       const score = calculateSpendingScore(expenses);
+      const scoreText = score !== null ? `📊 **Financial Health Score: ${score}/100**` : '📊 **Financial Health Score: Not enough data yet**';
 
       console.log(`✅ ${type} suggestions generated successfully`);
 
       res.json({
-        suggestions: `🤖 **AI Financial Advisor** (${aiResult.api}):\n\n${aiResult.text}\n\n📊 **Financial Health Score: ${score}/100**`
+        suggestions: `🤖 **AI Financial Advisor** (${aiResult.api}):\n\n${aiResult.text}\n\n${scoreText}`
       });
     } catch (llmError) {
       console.error('❌ AI suggestions error:', llmError.message);
@@ -704,6 +705,7 @@ function getMockSuggestions(expenses, type = 'general') {
   
   const highestCategory = sortedCategories[0];
   const score = calculateSpendingScore(expenses);
+  const scoreText = score !== null ? `📊 **Financial Health Score: ${score}/100**` : '📊 **Financial Health Score: Not enough data yet**';
 
   if (type === 'budget') {
     return `🤖 **AI Financial Advisor**:
@@ -724,7 +726,7 @@ Here are 7 actionable budget tips based on your expense data:
 
 * **Emergency Fund First**: Before investing, build an emergency fund of 3-6 months of expenses (₹${(total * 4).toFixed(2)} based on current spending).
 
-📊 **Financial Health Score: ${score}/100**`;
+${scoreText}`;
   } else if (type === 'forecast') {
     const avgDaily = total / Math.max(1, expenses.length / 30);
     const projectedMonthly = avgDaily * 30;
@@ -750,7 +752,7 @@ ${sortedCategories.slice(1, 3).map(([cat, amt]) =>
 
 * **Savings Opportunity**: If you reduce spending by 15%, you could save ₹${(projectedMonthly * 0.15).toFixed(2)} next month.
 
-📊 **Financial Health Score: ${score}/100**`;
+${scoreText}`;
   } else {
     return `🤖 **AI Financial Advisor**:
 
@@ -779,7 +781,7 @@ ${sortedCategories.slice(1, 3).map(([cat, amt]) =>
 
 * **Track expenses daily**: Review your spending every day to stay aware and make better financial decisions.
 
-📊 **Financial Health Score: ${score}/100**`;
+${scoreText}`;
   }
 }
 

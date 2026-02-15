@@ -84,43 +84,60 @@ const Achievements = () => {
       {score && (
         <Card className="bg-gradient-to-br from-primary to-purple-700 text-white border-0">
           <div className="flex flex-col md:flex-row items-center gap-8">
-            <div className="relative w-40 h-40 flex-shrink-0">
-              <svg className="w-full h-full transform -rotate-90">
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="70"
-                  stroke="rgba(255,255,255,0.2)"
-                  strokeWidth="14"
-                  fill="none"
-                />
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="70"
-                  stroke="white"
-                  strokeWidth="14"
-                  fill="none"
-                  strokeDasharray={`${(score.score / 100) * 439.82} 439.82`}
-                  strokeLinecap="round"
-                  className="transition-all duration-1000"
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-5xl font-semibold tabular-nums tracking-tight">{score.score}</span>
-                <span className="text-sm opacity-90">/ {score.maxScore}</span>
+            {score.score !== null ? (
+              <>
+                <div className="relative w-40 h-40 flex-shrink-0">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle
+                      cx="80"
+                      cy="80"
+                      r="70"
+                      stroke="rgba(255,255,255,0.2)"
+                      strokeWidth="14"
+                      fill="none"
+                    />
+                    <circle
+                      cx="80"
+                      cy="80"
+                      r="70"
+                      stroke="white"
+                      strokeWidth="14"
+                      fill="none"
+                      strokeDasharray={`${(score.score / 100) * 439.82} 439.82`}
+                      strokeLinecap="round"
+                      className="transition-all duration-1000"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-5xl font-semibold tabular-nums tracking-tight">{score.score}</span>
+                    <span className="text-sm opacity-90">/ {score.maxScore}</span>
+                  </div>
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                  <h3 className="text-2xl sm:text-3xl font-semibold mb-2 flex items-center gap-3 justify-center md:justify-start tracking-tight">
+                    <Trophy className="w-8 h-8" />
+                    Financial Health Score
+                  </h3>
+                  <p className="text-2xl sm:text-3xl font-semibold mb-2 tracking-tight">{score.rating}</p>
+                  <p className="text-white/80 text-base sm:text-lg leading-relaxed">
+                    Keep tracking expenses to improve your score!
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 text-center py-8">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 mb-4">
+                  <Trophy className="w-10 h-10" />
+                </div>
+                <h3 className="text-2xl sm:text-3xl font-semibold mb-2 tracking-tight">
+                  Financial Health Score
+                </h3>
+                <p className="text-xl font-semibold mb-2 tracking-tight">{score.rating}</p>
+                <p className="text-white/80 text-base sm:text-lg leading-relaxed">
+                  {score.message || 'Start tracking expenses to see your financial health score'}
+                </p>
               </div>
-            </div>
-            <div className="flex-1 text-center md:text-left">
-              <h3 className="text-2xl sm:text-3xl font-semibold mb-2 flex items-center gap-3 justify-center md:justify-start tracking-tight">
-                <Trophy className="w-8 h-8" />
-                Financial Health Score
-              </h3>
-              <p className="text-2xl sm:text-3xl font-semibold mb-2 tracking-tight">{score.rating}</p>
-              <p className="text-white/80 text-base sm:text-lg leading-relaxed">
-                Keep tracking expenses to improve your score!
-              </p>
-            </div>
+            )}
           </div>
         </Card>
       )}

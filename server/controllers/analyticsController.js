@@ -138,6 +138,17 @@ exports.getScore = async (req, res) => {
     const expenses = await Expense.find({ userId: req.userId });
     const score = calculateSpendingScore(expenses);
 
+    // Handle new accounts with no expenses
+    if (score === null) {
+      return res.json({
+        score: null,
+        rating: 'No Data Yet',
+        color: '#94a3b8',
+        maxScore: 100,
+        message: 'Start tracking expenses to see your financial health score'
+      });
+    }
+
     let rating, color;
     if (score >= 80) {
       rating = 'Excellent';
@@ -162,7 +173,7 @@ exports.getScore = async (req, res) => {
   } catch (error) {
     console.error('Score error:', error);
     res.status(500).json({ 
-      score: 70, 
+      score: null, 
       rating: 'Good', 
       color: '#3b82f6', 
       maxScore: 100 

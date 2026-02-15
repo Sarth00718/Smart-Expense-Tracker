@@ -1,13 +1,15 @@
 function calculateSpendingScore(expenses) {
+  // Return null for new accounts with no expenses
   if (!expenses || expenses.length === 0) {
-    return 80;
+    return null;
   }
 
   try {
     const validExpenses = expenses.filter(exp => exp && typeof exp.amount === 'number' && !isNaN(exp.amount));
     
+    // Return null if no valid expenses
     if (validExpenses.length === 0) {
-      return 80;
+      return null;
     }
 
     const count = validExpenses.length;

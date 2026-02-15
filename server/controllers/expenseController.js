@@ -8,7 +8,7 @@ const {
   buildDateFilter, 
   buildPagination, 
   formatPaginationResponse 
-} = require('../utils/sharedControllers');
+} = require('../utils/helpers');
 
 exports.filterExpenses = async (req, res) => {
   try {
