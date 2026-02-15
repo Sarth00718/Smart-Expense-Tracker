@@ -24,6 +24,18 @@ const AIAssistant = () => {
   const chatEndRef = useRef(null)
   const recognitionRef = useRef(null)
 
+  // Function to format markdown in chat messages
+  const formatChatMessage = (text) => {
+    let formatted = text
+    // Replace **bold** with <strong>
+    formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold">$1</strong>')
+    // Replace *italic* with <em>
+    formatted = formatted.replace(/\*([^*]+)\*/g, '<em class="italic">$1</em>')
+    // Replace `code` with <code>
+    formatted = formatted.replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 bg-black/10 rounded text-xs font-mono">$1</code>')
+    return formatted
+  }
+
   useEffect(() => {
     loadSuggestions()
     loadConversations()
@@ -387,7 +399,10 @@ const AIAssistant = () => {
                   ? 'bg-gradient-to-br from-primary to-blue-600 text-white' 
                   : 'bg-white border border-gray-200'
               }`}>
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                <div 
+                  className="text-sm whitespace-pre-wrap leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: formatChatMessage(msg.content) }}
+                />
               </div>
               {msg.role === 'user' && (
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center flex-shrink-0 shadow-md">
@@ -532,9 +547,30 @@ const SmartInsightsCard = ({ tabContent, loading, currentType, onRefresh, onBudg
   const formatContent = (text) => {
     if (!text) return null
     
+    // Function to parse markdown-style formatting
+    const parseMarkdown = (line) => {
+      // Replace **bold** with <strong>
+      let formatted = line.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
+      
+      // Replace *italic* with <em>
+      formatted = formatted.replace(/\*([^*]+)\*/g, '<em class="italic">$1</em>')
+      
+      // Replace `code` with <code>
+      formatted = formatted.replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 bg-gray-100 rounded text-sm font-mono">$1</code>')
+      
+      return formatted
+    }
+    
     const lines = text.split('\n')
     return lines.map((line, index) => {
-      // Headers
+      // Headers (## or ###)
+      if (line.startsWith('###')) {
+        return (
+          <h4 key={index} className="text-base font-semibold text-gray-800 mt-3 mb-2 tracking-tight">
+            {line.replace('###', '').trim()}
+          </h4>
+        )
+      }
       if (line.startsWith('##')) {
         return (
           <h3 key={index} className="text-lg font-semibold text-gray-800 mt-4 mb-2 tracking-tight">
@@ -542,34 +578,49 @@ const SmartInsightsCard = ({ tabContent, loading, currentType, onRefresh, onBudg
           </h3>
         )
       }
+      
       // Bullet points
       if (line.trim().startsWith('•') || line.trim().startsWith('-') || line.trim().startsWith('*')) {
         const content = line.replace(/^[•\-*]\s*/, '').trim()
+        const formattedContent = parseMarkdown(content)
         return (
           <div key={index} className="flex items-start gap-3 mb-3 p-3 bg-white rounded-lg border border-gray-100 hover:border-blue-200 transition-colors">
             <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-            <p className="text-gray-700 leading-relaxed flex-1">{content}</p>
+            <p 
+              className="text-gray-700 leading-relaxed flex-1" 
+              dangerouslySetInnerHTML={{ __html: formattedContent }}
+            />
           </div>
         )
       }
+      
       // Numbered points
       if (/^\d+\./.test(line.trim())) {
         const content = line.replace(/^\d+\.\s*/, '').trim()
+        const formattedContent = parseMarkdown(content)
+        const number = line.match(/^\d+/)[0]
         return (
           <div key={index} className="flex items-start gap-3 mb-3 p-3 bg-white rounded-lg border border-gray-100 hover:border-blue-200 transition-colors">
             <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
-              {line.match(/^\d+/)[0]}
+              {number}
             </div>
-            <p className="text-gray-700 leading-relaxed flex-1">{content}</p>
+            <p 
+              className="text-gray-700 leading-relaxed flex-1" 
+              dangerouslySetInnerHTML={{ __html: formattedContent }}
+            />
           </div>
         )
       }
-      // Regular text
+      
+      // Regular text with markdown formatting
       if (line.trim()) {
+        const formattedContent = parseMarkdown(line)
         return (
-          <p key={index} className="text-gray-700 mb-3 leading-relaxed">
-            {line}
-          </p>
+          <p 
+            key={index} 
+            className="text-gray-700 mb-3 leading-relaxed" 
+            dangerouslySetInnerHTML={{ __html: formattedContent }}
+          />
         )
       }
       return null
