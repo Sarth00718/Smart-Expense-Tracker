@@ -133,7 +133,7 @@ app.use('/api/analytics', apiLimiter, analyticsRoutes);
 app.use('/api/ai', aiLimiter, aiRoutes);
 app.use('/api/achievements', apiLimiter, achievementRoutes);
 app.use('/api/receipts', apiLimiter, receiptRoutes);
-app.use('/api/budget-recommendations', aiLimiter, budgetRecommendationsRoutes);
+app.use('/api/budget-recommendations', apiLimiter, budgetRecommendationsRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/reports', apiLimiter, reportsRoutes);
 app.use('/api/voice', apiLimiter, voiceRoutes);

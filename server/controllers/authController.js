@@ -68,7 +68,9 @@ exports.register = async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        fullName: user.fullName
+        fullName: user.fullName,
+        createdAt: user.createdAt,
+        authProvider: user.authProvider
       }
     });
   } catch (error) {
@@ -118,7 +120,9 @@ exports.login = async (req, res) => {
         id: user._id,
         email: user.email,
         fullName: user.fullName,
-        picture: user.picture
+        picture: user.picture,
+        createdAt: user.createdAt,
+        authProvider: user.authProvider
       }
     });
   } catch (error) {
@@ -136,7 +140,9 @@ exports.getMe = async (req, res) => {
         id: req.user._id,
         email: req.user.email,
         fullName: req.user.fullName,
-        picture: req.user.picture
+        picture: req.user.picture,
+        createdAt: req.user.createdAt,
+        authProvider: req.user.authProvider
       }
     });
   } catch (error) {
@@ -171,7 +177,9 @@ exports.firebaseSync = async (req, res) => {
           id: user._id,
           email: user.email,
           fullName: user.fullName,
-          picture: user.picture
+          picture: user.picture,
+          createdAt: user.createdAt,
+          authProvider: user.authProvider
         },
         message: 'Firebase user synced successfully'
       });
@@ -195,7 +203,9 @@ exports.firebaseSync = async (req, res) => {
           id: user._id,
           email: user.email,
           fullName: user.fullName,
-          picture: user.picture
+          picture: user.picture,
+          createdAt: user.createdAt,
+          authProvider: user.authProvider
         },
         message: 'Existing user linked to Firebase successfully'
       });
@@ -218,7 +228,9 @@ exports.firebaseSync = async (req, res) => {
         id: user._id,
         email: user.email,
         fullName: user.fullName,
-        picture: user.picture
+        picture: user.picture,
+        createdAt: user.createdAt,
+        authProvider: user.authProvider
       },
       message: 'New Firebase user created successfully'
     });
@@ -257,7 +269,9 @@ exports.linkFirebase = async (req, res) => {
         id: req.user._id,
         email: req.user.email,
         fullName: req.user.fullName,
-        picture: req.user.picture
+        picture: req.user.picture,
+        createdAt: req.user.createdAt,
+        authProvider: req.user.authProvider
       },
       message: 'Firebase account linked successfully'
     });

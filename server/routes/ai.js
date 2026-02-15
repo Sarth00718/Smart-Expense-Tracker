@@ -410,16 +410,47 @@ function buildFinancialContext(expenses, incomes, budgets, goals, queryData) {
 
   // Calculate current month data
   const startOfMonth = new Date(currentYear, currentMonth, 1);
-  const monthExpenses = expenses.filter(exp => new Date(exp.date) >= startOfMonth);
-  const monthIncome = incomes.filter(inc => new Date(inc.date) >= startOfMonth);
+  startOfMonth.setHours(0, 0, 0, 0);
+  const endOfMonth = new Date(currentYear, currentMonth + 1, 0);
+  endOfMonth.setHours(23, 59, 59, 999);
+  
+  const monthExpenses = expenses.filter(exp => {
+    const expDate = new Date(exp.date);
+    const expYear = expDate.getFullYear();
+    const expMonth = expDate.getMonth();
+    return expYear === currentYear && expMonth === currentMonth;
+  });
+  
+  const monthIncome = incomes.filter(inc => {
+    const incDate = new Date(inc.date);
+    const incYear = incDate.getFullYear();
+    const incMonth = incDate.getMonth();
+    return incYear === currentYear && incMonth === currentMonth;
+  });
+  
   const monthExpenseTotal = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
   const monthIncomeTotal = monthIncome.reduce((sum, inc) => sum + inc.amount, 0);
+  
+  // Debug logging
+  console.log(`📅 Current Month: ${currentMonthName} ${currentYear} (Month index: ${currentMonth})`);
+  console.log(`📊 Date Range: ${startOfMonth.toISOString()} to ${endOfMonth.toISOString()}`);
+  console.log(`💰 Total Income Records: ${incomes.length}, This Month: ${monthIncome.length}`);
+  if (monthIncome.length > 0) {
+    console.log(`💰 Income dates this month:`, monthIncome.map(inc => ({
+      date: new Date(inc.date).toISOString(),
+      amount: inc.amount,
+      source: inc.source
+    })));
+  }
+  console.log(`💸 Total Expense Records: ${expenses.length}, This Month: ${monthExpenses.length}`);
+  console.log(`💵 Month Income Total: ₹${monthIncomeTotal.toFixed(2)}`);
+  console.log(`💳 Month Expense Total: ₹${monthExpenseTotal.toFixed(2)}`);
 
   context += `THIS MONTH (${currentMonthName} ${currentYear}):\n`;
-  context += `Income: ₹${monthIncomeTotal.toFixed(2)}\n`;
-  context += `Expenses: ₹${monthExpenseTotal.toFixed(2)}\n`;
-  context += `Balance: ₹${(monthIncomeTotal - monthExpenseTotal).toFixed(2)}\n`;
-  context += `Transactions: ${monthExpenses.length} expenses, ${monthIncome.length} income\n\n`;
+  context += `Income: ₹${monthIncomeTotal.toFixed(2)} (${monthIncome.length} transactions)\n`;
+  context += `Expenses: ₹${monthExpenseTotal.toFixed(2)} (${monthExpenses.length} transactions)\n`;
+  context += `Current Balance: ₹${(monthIncomeTotal - monthExpenseTotal).toFixed(2)}\n`;
+  context += `Days Remaining: ${daysRemaining}\n\n`;
 
   // Total expenses and income (all time)
   const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);

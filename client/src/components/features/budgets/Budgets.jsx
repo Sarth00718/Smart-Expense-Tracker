@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { PieChart, Plus, Trash2, TrendingDown, TrendingUp, AlertCircle, Lightbulb, Target, Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
 import { budgetService } from '../../../services/budgetService'
-import { budgetRecommendationService } from '../../../services/budgetRecommendationService'
 import { expenseService } from '../../../services/expenseService'
+import BudgetRecommendations from './BudgetRecommendations'
 import toast from 'react-hot-toast'
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns'
 
@@ -20,22 +20,16 @@ const Budgets = () => {
   const [historyData, setHistoryData] = useState([])
   const [loadingHistory, setLoadingHistory] = useState(false)
   const [selectedMonth, setSelectedMonth] = useState(new Date())
-  
-  // Recommendations state
-  const [recommendations, setRecommendations] = useState(null)
-  const [loadingRecommendations, setLoadingRecommendations] = useState(false)
 
   useEffect(() => {
     loadBudgets()
   }, [])
 
   useEffect(() => {
-    if (activeTab === 'recommendations' && !recommendations) {
-      loadRecommendations()
-    } else if (activeTab === 'history') {
+    if (activeTab === 'history') {
       loadHistoryData()
     }
-  }, [activeTab, selectedMonth, recommendations])
+  }, [activeTab, selectedMonth])
 
   const loadBudgets = async () => {
     try {
@@ -47,19 +41,6 @@ const Budgets = () => {
       toast.error('Failed to load budgets')
     } finally {
       setLoading(false)
-    }
-  }
-
-  const loadRecommendations = async () => {
-    try {
-      setLoadingRecommendations(true)
-      const response = await budgetRecommendationService.getRecommendations()
-      setRecommendations(response.data)
-    } catch (error) {
-      console.error('Failed to fetch recommendations:', error)
-      toast.error('Failed to load budget recommendations')
-    } finally {
-      setLoadingRecommendations(false)
     }
   }
 
@@ -165,17 +146,6 @@ const Budgets = () => {
     }
   }
 
-  const applyRecommendation = async (category, amount) => {
-    try {
-      await budgetService.setBudget({ category, monthlyBudget: amount })
-      toast.success(`Budget set for ${category}!`)
-      setActiveTab('budgets')
-      loadBudgets()
-    } catch (error) {
-      toast.error('Failed to apply recommendation')
-    }
-  }
-
   const getStatusColor = (status, percentage) => {
     if (status === 'over') return 'text-red-600'
     if (percentage > 80) return 'text-orange-600'
@@ -188,19 +158,6 @@ const Budgets = () => {
     if (percentage > 80) return 'bg-orange-500'
     if (percentage > 60) return 'bg-yellow-500'
     return 'bg-green-500'
-  }
-
-  const getConfidenceColor = (confidence) => {
-    switch (confidence) {
-      case 'high':
-        return 'bg-green-100 text-green-800'
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'low':
-        return 'bg-red-100 text-red-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
   }
 
   return (
@@ -536,113 +493,10 @@ const Budgets = () => {
             )}
           </div>
         </div>
-      ) : (
+      ) : activeTab === 'recommendations' ? (
         // AI Recommendations Tab
-        <div className="space-y-4">
-          {loadingRecommendations ? (
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="text-center py-8">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <p className="mt-4 text-gray-600 text-sm sm:text-base">Analyzing your spending patterns...</p>
-              </div>
-            </div>
-          ) : !recommendations || !recommendations.hasData ? (
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm sm:text-base font-medium text-yellow-800 mb-2">Insufficient Data</h3>
-                    <p className="text-xs sm:text-sm text-yellow-700 mb-2">
-                      {recommendations?.message || 'We need at least 3 months of expense data to provide accurate budget recommendations.'}
-                    </p>
-                    <p className="text-xs text-yellow-600">
-                      Keep tracking your expenses consistently, and we'll generate personalized recommendations for you!
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* Summary Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <h3 className="text-gray-600 text-xs sm:text-sm">Total Recommended Budget</h3>
-                  <p className="text-lg sm:text-2xl font-bold text-blue-600">₹{recommendations.totalRecommendedBudget.toFixed(2)}</p>
-                </div>
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <h3 className="text-gray-600 text-xs sm:text-sm">Avg Monthly Income</h3>
-                  <p className="text-lg sm:text-2xl font-bold text-green-600">₹{recommendations.avgMonthlyIncome.toFixed(2)}</p>
-                </div>
-                <div className="bg-white p-4 rounded-lg shadow sm:col-span-2 lg:col-span-1">
-                  <h3 className="text-gray-600 text-xs sm:text-sm">Savings Potential</h3>
-                  <p className="text-lg sm:text-2xl font-bold text-purple-600">
-                    ₹{(recommendations.avgMonthlyIncome - recommendations.totalRecommendedBudget).toFixed(2)}
-                  </p>
-                </div>
-              </div>
-
-              {/* Recommendations List */}
-              <div className="space-y-3 sm:space-y-4">
-                {recommendations.recommendations.map((rec, index) => (
-                  <div key={index} className="bg-white rounded-lg shadow p-4 sm:p-6">
-                    <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-3">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-base sm:text-lg font-bold mb-1">{rec.category}</h3>
-                        <p className="text-xs sm:text-sm text-gray-600">
-                          {rec.dataPoints} transactions over {rec.monthsAnalyzed} months
-                        </p>
-                      </div>
-                      <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${getConfidenceColor(rec.confidence)}`}>
-                        {rec.confidence.toUpperCase()}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-3">
-                      <div>
-                        <p className="text-xs sm:text-sm text-gray-600">Current Average</p>
-                        <p className="text-lg sm:text-xl font-bold">₹{rec.currentAverage.toFixed(2)}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs sm:text-sm text-gray-600">Recommended</p>
-                        <p className="text-lg sm:text-xl font-bold text-blue-600">₹{rec.recommendedAmount.toFixed(2)}</p>
-                      </div>
-                    </div>
-
-                    <div className="bg-gray-50 rounded-lg p-3 mb-3">
-                      <p className="text-xs sm:text-sm font-medium mb-1">💡 Reasoning:</p>
-                      <p className="text-xs sm:text-sm text-gray-700">{rec.reasoning}</p>
-                    </div>
-
-                    <button
-                      onClick={() => applyRecommendation(rec.category, rec.recommendedAmount)}
-                      className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-xs sm:text-sm"
-                    >
-                      Apply This Budget
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              {/* Usage Tips */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h3 className="text-sm sm:text-base font-medium text-blue-800 mb-2">📊 How to Use</h3>
-                <ul className="space-y-1 text-xs sm:text-sm text-blue-700">
-                  <li>• Review each category's recommended budget</li>
-                  <li>• Click "Apply This Budget" to set it automatically</li>
-                  <li>• Adjust based on your personal goals</li>
-                  <li>• Track your progress in the "My Budgets" tab</li>
-                </ul>
-              </div>
-            </>
-          )}
-        </div>
-      )}
+        <BudgetRecommendations />
+      ) : null}
     </div>
   )
 }

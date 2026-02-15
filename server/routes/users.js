@@ -4,6 +4,33 @@ const auth = require('../middleware/auth');
 const User = require('../models/User');
 
 /**
+ * GET /api/users/profile/stats
+ * Get user profile statistics
+ */
+router.get('/profile/stats', auth, async (req, res) => {
+  try {
+    const Expense = require('../models/Expense');
+    const Budget = require('../models/Budget');
+    const Goal = require('../models/Goal');
+
+    const [expenseCount, budgetCount, goalCount] = await Promise.all([
+      Expense.countDocuments({ userId: req.userId }),
+      Budget.countDocuments({ userId: req.userId }),
+      Goal.countDocuments({ userId: req.userId })
+    ]);
+
+    res.json({
+      expenses: expenseCount,
+      budgets: budgetCount,
+      goals: goalCount
+    });
+  } catch (error) {
+    console.error('Get profile stats error:', error);
+    res.status(500).json({ error: 'Failed to get profile stats' });
+  }
+});
+
+/**
  * PUT /api/users/profile
  * Update user profile
  */

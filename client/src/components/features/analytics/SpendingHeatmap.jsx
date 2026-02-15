@@ -194,7 +194,10 @@ const SpendingHeatmap = () => {
           <div className="p-3 sm:p-4 bg-green-50 rounded-lg border border-green-200">
             <p className="text-xs sm:text-sm text-green-600 font-semibold tracking-tight">Daily Average</p>
             <p className="text-xl sm:text-2xl font-semibold text-green-900 tabular-nums tracking-tight">
-              ₹{(totalAmount / daysInMonth).toFixed(2)}
+              ₹{totalCount > 0 ? (totalAmount / totalCount).toFixed(2) : '0.00'}
+            </p>
+            <p className="text-[10px] sm:text-xs text-green-700 mt-1">
+              (on {totalCount} days with expenses)
             </p>
           </div>
         </div>
