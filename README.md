@@ -1,134 +1,346 @@
 # 💰 Smart Expense Tracker
 
-> A production-ready MERN stack expense tracking application with AI-powered insights, receipt scanning, voice input, and comprehensive financial management tools.
+<div align="center">
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)](https://nodejs.org/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![React](https://img.shields.io/badge/React-18.2.0-61DAFB?logo=react)](https://reactjs.org/)
-[![Express](https://img.shields.io/badge/Express-4.18.2-000000?logo=express)](https://expressjs.com/)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Node](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)
+![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?logo=mongodb&logoColor=white)
+![React](https://img.shields.io/badge/React-18.2.0-61DAFB?logo=react)
+![Express](https://img.shields.io/badge/Express-4.18.2-000000?logo=express)
 
----
+**A production-ready MERN stack expense tracking application with AI-powered insights, receipt scanning, voice input, and comprehensive financial management tools.**
 
-## 🌟 Features
+[Features](#-features) • [Demo](#-demo) • [Installation](#-installation) • [Documentation](#-documentation) • [Contributing](#-contributing)
 
-### Core Features
-- 💸 **Expense Tracking** - Add, edit, delete, and categorize expenses with ease
-- 💰 **Income Management** - Track multiple income sources and recurring income
-- 📊 **Budget Planning** - Set category-wise budgets with real-time monitoring
-- 🎯 **Financial Goals** - Create and track savings goals with progress visualization
-- 📈 **Analytics Dashboard** - Comprehensive insights with interactive charts
-- 🔍 **Advanced Search** - Natural language queries and smart filters
-
-### Advanced Features
-- 🤖 **AI Assistant** - ChatGPT-style financial advisor powered by Groq AI
-- 📸 **Receipt Scanner** - OCR-powered receipt scanning with Tesseract.js
-- 🎤 **Voice Input** - Add expenses hands-free using voice commands
-- 🏆 **Achievements** - Gamification system with badges and milestones
-- 📱 **PWA Support** - Install as app with offline functionality
-- 📄 **Data Export** - Export to Excel, CSV, JSON, and PDF formats
-- 🔐 **Biometric Auth** - Fingerprint and Face ID support
-- 🗓️ **Spending Heatmap** - Calendar view of spending patterns
-- 💡 **Budget Recommendations** - AI-powered budget suggestions
+</div>
 
 ---
 
-## 🚀 Quick Start
+## 📋 Table of Contents
+
+- [Overview](#-overview)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Architecture](#-architecture)
+- [Installation](#-installation)
+- [Configuration](#-configuration)
+- [Usage](#-usage)
+- [API Documentation](#-api-documentation)
+- [Project Structure](#-project-structure)
+- [Screenshots](#-screenshots)
+- [Deployment](#-deployment)
+- [Testing](#-testing)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Support](#-support)
+
+---
+
+## 🌟 Overview
+
+Smart Expense Tracker is a full-stack financial management application built with the MERN stack. It helps users track expenses, manage budgets, set financial goals, and gain insights into their spending patterns through AI-powered analytics.
+
+### Why Smart Expense Tracker?
+
+- ✅ **Production-Ready**: Clean architecture with proper separation of concerns
+- ✅ **Feature-Rich**: 15+ major features including AI assistant and receipt scanning
+- ✅ **Secure**: JWT authentication, input validation, and rate limiting
+- ✅ **Scalable**: Layered architecture ready for enterprise use
+- ✅ **Modern UI**: Beautiful, responsive design with smooth animations
+- ✅ **PWA Support**: Install as an app with offline functionality
+
+---
+
+## ✨ Features
+
+### 💸 Core Features
+
+- **Expense Tracking** - Add, edit, delete, and categorize expenses with ease
+- **Income Management** - Track multiple income sources and recurring income
+- **Budget Planning** - Set category-wise budgets with real-time monitoring
+- **Financial Goals** - Create and track savings goals with progress visualization
+- **Analytics Dashboard** - Comprehensive insights with interactive charts
+- **Advanced Search** - Natural language queries and smart filters
+
+### 🚀 Advanced Features
+
+- **🤖 AI Assistant** - ChatGPT-style financial advisor powered by Groq AI
+- **📸 Receipt Scanner** - OCR-powered receipt scanning with Tesseract.js
+- **🎤 Voice Input** - Add expenses hands-free using voice commands
+- **🏆 Achievements** - Gamification system with badges and milestones
+- **📱 PWA Support** - Install as app with offline functionality
+- **📄 Data Export** - Export to Excel, CSV, JSON, and PDF formats
+- **🔐 Biometric Auth** - Fingerprint and Face ID support
+- **🗓️ Spending Heatmap** - Calendar view with day-of-week analysis
+- **💡 Budget Recommendations** - AI-powered budget suggestions
+
+---
+
+## 🛠️ Tech Stack
+
+### Backend
+- **Runtime**: Node.js 16+
+- **Framework**: Express.js
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JWT (JSON Web Tokens)
+- **Security**: Bcrypt, Rate Limiting, Input Validation
+- **AI**: Groq AI API
+- **OCR**: Tesseract.js
+- **PDF Generation**: PDFKit
+
+### Frontend
+- **Library**: React 18
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **Animations**: Framer Motion
+- **Charts**: Recharts
+- **Icons**: Lucide React
+- **State Management**: Context API
+- **Routing**: React Router v6
+- **HTTP Client**: Axios
+
+### DevOps
+- **Version Control**: Git
+- **Backend Hosting**: Render
+- **Frontend Hosting**: Vercel
+- **Database**: MongoDB Atlas
+- **CI/CD**: GitHub Actions (planned)
+
+---
+
+## 🏗️ Architecture
+
+### Clean Layered Architecture
+
+```
+┌─────────────────────────────────────────┐
+│           Client (React)                │
+└─────────────────┬───────────────────────┘
+                  │ HTTP/REST
+┌─────────────────▼───────────────────────┐
+│         Routes Layer                    │
+│  (API Endpoints & Middleware)           │
+└─────────────────┬───────────────────────┘
+                  │
+┌─────────────────▼───────────────────────┐
+│       Controllers Layer                 │
+│  (Request/Response Handling)            │
+└─────────────────┬───────────────────────┘
+                  │
+┌─────────────────▼───────────────────────┐
+│        Services Layer                   │
+│  (Business Logic & Validation)          │
+└─────────────────┬───────────────────────┘
+                  │
+┌─────────────────▼───────────────────────┐
+│      Repositories Layer                 │
+│  (Database Operations)                  │
+└─────────────────┬───────────────────────┘
+                  │
+┌─────────────────▼───────────────────────┐
+│         Models Layer                    │
+│  (Data Schemas & Validation)            │
+└─────────────────┬───────────────────────┘
+                  │
+┌─────────────────▼───────────────────────┐
+│         MongoDB Database                │
+└─────────────────────────────────────────┘
+```
+
+### Design Patterns
+
+- **Repository Pattern** - Abstraction over data access
+- **Service Layer Pattern** - Business logic separation
+- **Dependency Injection** - Loose coupling
+- **Factory Pattern** - Object creation
+- **Singleton Pattern** - Database connections
+
+---
+
+## 📦 Installation
 
 ### Prerequisites
 
-```bash
-node --version  # v16.0.0 or higher
-npm --version   # v8.0.0 or higher
-mongod --version # MongoDB installed and running
-```
+- Node.js >= 16.0.0
+- npm >= 8.0.0
+- MongoDB >= 4.4
 
-### Installation
+### Quick Start
 
 1. **Clone the repository**
 ```bash
-git clone <repository-url>
+git clone https://github.com/yourusername/smart-expense-tracker.git
 cd smart-expense-tracker
 ```
 
-2. **Install dependencies**
+2. **Install backend dependencies**
 ```bash
-# Install backend dependencies
 cd server
 npm install
+```
 
-# Install frontend dependencies
+3. **Install frontend dependencies**
+```bash
 cd ../client
 npm install
 ```
 
-3. **Configure environment variables**
+4. **Set up environment variables** (see [Configuration](#-configuration))
 
-
-**Backend (.env)**
+5. **Start MongoDB**
 ```bash
-cd server
-cp .env.example .env
+mongod
 ```
 
-Edit `server/.env`:
+6. **Run the application**
+
+Terminal 1 (Backend):
+```bash
+cd server
+npm run dev
+```
+
+Terminal 2 (Frontend):
+```bash
+cd client
+npm run dev
+```
+
+7. **Open your browser**
+```
+http://localhost:5173
+```
+
+---
+
+## ⚙️ Configuration
+
+### Backend Environment Variables
+
+Create `server/.env`:
+
 ```env
 # Server Configuration
 PORT=5000
 NODE_ENV=development
 
-# MongoDB (REQUIRED)
+# Database
 MONGODB_URI=mongodb://localhost:27017/expense-tracker
 
-# JWT Secret (REQUIRED - minimum 32 characters)
+# Authentication
 JWT_SECRET=your_super_secret_jwt_key_minimum_32_characters_long
+JWT_EXPIRE=7d
 
-# AI API Key (Optional - for AI Assistant)
-GROQ_API_KEY=your_groq_api_key_here
+# AI Service (Optional)
+GROQ_API_KEY=your_groq_api_key
 
-# Frontend URL (for CORS)
-CLIENT_URL=http://localhost:3000
+# Client URL (for CORS)
+CLIENT_URL=http://localhost:5173
 ```
 
-**Frontend (.env)**
-```bash
-cd client
-cp .env.example .env
-```
+### Frontend Environment Variables
 
-Edit `client/.env`:
+Create `client/.env`:
+
 ```env
 # API Configuration
 VITE_API_URL=http://localhost:5000/api
 
-# Firebase Configuration (Optional)
-VITE_FIREBASE_API_KEY=your_firebase_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your-project-id
-VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
-
-# Authentication Method (backend or firebase)
+# Authentication Method
 VITE_AUTH_METHOD=backend
+
+# Firebase (Optional - for additional auth)
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
 ```
 
-4. **Start the application**
+---
 
-```bash
-# Terminal 1 - Start backend
-cd server
-npm run dev
+## 🚀 Usage
 
-# Terminal 2 - Start frontend
-cd client
-npm run dev
+### User Registration
+
+1. Navigate to the registration page
+2. Enter email, password, and full name
+3. Click "Register"
+4. You'll be automatically logged in
+
+### Adding Expenses
+
+1. Click "Add Expense" button
+2. Fill in the details:
+   - Date
+   - Category
+   - Amount
+   - Description
+   - Payment mode
+3. Click "Save"
+
+### Setting Budgets
+
+1. Go to "Budgets" page
+2. Click "Set Budget"
+3. Select category and enter monthly limit
+4. Track your spending against the budget
+
+### Using AI Assistant
+
+1. Click on the AI Assistant icon
+2. Ask questions like:
+   - "How much did I spend on food this month?"
+   - "Give me tips to save money"
+   - "Analyze my spending patterns"
+
+### Scanning Receipts
+
+1. Click "Scan Receipt"
+2. Upload or capture receipt image
+3. Review extracted data
+4. Confirm and save
+
+---
+
+## 📚 API Documentation
+
+### Base URL
+```
+Development: http://localhost:5000/api
+Production: https://your-domain.com/api
 ```
 
-5. **Open your browser**
+### Authentication
+
+All protected routes require JWT token:
 ```
-http://localhost:3000
+Authorization: Bearer <your_jwt_token>
 ```
+
+### Key Endpoints
+
+#### Authentication
+- `POST /auth/register` - Register new user
+- `POST /auth/login` - Login user
+- `GET /auth/me` - Get current user
+
+#### Expenses
+- `GET /expenses` - Get all expenses (paginated)
+- `POST /expenses` - Create expense
+- `PUT /expenses/:id` - Update expense
+- `DELETE /expenses/:id` - Delete expense
+- `GET /expenses/summary` - Get expense summary
+
+#### Budgets
+- `GET /budgets` - Get all budgets
+- `POST /budgets` - Set budget
+- `DELETE /budgets/:category` - Delete budget
+
+#### Analytics
+- `GET /analytics/dashboard` - Get dashboard data
+- `GET /analytics/heatmap` - Get spending heatmap
+- `GET /analytics/patterns` - Get spending patterns
+
+For complete API documentation, see [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md)
 
 ---
 
@@ -136,392 +348,149 @@ http://localhost:3000
 
 ```
 smart-expense-tracker/
-├── client/                     # React Frontend
-│   ├── public/                 # Static assets
-│   │   ├── pwa-192x192.png    # PWA icons
-│   │   ├── pwa-512x512.png
-│   │   └── manifest.json
+├── client/                      # React Frontend
+│   ├── public/                  # Static assets
 │   ├── src/
-│   │   ├── components/
-│   │   │   ├── features/      # Feature components
-│   │   │   │   ├── expenses/
-│   │   │   │   ├── income/
-│   │   │   │   ├── budgets/
-│   │   │   │   ├── goals/
-│   │   │   │   ├── analytics/
-│   │   │   │   ├── ai/
-│   │   │   │   ├── receipts/
-│   │   │   │   ├── achievements/
-│   │   │   │   └── settings/
-│   │   │   ├── layout/        # Layout components
-│   │   │   └── ui/            # Reusable UI components
-│   │   ├── context/           # React Context
-│   │   ├── services/          # API services
-│   │   ├── hooks/             # Custom hooks
-│   │   ├── utils/             # Utility functions
-│   │   ├── config/            # Configuration
-│   │   └── pages/             # Page components
-│   ├── package.json
-│   └── vite.config.js
+│   │   ├── components/          # React components
+│   │   │   ├── common/          # Reusable components
+│   │   │   ├── features/        # Feature-specific components
+│   │   │   ├── layout/          # Layout components
+│   │   │   └── ui/              # UI components
+│   │   ├── context/             # React Context (state management)
+│   │   ├── hooks/               # Custom React hooks
+│   │   ├── pages/               # Page components
+│   │   ├── services/            # API service calls
+│   │   ├── utils/               # Utility functions
+│   │   ├── App.jsx              # Main App component
+│   │   └── main.jsx             # Entry point
+│   ├── .env                     # Environment variables
+│   ├── package.json             # Dependencies
+│   └── vite.config.js           # Vite configuration
 │
-├── server/                     # Node.js Backend
-│   ├── config/                # Configuration
-│   │   ├── database.js
-│   │   └── env.js
-│   ├── controllers/           # HTTP request handlers
-│   ├── services/              # Business logic
-│   ├── repositories/          # Data access layer
-│   ├── models/                # Mongoose schemas
-│   ├── routes/                # API routes
-│   ├── middleware/            # Custom middleware
-│   ├── utils/                 # Utility functions
-│   ├── server.js              # Entry point
-│   └── package.json
+├── server/                      # Node.js Backend
+│   ├── config/                  # Configuration files
+│   │   ├── database.js          # Database connection
+│   │   └── env.js               # Environment validation
+│   ├── controllers/             # Request handlers
+│   │   ├── authController.js
+│   │   ├── expenseController.js
+│   │   ├── budgetController.js
+│   │   └── ...
+│   ├── services/                # Business logic
+│   │   ├── authService.js
+│   │   ├── expenseService.js
+│   │   └── ...
+│   ├── repositories/            # Data access layer
+│   │   ├── expenseRepository.js
+│   │   ├── budgetRepository.js
+│   │   └── ...
+│   ├── models/                  # Mongoose schemas
+│   │   ├── User.js
+│   │   ├── Expense.js
+│   │   ├── Budget.js
+│   │   └── ...
+│   ├── routes/                  # API routes
+│   │   ├── auth.js
+│   │   ├── expenses.js
+│   │   └── ...
+│   ├── middleware/              # Custom middleware
+│   │   ├── auth.js              # Authentication
+│   │   ├── errorHandler.js      # Error handling
+│   │   └── validation.js        # Input validation
+│   ├── utils/                   # Utility functions
+│   │   ├── errors.js            # Custom error classes
+│   │   └── asyncHandler.js      # Async wrapper
+│   ├── .env                     # Environment variables
+│   ├── package.json             # Dependencies
+│   └── server.js                # Entry point
 │
-├── docs/                       # Documentation
+├── docs/                        # Documentation
 │   ├── API_DOCUMENTATION.md
 │   ├── DEPLOYMENT_GUIDE.md
 │   ├── FOLDER_STRUCTURE.md
+│   ├── PROJECT_SUMMARY.md
 │   └── QUICK_START.md
 │
-└── README.md
+├── .gitignore
+├── LICENSE
+├── README.md
+└── render.yaml                  # Render deployment config
 ```
 
 ---
 
-## 🏗️ Architecture
+## 📸 Screenshots
 
-### Technology Stack
+### Dashboard
+![Dashboard](docs/screenshots/dashboard.png)
 
-**Frontend:**
-- React 18.2.0
-- Vite 5.0.8
-- Tailwind CSS 3.3.6
-- Framer Motion 12.33.0
-- Recharts 3.7.0
-- React Router v6
-- Axios
-- Firebase (optional)
+### Expense Tracking
+![Expenses](docs/screenshots/expenses.png)
 
-**Backend:**
-- Node.js 16+
-- Express.js 4.18.2
-- MongoDB with Mongoose 8.0.3
-- JWT Authentication
-- Bcrypt.js
-- Tesseract.js (OCR)
-- PDFKit (reports)
-- Groq AI API
+### Budget Management
+![Budgets](docs/screenshots/budgets.png)
 
-### Architecture Pattern
-
-**Clean Layered Architecture:**
-```
-Client Request
-    ↓
-Routes (API endpoints)
-    ↓
-Controllers (HTTP handlers)
-    ↓
-Services (Business logic)
-    ↓
-Repositories (Data access)
-    ↓
-Models (Database schemas)
-    ↓
-MongoDB
-```
-
-**Design Patterns:**
-- Repository Pattern
-- Service Layer Pattern
-- Dependency Injection
-- Factory Pattern
-- Singleton Pattern
+### Analytics & Heatmap
+![Analytics](docs/screenshots/analytics.png)
 
 ---
 
-## 🔌 API Endpoints
+## 🌐 Deployment
 
-### Authentication
-```
-POST   /api/auth/register          # Register new user
-POST   /api/auth/login             # Login user
-GET    /api/auth/me                # Get current user
-POST   /api/auth/firebase-sync     # Sync Firebase user
-```
+### Backend (Render)
 
-### Expenses
-```
-GET    /api/expenses               # Get all expenses (paginated)
-POST   /api/expenses               # Create expense
-PUT    /api/expenses/:id           # Update expense
-DELETE /api/expenses/:id           # Delete expense
-GET    /api/expenses/summary       # Get expense summary
-GET    /api/expenses/categories    # Get categories
-POST   /api/expenses/search        # Advanced search
-```
+1. Create account on [Render](https://render.com)
+2. Create new Web Service
+3. Connect GitHub repository
+4. Configure:
+   - Build Command: `cd server && npm install`
+   - Start Command: `cd server && npm start`
+5. Add environment variables
+6. Deploy
 
-### Income
-```
-GET    /api/income                 # Get all income
-POST   /api/income                 # Create income
-PUT    /api/income/:id             # Update income
-DELETE /api/income/:id             # Delete income
-```
+### Frontend (Vercel)
 
-### Budgets
-```
-GET    /api/budgets                # Get all budgets
-POST   /api/budgets                # Set budget
-DELETE /api/budgets/:category      # Delete budget
-GET    /api/budget-recommendations # Get AI recommendations
-```
+1. Create account on [Vercel](https://vercel.com)
+2. Import GitHub repository
+3. Configure:
+   - Framework: Vite
+   - Root Directory: `client`
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+4. Add environment variables
+5. Deploy
 
-### Goals
-```
-GET    /api/goals                  # Get all goals
-POST   /api/goals                  # Create goal
-PUT    /api/goals/:id              # Update goal
-DELETE /api/goals/:id              # Delete goal
-```
+### Database (MongoDB Atlas)
 
-### Analytics
-```
-GET    /api/analytics/dashboard    # Dashboard data
-GET    /api/analytics/heatmap      # Spending heatmap
-GET    /api/analytics/patterns     # Spending patterns
-```
+1. Create account on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+2. Create cluster
+3. Create database user
+4. Whitelist IP addresses
+5. Get connection string
+6. Update `MONGODB_URI` in environment variables
 
-### AI Assistant
-```
-POST   /api/ai/chat                # Chat with AI
-GET    /api/ai/suggestions         # Get suggestions
-```
-
-### Other Endpoints
-- Achievements: `/api/achievements`
-- Receipts: `/api/receipts`
-- Reports: `/api/reports`
-- Voice: `/api/voice`
-- Export: `/api/export`
-- Biometric: `/api/biometric`
-
-📚 **Full API Documentation:** See [API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md)
-
----
-
-## 🎨 Features in Detail
-
-### 1. Expense Tracking
-- Add expenses with amount, category, description, and date
-- Edit and delete expenses
-- Categorize expenses (Food, Transport, Shopping, etc.)
-- Attach receipts to expenses
-- Recurring expense tracking
-- Bulk operations
-
-### 2. Income Management
-- Track multiple income sources
-- Recurring income support
-- Income vs expense comparison
-- Monthly income trends
-
-### 3. Budget Planning
-- Set category-wise budgets
-- Real-time budget monitoring
-- Budget alerts and notifications
-- AI-powered budget recommendations
-- Budget vs actual comparison
-
-### 4. Financial Goals
-- Create savings goals
-- Track progress with visual indicators
-- Set target amounts and deadlines
-- Goal milestones
-- Achievement notifications
-
-### 5. Analytics Dashboard
-- Interactive charts and graphs
-- Spending trends over time
-- Category-wise breakdown
-- Monthly comparisons
-- Income vs expense analysis
-- Spending heatmap calendar
-
-### 6. AI Assistant
-- Natural language financial queries
-- Personalized financial advice
-- Spending pattern analysis
-- Budget optimization suggestions
-- Goal achievement strategies
-
-### 7. Receipt Scanner
-- OCR-powered receipt scanning
-- Automatic data extraction
-- Image upload support
-- Manual editing capability
-
-### 8. Voice Input
-- Hands-free expense entry
-- Voice command support
-- Speech-to-text conversion
-- Quick expense logging
-
-### 9. Achievements System
-- Unlock badges and milestones
-- Track financial discipline
-- Gamification elements
-- Progress tracking
-
-### 10. PWA Features
-- Install as mobile/desktop app
-- Offline functionality
-- Background sync
-- Push notifications (ready)
-- App-like experience
-
----
-
-## 🔒 Security Features
-
-- ✅ JWT-based authentication
-- ✅ Password hashing with bcrypt (10 rounds)
-- ✅ Rate limiting on all routes
-- ✅ Input validation and sanitization
-- ✅ MongoDB injection prevention
-- ✅ XSS protection
-- ✅ Secure HTTP headers
-- ✅ CORS configuration
-- ✅ Environment variable validation
-- ✅ Biometric authentication support
-
----
-
-## ⚡ Performance Optimizations
-
-- ✅ Database indexing on frequently queried fields
-- ✅ MongoDB connection pooling (5-10 connections)
-- ✅ API response caching
-- ✅ Code splitting in frontend
-- ✅ Lazy loading of components
-- ✅ Service worker caching
-- ✅ Optimized bundle size
-- ✅ Image optimization
-- ✅ Pagination on list endpoints
-
----
-
-## 📱 PWA & Offline Support
-
-### Installation
-Users can install the app on their device:
-- **Desktop:** Click install button in address bar
-- **Mobile:** Add to Home Screen option
-
-### Offline Features
-- ✅ View cached data when offline
-- ✅ Queue operations for sync
-- ✅ Automatic sync when back online
-- ✅ Offline indicator
-- ✅ Background sync
-
-### Service Worker
-- Caches static assets
-- Caches API responses
-- Network-first strategy for API calls
-- Cache-first for images and fonts
+For detailed deployment instructions, see [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md)
 
 ---
 
 ## 🧪 Testing
 
-### Run Tests
+### Backend Tests
 ```bash
-# Backend tests
 cd server
 npm test
+```
 
-# Frontend tests
+### Frontend Tests
+```bash
 cd client
 npm test
 ```
 
-### Test Coverage
-- Unit tests for services
-- Integration tests for API endpoints
-- Component tests for React components
-- E2E tests for critical user flows
-
----
-
-## 📦 Deployment
-
-### Backend Deployment (Render/Heroku)
-
-1. **Set environment variables**
-```env
-NODE_ENV=production
-MONGODB_URI=<your-mongodb-atlas-uri>
-JWT_SECRET=<your-secret-key>
-GROQ_API_KEY=<your-groq-key>
-CLIENT_URL=<your-frontend-url>
-```
-
-2. **Deploy**
+### E2E Tests
 ```bash
-cd server
-npm start
+npm run test:e2e
 ```
-
-### Frontend Deployment (Vercel/Netlify)
-
-1. **Build the app**
-```bash
-cd client
-npm run build
-```
-
-2. **Set environment variables**
-```env
-VITE_API_URL=<your-backend-url>/api
-VITE_AUTH_METHOD=backend
-```
-
-3. **Deploy**
-```bash
-npm run preview  # Test production build locally
-# Then deploy dist/ folder
-```
-
-📚 **Full Deployment Guide:** See [DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md)
-
----
-
-## 🛠️ Development
-
-### Available Scripts
-
-**Backend:**
-```bash
-npm run dev      # Start development server with nodemon
-npm start        # Start production server
-npm test         # Run tests
-```
-
-**Frontend:**
-```bash
-npm run dev      # Start development server
-npm run build    # Build for production
-npm run preview  # Preview production build
-npm run lint     # Run ESLint
-```
-
-### Code Style
-- ESLint for JavaScript linting
-- Prettier for code formatting
-- Consistent naming conventions
-- Clean code principles
 
 ---
 
@@ -529,18 +498,28 @@ npm run lint     # Run ESLint
 
 Contributions are welcome! Please follow these steps:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1. **Fork the repository**
+2. **Create a feature branch**
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+3. **Commit your changes**
+   ```bash
+   git commit -m 'Add some amazing feature'
+   ```
+4. **Push to the branch**
+   ```bash
+   git push origin feature/amazing-feature
+   ```
+5. **Open a Pull Request**
 
-### Contribution Guidelines
-- Follow the existing code style
+### Coding Standards
+
+- Follow ESLint configuration
 - Write meaningful commit messages
 - Add tests for new features
-- Update documentation as needed
-- Ensure all tests pass
+- Update documentation
+- Keep code DRY and SOLID
 
 ---
 
@@ -550,171 +529,78 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 👥 Authors
+## 💬 Support
 
-- **Your Name** - *Initial work*
+- **Documentation**: Check the [docs](docs/) folder
+- **Issues**: [GitHub Issues](https://github.com/yourusername/smart-expense-tracker/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/yourusername/smart-expense-tracker/discussions)
 
 ---
 
 ## 🙏 Acknowledgments
 
-- [React](https://reactjs.org/) - Frontend framework
+- [React](https://reactjs.org/) - Frontend library
 - [Express](https://expressjs.com/) - Backend framework
 - [MongoDB](https://www.mongodb.com/) - Database
-- [Tailwind CSS](https://tailwindcss.com/) - CSS framework
-- [Groq AI](https://groq.com/) - AI API
-- [Tesseract.js](https://tesseract.projectnaptha.com/) - OCR engine
-- [Recharts](https://recharts.org/) - Charting library
-- [Framer Motion](https://www.framer.com/motion/) - Animation library
-
----
-
-## 📞 Support
-
-For support, email your-email@example.com or open an issue in the repository.
-
----
-
-## 🗺️ Roadmap
-
-### Version 2.0 (Planned)
-- [ ] Multi-currency support
-- [ ] Team collaboration features
-- [ ] Advanced analytics with ML predictions
-- [ ] Mobile app (React Native)
-- [ ] Bank account integration
-- [ ] Cryptocurrency tracking
-- [ ] Investment portfolio tracking
-- [ ] Tax calculation and reporting
-
-### Version 1.5 (In Progress)
-- [x] PWA support
-- [x] Offline functionality
-- [x] Biometric authentication
-- [x] AI assistant
-- [x] Receipt scanner
-- [x] Voice input
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [Recharts](https://recharts.org/) - Charts
+- [Groq AI](https://groq.com/) - AI assistant
+- [Tesseract.js](https://tesseract.projectnaptha.com/) - OCR
 
 ---
 
 ## 📊 Project Stats
 
-- **Total Files:** 150+
-- **Lines of Code:** ~15,000+
-- **Components:** 31+
-- **API Endpoints:** 60+
-- **Features:** 15+
-- **Code Quality:** 100/100
-- **Test Coverage:** Ready for 80%+
+- **Lines of Code**: 15,000+
+- **API Endpoints**: 50+
+- **Features**: 15+
+- **Components**: 40+
+- **Test Coverage**: Ready for 80%+
 
 ---
 
-## 🎯 Key Highlights
+## 🎯 Roadmap
 
-✨ **Production-Ready** - Enterprise-grade architecture and code quality
-🏗️ **Clean Architecture** - Layered design with separation of concerns
-🔒 **Secure** - Industry-standard security practices
-⚡ **Performant** - Optimized for speed and efficiency
-📱 **Responsive** - Works on all devices
-🌐 **PWA** - Install as app with offline support
-🤖 **AI-Powered** - Intelligent financial insights
-📊 **Analytics** - Comprehensive data visualization
-🎨 **Modern UI** - Beautiful and intuitive interface
-📚 **Well-Documented** - Comprehensive documentation
+### Phase 1 (Completed ✅)
+- [x] Core expense tracking
+- [x] Budget management
+- [x] Analytics dashboard
+- [x] AI assistant
+- [x] Receipt scanning
+- [x] PWA support
 
----
+### Phase 2 (In Progress 🚧)
+- [ ] Comprehensive testing
+- [ ] Performance optimization
+- [ ] Mobile app (React Native)
+- [ ] Advanced analytics
 
-## 💡 Tips for Users
-
-1. **Set Budgets Early** - Define your monthly budgets to track spending
-2. **Use Categories** - Categorize expenses for better insights
-3. **Scan Receipts** - Use the receipt scanner for quick entry
-4. **Check Analytics** - Review your spending patterns regularly
-5. **Set Goals** - Create financial goals to stay motivated
-6. **Use AI Assistant** - Ask for personalized financial advice
-7. **Enable Offline Mode** - Install as PWA for offline access
-8. **Export Data** - Regularly backup your data
+### Phase 3 (Planned 📋)
+- [ ] Multi-currency support
+- [ ] Team collaboration
+- [ ] Investment tracking
+- [ ] Tax calculations
 
 ---
 
-## 🔧 Troubleshooting
+## 👨‍💻 Author
 
-### Common Issues
-
-**MongoDB Connection Error**
-```bash
-# Make sure MongoDB is running
-mongod
-
-# Or use MongoDB Atlas connection string
-MONGODB_URI=mongodb+srv://...
-```
-
-**Port Already in Use**
-```bash
-# Change port in .env file
-PORT=5001
-```
-
-**CORS Errors**
-```bash
-# Update CLIENT_URL in backend .env
-CLIENT_URL=http://localhost:3000
-```
-
-**Firebase Errors**
-```bash
-# Check Firebase configuration in client/.env
-# Or use backend authentication only
-VITE_AUTH_METHOD=backend
-```
+**Your Name**
+- GitHub: [@Sarth00718](https://github.com/Sarth00718)
+- Email: sarthnaola018@gmail.com
 
 ---
 
-## 📚 Additional Documentation
+## ⭐ Show Your Support
 
-- [Quick Start Guide](docs/QUICK_START.md)
-- [API Documentation](docs/API_DOCUMENTATION.md)
-- [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)
-- [Folder Structure](docs/FOLDER_STRUCTURE.md)
-- [Project Summary](docs/PROJECT_SUMMARY.md)
-
----
-
-## 🌟 Star History
-
-If you find this project useful, please consider giving it a ⭐!
-
----
-
-## 📸 Screenshots
-
-### Dashboard
-![Dashboard](screenshots/dashboard.png)
-
-### Expense Tracking
-![Expenses](screenshots/expenses.png)
-
-### Analytics
-![Analytics](screenshots/analytics.png)
-
-### AI Assistant
-![AI Assistant](screenshots/ai-assistant.png)
+Give a ⭐️ if this project helped you!
 
 ---
 
 <div align="center">
 
-**Built with ❤️ using MERN Stack**
+**Built using MERN Stack**
 
-[Report Bug](https://github.com/yourusername/smart-expense-tracker/issues) · 
-[Request Feature](https://github.com/yourusername/smart-expense-tracker/issues) · 
-[Documentation](docs/)
+[⬆ Back to Top](#-smart-expense-tracker)
 
 </div>
-
----
-
-**Last Updated:** December 2024
-**Version:** 1.0.0
-**Status:** ✅ Production Ready
