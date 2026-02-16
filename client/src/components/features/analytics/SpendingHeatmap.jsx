@@ -116,7 +116,6 @@ const SpendingHeatmap = () => {
     
     return weekDays.map((day, index) => ({
       day,
-      average: dayCounts[index] > 0 ? dayTotals[index] / dayCounts[index] : 0,
       total: dayTotals[index],
       count: dayCounts[index]
     }))
@@ -379,8 +378,8 @@ const SpendingHeatmap = () => {
           </h3>
           <div className="grid grid-cols-7 gap-2">
             {dayOfWeekPattern.map((pattern, index) => {
-              const maxAvg = Math.max(...dayOfWeekPattern.map(p => p.average))
-              const heightPercent = maxAvg > 0 ? (pattern.average / maxAvg) * 100 : 0
+              const maxTotal = Math.max(...dayOfWeekPattern.map(p => p.total))
+              const heightPercent = maxTotal > 0 ? (pattern.total / maxTotal) * 100 : 0
               
               return (
                 <div key={index} className="flex flex-col items-center">
@@ -388,21 +387,21 @@ const SpendingHeatmap = () => {
                     <div 
                       className="w-full bg-indigo-500 rounded-t-lg transition-all duration-500 hover:bg-indigo-600 cursor-pointer"
                       style={{ height: `${heightPercent}%`, minHeight: pattern.count > 0 ? '8px' : '0' }}
-                      title={`${pattern.day}: ₹${pattern.average.toFixed(0)} avg (${pattern.count} days)`}
+                      title={`${pattern.day}: ₹${pattern.total.toFixed(0)} total (${pattern.count} days)`}
                     ></div>
                   </div>
                   <span className="text-xs font-semibold text-indigo-900 mt-2">
                     {pattern.day.substring(0, 3)}
                   </span>
                   <span className="text-[10px] text-indigo-700">
-                    ₹{pattern.average.toFixed(0)}
+                    ₹{pattern.total.toFixed(0)}
                   </span>
                 </div>
               )
             })}
           </div>
           <div className="mt-3 text-xs text-indigo-700 text-center">
-            Average spending per day of the week
+            Total spending per day of the week
           </div>
         </div>
       </div>
