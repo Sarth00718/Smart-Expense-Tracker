@@ -42,10 +42,17 @@ class ExpenseRepository extends BaseRepository {
     ]);
   }
 
-  async getMonthlyTotal(userId, startDate, endDate) {
-    return this.getTotalByUserId(userId, {
+  async getMonthlyTotal(userId, startDate, endDate, category = null) {
+    const match = { 
+      userId, 
       date: { $gte: startDate, $lte: endDate }
-    });
+    };
+    
+    if (category) {
+      match.category = category;
+    }
+    
+    return this.getTotalByUserId(userId, match);
   }
 
   async deleteAllByUserId(userId) {

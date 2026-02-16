@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react'
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react'
 import { incomeService } from '../services/incomeService'
 import { useAuth } from './AuthContext'
 
@@ -18,7 +18,7 @@ export const IncomeProvider = ({ children }) => {
   const [loading, setLoading] = useState(false)
   const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 50, pages: 0 })
 
-  const loadIncome = async (params = {}) => {
+  const loadIncome = useCallback(async (signal, params = {}) => {
     if (!user) {
       setIncome([])
       return
@@ -27,21 +27,37 @@ export const IncomeProvider = ({ children }) => {
     try {
       setLoading(true)
       const response = await incomeService.getAll(params)
+      
+      // Check if request was aborted
+      if (signal?.aborted) return
+      
       setIncome(response.data.data || [])
       setPagination(response.data.pagination || { total: 0, page: 1, limit: 50, pages: 0 })
     } catch (error) {
+      // Don't set error state if request was aborted
+      if (error.name === 'AbortError' || signal?.aborted) return
+      
       console.error('Error loading income:', error)
       setIncome([])
     } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    if (user) {
-      loadIncome()
+      if (!signal?.aborted) {
+        setLoading(false)
+      }
     }
   }, [user])
+
+  useEffect(() => {
+    const abortController = new AbortController()
+
+    if (user) {
+      loadIncome(abortController.signal)
+    }
+
+    // Cleanup function to abort pending requests
+    return () => {
+      abortController.abort()
+    }
+  }, [user, loadIncome])
 
   const addIncome = async (incomeData) => {
     const response = await incomeService.add(incomeData)

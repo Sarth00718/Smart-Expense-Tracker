@@ -34,7 +34,7 @@ class OfflineQueue {
   // Add request to queue
   addToQueue(request) {
     const queueItem = {
-      id: Date.now() + Math.random(),
+      id: crypto.randomUUID(), // Use crypto.randomUUID() for guaranteed uniqueness
       timestamp: new Date().toISOString(),
       ...request
     };
@@ -134,16 +134,23 @@ class OfflineQueue {
         const results = await this.processQueue();
         
         if (results.processed > 0) {
-          // Notify user
-          if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('Synced!', {
-              body: `${results.processed} offline changes synced successfully`,
-              icon: '/pwa-192x192.png'
-            });
-          }
-          
           // Dispatch custom event for UI updates
           window.dispatchEvent(new CustomEvent('offline-sync-complete', {
+            detail: results
+          }));
+          
+          // Show browser notification if permitted
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Synced!', {
+              body: `${results.processed} offline ${results.processed === 1 ? 'change' : 'changes'} synced successfully`,
+              icon: '/pwa-192x192.png',
+              badge: '/pwa-192x192.png'
+            });
+          }
+        }
+        
+        if (results.failed > 0) {
+          window.dispatchEvent(new CustomEvent('offline-sync-failed', {
             detail: results
           }));
         }

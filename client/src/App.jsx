@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useEffect } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ExpenseProvider } from './context/ExpenseContext'
 import { IncomeProvider } from './context/IncomeContext'
@@ -101,6 +103,36 @@ const AnimatedRoutes = () => {
 };
 
 function App() {
+  // Setup offline sync listeners
+  useEffect(() => {
+    const handleSyncComplete = (event) => {
+      const { processed, failed } = event.detail
+      if (processed > 0) {
+        toast.success(`${processed} offline ${processed === 1 ? 'change' : 'changes'} synced!`, {
+          icon: '🔄',
+          duration: 4000,
+        })
+      }
+    }
+
+    const handleSyncFailed = (event) => {
+      const { failed } = event.detail
+      if (failed > 0) {
+        toast.error(`${failed} ${failed === 1 ? 'change' : 'changes'} failed to sync`, {
+          duration: 5000,
+        })
+      }
+    }
+
+    window.addEventListener('offline-sync-complete', handleSyncComplete)
+    window.addEventListener('offline-sync-failed', handleSyncFailed)
+
+    return () => {
+      window.removeEventListener('offline-sync-complete', handleSyncComplete)
+      window.removeEventListener('offline-sync-failed', handleSyncFailed)
+    }
+  }, [])
+
   return (
     <ErrorBoundary>
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>

@@ -16,7 +16,8 @@ class BudgetService {
         const spent = await expenseRepository.getMonthlyTotal(
           userId,
           monthStart,
-          monthEnd
+          monthEnd,
+          budget.category  // Pass category to filter spending
         );
 
         const percentage = budget.monthlyBudget > 0
