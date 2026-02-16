@@ -104,7 +104,7 @@ const Register = () => {
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors)
       toast.error('Please fix the errors in the form', {
-        duration: 4000,
+        duration: 3000,
         style: {
           borderRadius: '12px',
           background: '#fff',
@@ -124,6 +124,7 @@ const Register = () => {
       await register(formData.email, formData.password, formData.fullName)
       toast.success('Account created successfully!', {
         icon: '🎉',
+        duration: 3000,
         style: {
           borderRadius: '12px',
           background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
@@ -133,10 +134,10 @@ const Register = () => {
       })
       navigate('/dashboard')
     } catch (err) {
-      const errorMsg = err.response?.data?.error || err.message || 'Registration failed'
+      const errorMsg = err.response?.data?.message || err.message || 'Registration failed'
       setError(errorMsg)
       toast.error(errorMsg, {
-        duration: 5000,
+        duration: 4000,
         style: {
           borderRadius: '12px',
           background: '#fff',
@@ -162,6 +163,7 @@ const Register = () => {
       await loginWithGoogle()
       toast.success('Account created successfully!', {
         icon: '✨',
+        duration: 3000,
         style: {
           borderRadius: '12px',
           background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
@@ -171,10 +173,10 @@ const Register = () => {
       })
       navigate('/dashboard')
     } catch (err) {
-      const errorMsg = err.response?.data?.error || err.message || 'Google sign-in failed'
+      const errorMsg = err.response?.data?.message || err.message || 'Google sign-in failed'
       setError(errorMsg)
       toast.error(errorMsg, {
-        duration: 5000,
+        duration: 4000,
         style: {
           borderRadius: '12px',
           background: '#fff',

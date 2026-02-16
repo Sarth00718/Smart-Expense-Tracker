@@ -71,6 +71,7 @@ const Login = () => {
       await login(email, password)
       toast.success('Welcome back!', {
         icon: '🔓',
+        duration: 3000,
         style: {
           borderRadius: '12px',
           background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
@@ -79,34 +80,32 @@ const Login = () => {
         },
       })
       
-      setTimeout(() => {
-        navigate('/dashboard')
-      }, 100)
+      navigate('/dashboard')
     } catch (err) {
       console.error('Login error:', err)
       
       // Extract error message from different possible error structures
       let errorMsg = 'Login failed. Please try again.'
       
-      if (err.response?.data?.error) {
-        // Backend API error
-        errorMsg = err.response.data.error
+      if (err.response?.data?.message) {
+        // Backend API error with message
+        errorMsg = err.response.data.message
+      } else if (err.message) {
+        // Error with message (Firebase or other)
+        errorMsg = err.message
       } else if (err.response?.status === 401) {
         // Unauthorized - wrong credentials
-        errorMsg = 'Invalid email or password. Please check your credentials.'
+        errorMsg = 'Invalid email or password'
       } else if (err.response?.status === 429) {
         // Rate limit
-        errorMsg = 'Too many login attempts. Please wait a few minutes and try again.'
-      } else if (err.message && !err.message.includes('Network Error')) {
-        // Other errors with message (but not network errors)
-        errorMsg = err.message
+        errorMsg = 'Too many login attempts. Please wait and try again'
       }
       
       setError(errorMsg)
       
       // Show toast notification
       toast.error(errorMsg, {
-        duration: 5000,
+        duration: 4000,
         style: {
           borderRadius: '12px',
           background: '#fff',
@@ -132,6 +131,7 @@ const Login = () => {
       await loginWithGoogle()
       toast.success('Welcome back!', {
         icon: '✨',
+        duration: 3000,
         style: {
           borderRadius: '12px',
           background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
@@ -140,26 +140,24 @@ const Login = () => {
         },
       })
       
-      setTimeout(() => {
-        navigate('/dashboard')
-      }, 100)
+      navigate('/dashboard')
     } catch (err) {
       console.error('Google login error:', err)
       
       let errorMsg = 'Google sign-in failed. Please try again.'
       
-      if (err.response?.data?.error) {
-        errorMsg = err.response.data.error
-      } else if (err.response?.status === 429) {
-        errorMsg = 'Too many attempts. Please wait a few minutes and try again.'
+      if (err.response?.data?.message) {
+        errorMsg = err.response.data.message
       } else if (err.message) {
         errorMsg = err.message
+      } else if (err.response?.status === 429) {
+        errorMsg = 'Too many attempts. Please wait and try again'
       }
       
       setError(errorMsg)
       
       toast.error(errorMsg, {
-        duration: 5000,
+        duration: 4000,
         style: {
           borderRadius: '12px',
           background: '#fff',
@@ -190,6 +188,7 @@ const Login = () => {
       
       toast.success('Welcome back!', {
         icon: '🔐',
+        duration: 3000,
         style: {
           borderRadius: '12px',
           background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
@@ -198,16 +197,14 @@ const Login = () => {
         },
       })
       
-      setTimeout(() => {
-        navigate('/dashboard')
-      }, 100)
+      navigate('/dashboard')
     } catch (err) {
       console.error('Biometric login error:', err)
       const errorMsg = err.message || 'Biometric authentication failed'
       setError(errorMsg)
       
       toast.error(errorMsg, {
-        duration: 5000,
+        duration: 4000,
         style: {
           borderRadius: '12px',
           background: '#fff',
@@ -224,7 +221,7 @@ const Login = () => {
       if (errorMsg.includes('credential') || errorMsg.includes('register')) {
         toast('Try using email/password or Google sign-in', {
           icon: '💡',
-          duration: 4000,
+          duration: 3000,
         })
       }
     } finally {

@@ -53,13 +53,9 @@ const app = express();
 app.use(securityHeaders);
 
 // Middleware
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'http://localhost:4173',
-  'http://localhost:4174',
-  process.env.CLIENT_URL
-].filter(Boolean);
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : [];
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -69,19 +65,19 @@ app.use(cors({
       return callback(null, true);
     }
 
-    if (origin.endsWith('.vercel.app') ||
-      origin.endsWith('.render.com') ||
-      origin === 'http://localhost' ||
-      origin.startsWith('http://localhost:')) {
+    // Allow localhost during development
+    if (
+      origin.startsWith('http://localhost') ||
+      origin.endsWith('.vercel.app')
+    ) {
       return callback(null, true);
     }
 
-    callback(new Error('Not allowed by CORS'));
+    return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  maxAge: 86400
 }));
 
 app.use(express.json({ limit: '1mb' }));

@@ -16,9 +16,14 @@ export const authService = {
       }
       return { token, user }
     } catch (backendError) {
-      // Fallback to Firebase silently
+      // If backend returns validation error (400) or conflict (409), throw with proper message
+      if (backendError.response?.status === 400 || backendError.response?.status === 409) {
+        const error = new Error(backendError.response?.data?.message || 'Registration failed')
+        error.response = backendError.response
+        throw error
+      }
       
-      // Fallback to Firebase
+      // For other backend errors (500, network issues), fallback to Firebase
       try {
         const result = await firebaseAuth.register(email, password, fullName)
         
@@ -52,7 +57,8 @@ export const authService = {
 
         return result
       } catch (firebaseError) {
-        throw new Error(firebaseError.message || 'Registration failed')
+        // Firebase error - use the message from Firebase
+        throw firebaseError
       }
     }
   },
@@ -71,12 +77,14 @@ export const authService = {
       }
       return { token, user }
     } catch (backendError) {
-      // If backend returns 401 (invalid credentials), throw immediately without Firebase fallback
+      // If backend returns 401 (invalid credentials), throw with proper message
       if (backendError.response?.status === 401) {
-        throw backendError
+        const error = new Error(backendError.response?.data?.message || 'Invalid email or password')
+        error.response = backendError.response
+        throw error
       }
       
-      // For other errors, fallback to Firebase
+      // For other backend errors (500, network issues), fallback to Firebase
       try {
         const result = await firebaseAuth.login(email, password)
         
@@ -110,7 +118,8 @@ export const authService = {
 
         return result
       } catch (firebaseError) {
-        throw new Error(firebaseError.message || 'Login failed')
+        // Firebase error - use the message from Firebase
+        throw firebaseError
       }
     }
   },
@@ -151,7 +160,8 @@ export const authService = {
 
       return result
     } catch (error) {
-      throw new Error(error.message || 'Google login failed')
+      // Pass through the error with its message
+      throw error
     }
   },
 

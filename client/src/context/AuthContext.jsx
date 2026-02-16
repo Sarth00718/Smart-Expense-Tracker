@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react'
+import React, { createContext, useState, useContext, useEffect, useMemo, useCallback } from 'react'
 import { authService } from '../services/authService'
 import { firebaseAuth } from '../config/firebase'
 
@@ -35,11 +35,8 @@ export const AuthProvider = ({ children }) => {
           // Only set up Firebase listener if using Firebase auth
           if (authMethod === 'firebase') {
             unsubscribe = setupFirebaseListener()
-          } else if (authMethod === 'biometric' || authMethod === 'backend') {
-            // Backend or biometric auth - no need for Firebase listener
-            setLoading(false)
           } else {
-            // Unknown auth method, clear and start fresh
+            // Backend or biometric auth - no need for Firebase listener
             setLoading(false)
           }
           return
@@ -127,34 +124,34 @@ export const AuthProvider = ({ children }) => {
         unsubscribe()
       }
     }
-  }, []) // Dependencies are correct - we only want this to run once on mount
+  }, [])
 
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     const data = await authService.login(email, password)
     setUser(data.user)
     return data
-  }
+  }, [])
 
-  const register = async (email, password, fullName) => {
+  const register = useCallback(async (email, password, fullName) => {
     const data = await authService.register(email, password, fullName)
     setUser(data.user)
     return data
-  }
+  }, [])
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = useCallback(async () => {
     const data = await authService.loginWithGoogle()
     if (data) {
       setUser(data.user)
     }
     return data
-  }
+  }, [])
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await authService.logout()
     setUser(null)
-  }
+  }, [])
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     loading,
     login,
@@ -162,7 +159,7 @@ export const AuthProvider = ({ children }) => {
     loginWithGoogle,
     logout,
     setUser
-  }
+  }), [user, loading, login, register, loginWithGoogle, logout])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

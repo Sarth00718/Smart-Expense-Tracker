@@ -38,6 +38,7 @@ const errorHandler = (err, req, res, next) => {
   res.status(statusCode).json({
     success: false,
     message,
+    error: message, // Add error field for backward compatibility
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 };

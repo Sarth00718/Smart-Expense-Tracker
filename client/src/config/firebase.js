@@ -41,6 +41,28 @@ googleProvider.setCustomParameters({
   prompt: 'select_account'
 })
 
+// Helper function to convert Firebase errors to user-friendly messages
+const getFirebaseErrorMessage = (errorCode) => {
+  const errorMessages = {
+    'auth/invalid-email': 'Invalid email address format',
+    'auth/user-disabled': 'This account has been disabled',
+    'auth/user-not-found': 'Invalid email or password',
+    'auth/wrong-password': 'Invalid email or password',
+    'auth/invalid-credential': 'Invalid email or password',
+    'auth/email-already-in-use': 'An account with this email already exists',
+    'auth/weak-password': 'Password should be at least 6 characters',
+    'auth/operation-not-allowed': 'This sign-in method is not enabled',
+    'auth/too-many-requests': 'Too many failed attempts. Please try again later',
+    'auth/network-request-failed': 'Network error. Please check your connection',
+    'auth/popup-blocked': 'Popup was blocked by your browser',
+    'auth/popup-closed-by-user': 'Sign-in popup was closed',
+    'auth/cancelled-popup-request': 'Sign-in was cancelled',
+    'auth/account-exists-with-different-credential': 'An account already exists with this email'
+  }
+  
+  return errorMessages[errorCode] || 'Authentication failed. Please try again'
+}
+
 // Auth functions
 export const firebaseAuth = {
   // Register with email and password
@@ -65,7 +87,8 @@ export const firebaseAuth = {
         token: await userCredential.user.getIdToken()
       }
     } catch (error) {
-      throw new Error(error.message)
+      const message = getFirebaseErrorMessage(error.code)
+      throw new Error(message)
     }
   },
 
@@ -84,7 +107,8 @@ export const firebaseAuth = {
         token: await userCredential.user.getIdToken()
       }
     } catch (error) {
-      throw new Error(error.message)
+      const message = getFirebaseErrorMessage(error.code)
+      throw new Error(message)
     }
   },
 
@@ -111,7 +135,8 @@ export const firebaseAuth = {
         // Redirect will happen, no return needed
         return null
       }
-      throw new Error(error.message)
+      const message = getFirebaseErrorMessage(error.code)
+      throw new Error(message)
     }
   },
 
