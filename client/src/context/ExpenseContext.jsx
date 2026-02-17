@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react'
+import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react'
 import { expenseService } from '../services/expenseService'
 import { useAuth } from './AuthContext'
 
@@ -16,8 +16,9 @@ export const ExpenseProvider = ({ children }) => {
   const { user } = useAuth()
   const [expenses, setExpenses] = useState([])
   const [loading, setLoading] = useState(false)
+  const [pagination, setPagination] = useState({ page: 1, limit: 100, total: 0, pages: 0 })
 
-  const loadExpenses = useCallback(async (signal) => {
+  const loadExpenses = useCallback(async (signal, options = {}) => {
     if (!user) {
       setExpenses([])
       return
@@ -25,14 +26,24 @@ export const ExpenseProvider = ({ children }) => {
 
     try {
       setLoading(true)
-      const response = await expenseService.getAll()
+      // Use pagination with reasonable limit - only load recent expenses for context
+      const response = await expenseService.getExpenses({ 
+        page: options.page || 1, 
+        limit: options.limit || 100,
+        ...options 
+      })
 
       // Check if request was aborted
       if (signal?.aborted) return
 
       // Handle both old format (array) and new format (object with data property)
       const expenseData = response.data.data || response.data
+      const paginationData = response.data.pagination
+      
       setExpenses(Array.isArray(expenseData) ? expenseData : [])
+      if (paginationData) {
+        setPagination(paginationData)
+      }
     } catch (error) {
       // Don't set error state if request was aborted
       if (error.name === 'AbortError' || signal?.aborted) return
@@ -76,15 +87,16 @@ export const ExpenseProvider = ({ children }) => {
     await loadExpenses()
   }
 
-  const value = {
+  const value = useMemo(() => ({
     expenses,
     loading,
+    pagination,
     loadExpenses,
     fetchExpenses: loadExpenses, // Alias for compatibility
     addExpense,
     updateExpense,
     deleteExpense
-  }
+  }), [expenses, loading, pagination, loadExpenses])
 
   return <ExpenseContext.Provider value={value}>{children}</ExpenseContext.Provider>
 }

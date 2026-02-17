@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import { 
   TrendingUp, BarChart3, PieChart, Activity, 
   DollarSign, TrendingDown, Zap, Calendar
@@ -15,21 +15,67 @@ import {
 } from 'recharts'
 import { format, startOfMonth, endOfMonth, subMonths, eachDayOfInterval } from 'date-fns'
 
+// Memoized chart components
+const SpendingTrendChart = memo(({ data }) => (
+  <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
+    <AreaChart data={data}>
+      <defs>
+        <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="5%" stopColor="#4361ee" stopOpacity={0.8}/>
+          <stop offset="95%" stopColor="#4361ee" stopOpacity={0}/>
+        </linearGradient>
+      </defs>
+      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+      <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#6b7280" />
+      <YAxis tick={{ fontSize: 11 }} stroke="#6b7280" />
+      <Tooltip 
+        contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+      />
+      <Area type="monotone" dataKey="amount" stroke="#4361ee" strokeWidth={2} fillOpacity={1} fill="url(#colorAmount)" />
+    </AreaChart>
+  </ResponsiveContainer>
+))
+
+const CategoryPieChart = memo(({ data, colors }) => (
+  <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
+    <RechartsPie>
+      <Pie
+        data={data}
+        cx="50%"
+        cy="50%"
+        labelLine={false}
+        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+        outerRadius={window.innerWidth < 640 ? 60 : 90}
+        fill="#8884d8"
+        dataKey="value"
+      >
+        {data.map((entry, index) => (
+          <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+        ))}
+      </Pie>
+      <Tooltip />
+    </RechartsPie>
+  </ResponsiveContainer>
+))
+
 const Analytics = () => {
   const { expenses } = useExpense()
   const { income } = useIncome()
   const [patterns, setPatterns] = useState([])
   const [predictions, setPredictions] = useState([])
   const [timeRange, setTimeRange] = useState('thisMonth')
+  const [analyticsLoading, setAnalyticsLoading] = useState(false)
 
-  const COLORS = ['#4361ee', '#7209b7', '#f72585', '#4cc9f0', '#f8961e', '#38b000', '#ff006e', '#8338ec']
+  const COLORS = useMemo(() => 
+    ['#4361ee', '#7209b7', '#f72585', '#4cc9f0', '#f8961e', '#38b000', '#ff006e', '#8338ec'],
+    []
+  )
 
-  useEffect(() => {
-    loadAnalytics()
-  }, [expenses])
-
-  const loadAnalytics = async () => {
+  const loadAnalytics = useCallback(async () => {
+    if (analyticsLoading) return // Prevent duplicate calls
+    
     try {
+      setAnalyticsLoading(true)
       const [patternsRes, predictionsRes] = await Promise.all([
         analyticsService.getPatterns(),
         analyticsService.getPredictions()
@@ -38,8 +84,17 @@ const Analytics = () => {
       setPredictions(predictionsRes.data.predictions || [])
     } catch (error) {
       console.error('Error loading analytics:', error)
+    } finally {
+      setAnalyticsLoading(false)
     }
-  }
+  }, [analyticsLoading])
+
+  useEffect(() => {
+    // Only load analytics once when component mounts
+    if (expenses.length > 0 && patterns.length === 0 && !analyticsLoading) {
+      loadAnalytics()
+    }
+  }, [expenses.length, patterns.length, analyticsLoading, loadAnalytics])
 
   // Filter data by time range
   const filteredData = useMemo(() => {
@@ -222,23 +277,7 @@ const Analytics = () => {
         <Card title="Spending Trend" subtitle="Daily spending over time" icon={TrendingUp}>
           <div className="w-full" style={{ minHeight: '256px', height: '320px' }}>
             {filteredData.expenses.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
-                <AreaChart data={spendingTrendData}>
-                  <defs>
-                    <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#4361ee" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#4361ee" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#6b7280" />
-                  <YAxis tick={{ fontSize: 11 }} stroke="#6b7280" />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-                  />
-                  <Area type="monotone" dataKey="amount" stroke="#4361ee" strokeWidth={2} fillOpacity={1} fill="url(#colorAmount)" />
-                </AreaChart>
-              </ResponsiveContainer>
+              <SpendingTrendChart data={spendingTrendData} />
             ) : (
               <div className="flex items-center justify-center h-full text-gray-400">
                 No expense data available
@@ -251,25 +290,7 @@ const Analytics = () => {
         <Card title="Category Breakdown" subtitle="Spending by category" icon={PieChart}>
           <div className="w-full" style={{ minHeight: '256px', height: '320px' }}>
             {categoryData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
-                <RechartsPie>
-                  <Pie
-                    data={categoryData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={window.innerWidth < 640 ? 60 : 90}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </RechartsPie>
-              </ResponsiveContainer>
+              <CategoryPieChart data={categoryData} colors={COLORS} />
             ) : (
               <div className="flex items-center justify-center h-full text-gray-400">
                 No category data available

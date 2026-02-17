@@ -88,7 +88,15 @@ exports.getHeatmap = async (req, res) => {
     const year = parseInt(req.query.year) || new Date().getFullYear();
     const month = parseInt(req.query.month) || new Date().getMonth() + 1;
 
-    const expenses = await Expense.find({ userId: req.userId });
+    // Only fetch expenses for the requested month
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0, 23, 59, 59);
+
+    const expenses = await Expense.find({ 
+      userId: req.userId,
+      date: { $gte: startDate, $lte: endDate }
+    }).select('date amount category').lean();
+
     const heatmapData = getHeatmapData(expenses, year, month);
 
     res.json(heatmapData);
@@ -102,9 +110,18 @@ exports.getHeatmap = async (req, res) => {
 // @access  Private
 exports.getPatterns = async (req, res) => {
   try {
-    const expenses = await Expense.find({ userId: req.userId })
+    // Only fetch last 3 months of expenses for pattern detection
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+    const expenses = await Expense.find({ 
+      userId: req.userId,
+      date: { $gte: threeMonthsAgo }
+    })
+      .select('date amount category paymentMode')
       .sort({ date: -1 })
-      .limit(100);
+      .limit(200)
+      .lean();
 
     const patterns = detectBehavioralPatterns(expenses);
 
@@ -120,7 +137,18 @@ exports.getPatterns = async (req, res) => {
 exports.getPredictions = async (req, res) => {
   try {
     const months = parseInt(req.query.months) || 3;
-    const expenses = await Expense.find({ userId: req.userId }).sort({ date: 1 });
+    
+    // Only fetch last 6 months for predictions
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    const expenses = await Expense.find({ 
+      userId: req.userId,
+      date: { $gte: sixMonthsAgo }
+    })
+      .select('date amount category')
+      .sort({ date: 1 })
+      .lean();
 
     const predictions = predictFutureExpenses(expenses, months);
 
@@ -135,7 +163,17 @@ exports.getPredictions = async (req, res) => {
 // @access  Private
 exports.getScore = async (req, res) => {
   try {
-    const expenses = await Expense.find({ userId: req.userId });
+    // Only fetch last 3 months for score calculation
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+    const expenses = await Expense.find({ 
+      userId: req.userId,
+      date: { $gte: threeMonthsAgo }
+    })
+      .select('date amount category')
+      .lean();
+
     const score = calculateSpendingScore(expenses);
 
     // Handle new accounts with no expenses

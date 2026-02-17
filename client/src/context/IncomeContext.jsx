@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react'
+import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react'
 import { incomeService } from '../services/incomeService'
 import { useAuth } from './AuthContext'
 
@@ -76,7 +76,7 @@ export const IncomeProvider = ({ children }) => {
     await loadIncome()
   }
 
-  const value = {
+  const value = useMemo(() => ({
     income,
     loading,
     pagination,
@@ -84,7 +84,7 @@ export const IncomeProvider = ({ children }) => {
     addIncome,
     updateIncome,
     deleteIncome
-  }
+  }), [income, loading, pagination, loadIncome])
 
   return <IncomeContext.Provider value={value}>{children}</IncomeContext.Provider>
 }
