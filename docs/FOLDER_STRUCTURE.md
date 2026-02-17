@@ -93,13 +93,12 @@ smart-expense-tracker/
 │   ├── package.json
 │   └── server.js                    # ⭐ REFACTORED: Entry point
 │
-├── docs/                            # ⭐ NEW: Documentation
-│   ├── REFACTORING_SUMMARY.md       # Architecture overview
-│   ├── MIGRATION_GUIDE.md           # Migration instructions
+├── docs/                            # Documentation
 │   ├── API_DOCUMENTATION.md         # API reference
 │   ├── DEPLOYMENT_GUIDE.md          # Deployment instructions
-│   ├── IMPROVEMENTS_SUMMARY.md      # Improvements overview
-│   └── FOLDER_STRUCTURE.md          # This file
+│   ├── FOLDER_STRUCTURE.md          # This file
+│   ├── PROJECT_SUMMARY.md           # Project overview
+│   └── QUICK_START.md               # Quick start guide
 │
 ├── .gitignore
 ├── LICENSE

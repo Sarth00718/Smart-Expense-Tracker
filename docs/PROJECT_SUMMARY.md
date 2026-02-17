@@ -94,12 +94,10 @@ smart-expense-tracker/
 │   └── server.js
 │
 └── docs/                    # Documentation
-    ├── REFACTORING_SUMMARY.md
     ├── API_DOCUMENTATION.md
     ├── DEPLOYMENT_GUIDE.md
-    ├── MIGRATION_GUIDE.md
-    ├── IMPROVEMENTS_SUMMARY.md
     ├── FOLDER_STRUCTURE.md
+    ├── PROJECT_SUMMARY.md
     └── QUICK_START.md
 ```
 
@@ -147,12 +145,12 @@ cd client && npm run dev
 - **BEFORE_AFTER_COMPARISON.md** - See improvements
 
 ### For Architects
-- **REFACTORING_SUMMARY.md** - Architecture deep dive
-- **IMPROVEMENTS_SUMMARY.md** - Detailed improvements
+- **PROJECT_SUMMARY.md** - Architecture overview
+- **FOLDER_STRUCTURE.md** - Project structure
 
 ### For DevOps
 - **DEPLOYMENT_GUIDE.md** - Production deployment
-- **MIGRATION_GUIDE.md** - Migration strategy
+- **API_DOCUMENTATION.md** - API reference
 
 ## 🔒 Security Features
 

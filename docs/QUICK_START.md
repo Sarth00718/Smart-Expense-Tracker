@@ -274,7 +274,7 @@ client/
 ## Getting Help
 
 1. **Check documentation:**
-   - REFACTORING_SUMMARY.md - Architecture
+   - PROJECT_SUMMARY.md - Project overview
    - API_DOCUMENTATION.md - API reference
    - FOLDER_STRUCTURE.md - Project structure
 
@@ -290,7 +290,7 @@ client/
 
 ## Next Steps
 
-1. Read REFACTORING_SUMMARY.md for architecture details
+1. Read PROJECT_SUMMARY.md for project overview
 2. Review API_DOCUMENTATION.md for API reference
 3. Check FOLDER_STRUCTURE.md for project organization
 4. Start building features!
