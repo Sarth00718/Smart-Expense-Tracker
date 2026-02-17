@@ -62,8 +62,19 @@ router.post('/chat', auth, async (req, res) => {
     let responseText;
     let apiUsed = 'fallback';
     
+    // Handle affordability queries
+    if ((lowerMessage.includes('afford') || lowerMessage.includes('buy') || lowerMessage.includes('purchase')) && 
+        /₹?\s*(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:rupees?|rs\.?|inr)?/i.test(message)) {
+      const amountMatch = message.match(/₹?\s*(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:rupees?|rs\.?|inr)?/i);
+      const amount = amountMatch ? parseFloat(amountMatch[1].replace(/,/g, '')) : null;
+      
+      if (amount) {
+        responseText = analyzeAffordability(amount, expenses, incomes, message);
+        apiUsed = 'rule-based';
+      }
+    }
     // Handle "Where did I overspend" queries
-    if (lowerMessage.includes('overspend') || lowerMessage.includes('over spend')) {
+    else if (lowerMessage.includes('overspend') || lowerMessage.includes('over spend')) {
       responseText = analyzeOverspending(expenses, budgets);
     }
     // Handle budget plan suggestions
@@ -115,7 +126,10 @@ IMPORTANT INSTRUCTIONS:
 - When user asks about "this month" or "current month", use the data from THIS MONTH section
 - When user asks about "today" or "current", refer to the CURRENT DATE CONTEXT
 - Always specify the time period you're referring to (e.g., "In ${currentMonthName} ${currentYear}...")
-- If user asks about a specific category, look at both THIS MONTH'S and ALL TIME data`;
+- If user asks about a specific category, look at both THIS MONTH'S and ALL TIME data
+- CRITICAL: When analyzing affordability or balance, ALWAYS use the "Current Balance" from THIS MONTH section
+- CRITICAL: The "Current Balance" already accounts for both income and expenses for the current month
+- If income is ₹0.00 for this month, explicitly mention that no income has been recorded yet`;
 
         const aiResult = await callAIWithRetry(
           prompt,
@@ -236,6 +250,79 @@ router.post('/conversations/new', auth, async (req, res) => {
     res.status(500).json({ error: 'Failed to create conversation' });
   }
 });
+
+// Helper function to analyze affordability
+function analyzeAffordability(amount, expenses, incomes, originalQuery) {
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const daysRemaining = daysInMonth - now.getDate();
+  
+  // Calculate current month data
+  const monthExpenses = expenses.filter(exp => {
+    const expDate = new Date(exp.date);
+    return expDate.getMonth() === currentMonth && expDate.getFullYear() === currentYear;
+  });
+  
+  const monthIncome = incomes.filter(inc => {
+    const incDate = new Date(inc.date);
+    return incDate.getMonth() === currentMonth && incDate.getFullYear() === currentYear;
+  });
+  
+  const monthExpenseTotal = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const monthIncomeTotal = monthIncome.reduce((sum, inc) => sum + inc.amount, 0);
+  const currentBalance = monthIncomeTotal - monthExpenseTotal;
+  
+  let response = `🔍 **Affordability Analysis for ₹${amount.toFixed(2)}:**\n\n`;
+  response += `📊 **Current Month Status:**\n`;
+  response += `• Income: ₹${monthIncomeTotal.toFixed(2)}\n`;
+  response += `• Expenses: ₹${monthExpenseTotal.toFixed(2)}\n`;
+  response += `• Current Balance: ₹${currentBalance.toFixed(2)}\n`;
+  response += `• Days Remaining: ${daysRemaining}\n\n`;
+  
+  // Determine affordability
+  const canAfford = currentBalance >= amount;
+  const balanceAfterPurchase = currentBalance - amount;
+  const dailyBudgetRemaining = daysRemaining > 0 ? balanceAfterPurchase / daysRemaining : 0;
+  
+  if (canAfford) {
+    if (balanceAfterPurchase >= 0) {
+      response += `✅ **RECOMMENDED**\n\n`;
+      response += `⚠️ This purchase would ${balanceAfterPurchase < currentBalance * 0.2 ? 'significantly reduce' : 'reduce'} your balance by ₹${amount.toFixed(2)}.\n\n`;
+      response += `💡 **After Purchase:**\n`;
+      response += `• Remaining Balance: ₹${balanceAfterPurchase.toFixed(2)}\n`;
+      
+      if (daysRemaining > 0) {
+        response += `• Daily Budget for Rest of Month: ₹${dailyBudgetRemaining.toFixed(2)}\n`;
+      }
+      
+      if (balanceAfterPurchase < 1000) {
+        response += `\n⚠️ **Warning:** Your remaining balance will be very low. Consider:\n`;
+        response += `• Postponing non-essential purchases\n`;
+        response += `• Ensuring you have emergency funds\n`;
+        response += `• Checking if this purchase is truly necessary\n`;
+      }
+    } else {
+      response += `❌ **NOT RECOMMENDED**\n\n`;
+      response += `⚠️ This purchase would exceed your current balance by ₹${Math.abs(balanceAfterPurchase).toFixed(2)}.\n\n`;
+      response += `💡 **Suggestion:** Wait until next month or consider a smaller amount.\n`;
+    }
+  } else {
+    response += `❌ **NOT RECOMMENDED**\n\n`;
+    response += `⚠️ This purchase would exceed your current balance by ₹${Math.abs(balanceAfterPurchase).toFixed(2)}.\n\n`;
+    response += `💡 **Suggestions:**\n`;
+    response += `• Wait until next month when you receive more income\n`;
+    response += `• Consider a smaller purchase amount\n`;
+    response += `• Review your expenses to find areas to cut back\n`;
+    
+    if (monthIncomeTotal === 0) {
+      response += `\n📝 **Note:** No income recorded for this month yet. Add your income to get accurate affordability analysis.\n`;
+    }
+  }
+  
+  return response;
+}
 
 // Helper function to analyze overspending
 function analyzeOverspending(expenses, budgets) {
@@ -428,6 +515,18 @@ function buildFinancialContext(expenses, incomes, budgets, goals, queryData) {
     return incYear === currentYear && incMonth === currentMonth;
   });
   
+  // Debug: Log income data for troubleshooting
+  console.log('🔍 AI Context Debug:');
+  console.log(`Total incomes in DB: ${incomes.length}`);
+  console.log(`Current month incomes: ${monthIncome.length}`);
+  if (incomes.length > 0) {
+    console.log('Sample income dates:', incomes.slice(0, 3).map(inc => ({
+      date: inc.date,
+      amount: inc.amount,
+      source: inc.source
+    })));
+  }
+  
   const monthExpenseTotal = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
   const monthIncomeTotal = monthIncome.reduce((sum, inc) => sum + inc.amount, 0);
   
@@ -449,10 +548,21 @@ function buildFinancialContext(expenses, incomes, budgets, goals, queryData) {
   }
 
   context += `THIS MONTH (${currentMonthName} ${currentYear}):\n`;
-  context += `Income: ₹${monthIncomeTotal.toFixed(2)} (${monthIncome.length} transactions)\n`;
-  context += `Expenses: ₹${monthExpenseTotal.toFixed(2)} (${monthExpenses.length} transactions)\n`;
+  context += `Income: ₹${monthIncomeTotal.toFixed(2)} (${monthIncome.length} transaction${monthIncome.length !== 1 ? 's' : ''})\n`;
+  context += `Expenses: ₹${monthExpenseTotal.toFixed(2)} (${monthExpenses.length} transaction${monthExpenses.length !== 1 ? 's' : ''})\n`;
   context += `Current Balance: ₹${(monthIncomeTotal - monthExpenseTotal).toFixed(2)}\n`;
-  context += `Days Remaining: ${daysRemaining}\n\n`;
+  context += `Days Remaining: ${daysRemaining}\n`;
+  
+  // Add income details for this month if available
+  if (monthIncome.length > 0) {
+    context += `\nTHIS MONTH'S INCOME DETAILS:\n`;
+    monthIncome.forEach(inc => {
+      const incDate = new Date(inc.date);
+      const dayOfMonth = incDate.getDate();
+      context += `- ${currentMonthName} ${dayOfMonth}: ${inc.source} - ₹${inc.amount.toFixed(2)}${inc.description ? ` (${inc.description})` : ''}\n`;
+    });
+  }
+  context += `\n`;
 
   // Total expenses and income (all time)
   const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
