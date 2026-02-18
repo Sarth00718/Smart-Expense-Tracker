@@ -13,10 +13,37 @@ import PWAInstallPrompt from './components/ui/PWAInstallPrompt'
 import OfflineIndicator from './components/ui/OfflineIndicator'
 import ErrorBoundary from './components/ui/ErrorBoundary'
 import { pageTransition } from './utils/animations'
+import api from './services/api'
+
+// Keep-alive ping to prevent server sleep
+const useServerKeepAlive = () => {
+  useEffect(() => {
+    // Ping server every 5 minutes to keep it awake
+    const pingInterval = setInterval(async () => {
+      try {
+        await api.get('/health/ping', { 
+          timeout: 5000,
+          retry: 0 // Don't retry pings
+        })
+      } catch (error) {
+        // Silently fail - this is just a keep-alive
+        console.log('Keep-alive ping failed (server may be sleeping)')
+      }
+    }, 5 * 60 * 1000) // 5 minutes
+
+    // Initial ping on mount
+    api.get('/health/ping', { timeout: 5000, retry: 0 }).catch(() => {})
+
+    return () => clearInterval(pingInterval)
+  }, [])
+}
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth()
+  
+  // Keep server alive when user is logged in
+  useServerKeepAlive()
 
   if (loading) {
     return (

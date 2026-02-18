@@ -26,6 +26,7 @@ export const ExpenseProvider = ({ children }) => {
 
     try {
       setLoading(true)
+      
       // Use pagination with reasonable limit - only load recent expenses for context
       const response = await expenseService.getExpenses({ 
         page: options.page || 1, 
@@ -49,13 +50,18 @@ export const ExpenseProvider = ({ children }) => {
       if (error.name === 'AbortError' || signal?.aborted) return
 
       console.error('Error loading expenses:', error)
-      setExpenses([])
+      
+      // Don't clear expenses on error - keep stale data
+      // This prevents blank screen after timeout
+      if (expenses.length === 0) {
+        setExpenses([])
+      }
     } finally {
       if (!signal?.aborted) {
         setLoading(false)
       }
     }
-  }, [user])
+  }, [user]) // Removed expenses from dependencies to prevent loops
 
   useEffect(() => {
     const abortController = new AbortController()

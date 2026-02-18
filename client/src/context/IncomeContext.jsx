@@ -38,13 +38,18 @@ export const IncomeProvider = ({ children }) => {
       if (error.name === 'AbortError' || signal?.aborted) return
       
       console.error('Error loading income:', error)
-      setIncome([])
+      
+      // Don't clear income on error - keep stale data
+      // This prevents blank screen after timeout
+      if (income.length === 0) {
+        setIncome([])
+      }
     } finally {
       if (!signal?.aborted) {
         setLoading(false)
       }
     }
-  }, [user])
+  }, [user]) // Removed income from dependencies to prevent loops
 
   useEffect(() => {
     const abortController = new AbortController()

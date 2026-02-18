@@ -17,8 +17,10 @@ router.get('/', async (_req, res) => {
   // Check database connection
   try {
     if (mongoose.connection.readyState === 1) {
+      // Ping database to ensure it's responsive
+      await mongoose.connection.db.admin().ping();
       health.services.database.status = 'up';
-      health.services.database.message = 'MongoDB connected';
+      health.services.database.message = 'MongoDB connected and responsive';
     } else {
       health.services.database.status = 'down';
       health.services.database.message = 'MongoDB disconnected';
@@ -52,6 +54,15 @@ router.get('/', async (_req, res) => {
 
   const statusCode = health.status === 'healthy' ? 200 : 503;
   res.status(statusCode).json(health);
+});
+
+// Lightweight ping endpoint for keep-alive
+router.get('/ping', (_req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
 });
 
 module.exports = router;
