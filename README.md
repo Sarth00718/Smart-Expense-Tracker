@@ -1,74 +1,74 @@
 # 💰 Smart Expense Tracker
 
-<div align="center">
+A modern, full-stack MERN application for tracking expenses, managing budgets, and gaining financial insights with AI-powered features.
 
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Node](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)
-![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?logo=mongodb&logoColor=white)
-![React](https://img.shields.io/badge/React-18.2.0-61DAFB?logo=react)
-![Express](https://img.shields.io/badge/Express-4.18.2-000000?logo=express)
+## 🚀 Features
 
-**A production-ready MERN stack expense tracking application with AI-powered insights, receipt scanning, voice input, and comprehensive financial management tools.**
+### 💸 Expense Management
+- Add, edit, and delete expenses
+- Category-based organization
+- Receipt scanning with OCR
+- Voice input for quick entry
+- Advanced search and filters
+- Recurring expense tracking
+- Export to Excel/CSV/PDF
 
-[Features](#-features) • [Demo](#-demo) • [Installation](#-installation) • [Documentation](#-documentation) • [Contributing](#-contributing)
+### 💰 Income Tracking
+- Track multiple income sources
+- Monthly income summaries
+- Income vs expenses comparison
+- Recurring income support
 
-</div>
+### � Budget Management
+- Set category-based budgets
+- Real-time budget tracking
+- Overspending alerts
+- AI-powered budget recommendations
+- Visual progress indicators
 
----
+### 🎯 Financial Goals
+- Create and track savings goals
+- Progress visualization
+- Deadline reminders
+- Goal completion celebrations
 
-## 📋 Table of Contents
+### 📈 Analytics & Insights
+- Interactive dashboard
+- Spending patterns analysis
+- Category breakdown charts
+- Spending trends over time
+- Calendar heatmap
+- Financial health score
 
-- [Overview](#-overview)
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [Architecture](#-architecture)
-- [Installation](#-installation)
-- [Configuration](#-configuration)
-- [Usage](#-usage)
-- [API Documentation](#-api-documentation)
-- [Project Structure](#-project-structure)
-- [Screenshots](#-screenshots)
-- [Deployment](#-deployment)
-- [Testing](#-testing)
-- [Contributing](#-contributing)
-- [License](#-license)
-- [Support](#-support)
+### 🤖 AI Assistant
+- Natural language chat interface
+- Smart expense categorization
+- Personalized financial advice
+- Budget recommendations
+- Spending analysis
 
----
+### 🏆 Gamification
+- Achievement badges
+- Milestone tracking
+- Progress rewards
+- Motivational system
 
-## 🌟 Overview
+### � Progressive Web App (PWA)
+- Offline functionality
+- Install on any device
+- Background sync
+- Push notifications
+- Fast and responsive
 
-Smart Expense Tracker is a full-stack financial management application built with the MERN stack. It helps users track expenses, manage budgets, set financial goals, and gain insights into their spending patterns through AI-powered analytics.
+## 🛠️ Tech Stack
 
-### Why Smart Expense Tracker?
-
-- ✅ **Production-Ready**: Clean architecture with proper separation of concerns
-- ✅ **Feature-Rich**: 15+ major features including AI assistant and receipt scanning
-- ✅ **Secure**: JWT authentication, input validation, and rate limiting
-- ✅ **Scalable**: Layered architecture ready for enterprise use
-- ✅ **Modern UI**: Beautiful, responsive design with smooth animations
-- ✅ **PWA Support**: Install as an app with offline functionality
-
----
-
-## ✨ Features
-
-### 💸 Core Features
-
-- **Expense Tracking** - Add, edit, delete, and categorize expenses with ease
-- **Income Management** - Track multiple income sources and recurring income
-- **Budget Planning** - Set category-wise budgets with real-time monitoring
-- **Financial Goals** - Create and track savings goals with progress visualization
-- **Analytics Dashboard** - Comprehensive insights with interactive charts
-- **Advanced Search** - Natural language queries and smart filters
-
-### 🚀 Advanced Features
-
-- **🤖 AI Assistant** - ChatGPT-style financial advisor powered by Groq AI
-- **📸 Receipt Scanner** - OCR-powered receipt scanning with Tesseract.js
-- **🎤 Voice Input** - Add expenses hands-free using voice commands
-- **🏆 Achievements** - Gamification system with badges and milestones
-- **📱 PWA Support** - Install as app with offline functionality
+### Backend
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Database**: MongoDB with Mongoose
+- **Authentication**: JWT + Firebase (optional)
+- **AI**: Groq API (Llama 3.3)
+- **OCR**: Tesseract.jsInstall as app with offline functionality
 - **📄 Data Export** - Export to Excel, CSV, JSON, and PDF formats
 - **🔐 Biometric Auth** - Fingerprint and Face ID support
 - **🗓️ Spending Heatmap** - Calendar view with day-of-week analysis
@@ -194,13 +194,13 @@ mongod
 
 6. **Run the application**
 
-Terminal 1 (Backend):
+Terminal 1 (server):
 ```bash
 cd server
 npm run dev
 ```
 
-Terminal 2 (Frontend):
+Terminal 2 (client):
 ```bash
 cd client
 npm run dev
@@ -604,3 +604,5 @@ Give a ⭐️ if this project helped you!
 [⬆ Back to Top](#-smart-expense-tracker)
 
 </div>
+
+

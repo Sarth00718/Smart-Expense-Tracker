@@ -1,9 +1,9 @@
 {
-  "name": "smart-expense-tracker-client",
+  "name": "smart-expense-tracker-frontend",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Smart Expense Tracker Frontend - React PWA",
+  "description": "Smart Expense Tracker Frontend - Modern React PWA",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
