@@ -20,3 +20,8 @@ export { SkeletonCard, SkeletonList, SkeletonChart } from './SkeletonLoader'
 export { ScanOverlay, ProcessingLoader } from './ScanAnimation'
 export { MicrophonePulse, Waveform, TypingIndicator } from './VoiceAnimation'
 
+// Loading & Background Components
+export { default as LoadingSpinner, ButtonSpinner, SkeletonLoader as ContentSkeleton } from './LoadingSpinner'
+export { default as AnimatedBackground } from './AnimatedBackground'
+
+

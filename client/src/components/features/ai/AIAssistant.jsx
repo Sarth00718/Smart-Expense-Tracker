@@ -21,6 +21,7 @@ const AIAssistant = () => {
   const [conversationId, setConversationId] = useState(null)
   const [conversations, setConversations] = useState([])
   const [showHistory, setShowHistory] = useState(false)
+  const [lastError, setLastError] = useState(null)
   const chatEndRef = useRef(null)
   const recognitionRef = useRef(null)
 
@@ -195,6 +196,7 @@ const AIAssistant = () => {
 
     const userMessage = userInput.trim()
     setUserInput('')
+    setLastError(null)
     
     // Add user message to chat immediately
     setChatMessages(prev => [...prev, { role: 'user', content: userMessage }])
@@ -221,11 +223,20 @@ const AIAssistant = () => {
       loadConversations()
     } catch (error) {
       console.error('Chat error:', error)
-      setChatMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: '❌ Sorry, I encountered an error. Please try again.' 
-      }])
-      toast.error('Failed to get response')
+      
+      // Restore user input so they can edit and retry
+      setUserInput(userMessage)
+      
+      // Remove the user message from chat since it failed
+      setChatMessages(prev => prev.slice(0, -1))
+      
+      // Show detailed error message
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to get response'
+      setLastError(errorMessage)
+      
+      toast.error(`Error: ${errorMessage}. Your message has been restored for editing.`, {
+        duration: 5000
+      })
     } finally {
       setChatLoading(false)
     }
@@ -434,30 +445,49 @@ const AIAssistant = () => {
             <input
               type="text"
               value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
+              onChange={(e) => {
+                setUserInput(e.target.value)
+                if (lastError) setLastError(null) // Clear error when user starts typing
+              }}
               placeholder="Ask me anything about your finances..."
-              className="input w-full pr-12"
+              className="input w-full pr-24"
               disabled={chatLoading}
+              autoFocus={userInput.length > 0}
             />
-            {isVoiceSupported && (
-              <button
-                type="button"
-                onClick={handleVoiceInput}
-                disabled={chatLoading}
-                className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all ${
-                  isListening 
-                    ? 'bg-red-500 text-white animate-pulse' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-                title={isListening ? 'Stop listening' : 'Voice input'}
-              >
-                {isListening ? (
-                  <MicOff className="w-5 h-5" />
-                ) : (
-                  <Mic className="w-5 h-5" />
-                )}
-              </button>
-            )}
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
+              {userInput && !chatLoading && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserInput('')
+                    setLastError(null)
+                  }}
+                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Clear input"
+                >
+                  ✕
+                </button>
+              )}
+              {isVoiceSupported && (
+                <button
+                  type="button"
+                  onClick={handleVoiceInput}
+                  disabled={chatLoading}
+                  className={`p-2 rounded-full transition-all ${
+                    isListening 
+                      ? 'bg-red-500 text-white animate-pulse' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  title={isListening ? 'Stop listening' : 'Voice input'}
+                >
+                  {isListening ? (
+                    <MicOff className="w-5 h-5" />
+                  ) : (
+                    <Mic className="w-5 h-5" />
+                  )}
+                </button>
+              )}
+            </div>
           </div>
           <Button 
             type="submit" 
@@ -466,9 +496,42 @@ const AIAssistant = () => {
             disabled={chatLoading || !userInput.trim()}
             icon={Send}
           >
-            Send
+            {chatLoading ? 'Sending...' : 'Send'}
           </Button>
         </form>
+
+        {/* Error Message */}
+        {lastError && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <span className="text-red-500 text-xl">❌</span>
+              <div className="flex-1">
+                <p className="text-sm text-red-700 font-semibold mb-1">Error processing your request</p>
+                <p className="text-xs text-red-600 mb-2">{lastError}</p>
+                
+                {lastError.includes('AI_NOT_CONFIGURED') || lastError.includes('API key') ? (
+                  <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs">
+                    <p className="font-semibold text-yellow-800 mb-2">🔧 Setup Required:</p>
+                    <ol className="list-decimal list-inside space-y-1 text-yellow-700">
+                      <li>Get a free API key from <a href="https://console.groq.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-yellow-900">console.groq.com</a></li>
+                      <li>Add it to your <code className="bg-yellow-100 px-1 rounded">server/.env</code> file as <code className="bg-yellow-100 px-1 rounded">GROQ_API_KEY=your_key</code></li>
+                      <li>Restart your server</li>
+                    </ol>
+                  </div>
+                ) : (
+                  <p className="text-xs text-red-500 mt-2">Your message has been restored above. You can edit it and try again.</p>
+                )}
+              </div>
+              <button
+                onClick={() => setLastError(null)}
+                className="text-red-400 hover:text-red-600 transition-colors text-lg leading-none"
+                title="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Quick Questions */}
         <div className="flex flex-wrap gap-2">

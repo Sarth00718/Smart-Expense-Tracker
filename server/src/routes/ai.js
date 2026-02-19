@@ -92,6 +92,11 @@ router.post('/chat', auth, async (req, res) => {
     // Use AI for complex queries
     else {
       try {
+        // Check if API key is configured
+        if (!process.env.GROQ_API_KEY || process.env.GROQ_API_KEY === 'your_groq_api_key_here') {
+          throw new Error('AI_NOT_CONFIGURED: Groq API key is not configured. Please add GROQ_API_KEY to your .env file.');
+        }
+        
         const now = new Date();
         const currentYear = now.getFullYear();
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
@@ -171,8 +176,10 @@ IMPORTANT INSTRUCTIONS:
     });
 
   } catch (error) {
-    res.json({ 
-      response: '❌ Sorry, I encountered an error processing your request. Please try again or rephrase your question.' 
+    console.error('AI chat error:', error);
+    res.status(500).json({ 
+      error: 'Sorry, I encountered an error processing your request. Please try again or rephrase your question.',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });

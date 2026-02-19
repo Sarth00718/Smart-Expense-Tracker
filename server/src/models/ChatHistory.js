@@ -16,7 +16,7 @@ const messageSchema = new mongoose.Schema({
   },
   apiUsed: {
     type: String,
-    enum: ['groq', 'fallback'],
+    enum: ['groq', 'fallback', 'rule-based'],
     default: 'fallback'
   }
 });
