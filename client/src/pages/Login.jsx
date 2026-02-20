@@ -75,9 +75,9 @@ const Login = () => {
         duration: 3000,
         style: {
           borderRadius: '12px',
-          background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+          background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
           color: '#fff',
-          boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
+          boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
         },
       })
       
@@ -135,9 +135,9 @@ const Login = () => {
         duration: 3000,
         style: {
           borderRadius: '12px',
-          background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+          background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
           color: '#fff',
-          boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
+          boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
         },
       })
       
@@ -192,9 +192,9 @@ const Login = () => {
         duration: 3000,
         style: {
           borderRadius: '12px',
-          background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+          background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
           color: '#fff',
-          boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
+          boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
         },
       })
       
@@ -309,9 +309,9 @@ const Login = () => {
           </div>
 
           {/* Enhanced Glass Card */}
-          <div className="relative bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl p-6 lg:p-8 border border-white/30 overflow-hidden font-sans">
+          <div className="relative bg-gradient-to-br from-blue-50/80 via-purple-50/60 to-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl p-6 lg:p-8 border border-white/30 overflow-hidden font-sans">
             {/* Decorative corner gradient */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-transparent rounded-bl-full"></div>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-200/30 via-purple-200/20 to-transparent rounded-bl-full blur-2xl"></div>
             
             <div className="relative z-10">
               {/* Header */}
