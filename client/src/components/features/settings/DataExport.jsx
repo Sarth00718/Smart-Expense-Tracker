@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Download, FileText, FileSpreadsheet, FileJson, Calendar } from 'lucide-react'
+import { Download, FileText, FileSpreadsheet, FileJson, Calendar, FileBarChart } from 'lucide-react'
 import { exportService } from '../../../services/exportService'
 import { Card, Button } from '../../ui'
 import toast from 'react-hot-toast'
@@ -31,6 +31,8 @@ const DataExport = () => {
         } else if (format === 'excel') {
           await exportService.exportAllDataExcel(startDate, endDate)
         }
+      } else if (type === 'pdf') {
+        await exportService.exportComprehensivePDF(startDate, endDate)
       }
 
       toast.success('Data exported successfully!', { id: loadingToast })
@@ -136,7 +138,16 @@ const DataExport = () => {
           <p className="text-sm text-gray-600">
             Includes expenses, income, budgets, and goals in a comprehensive report
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Button
+              variant="primary"
+              onClick={() => handleExport('pdf', 'pdf')}
+              disabled={loading}
+              icon={FileBarChart}
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+            >
+              PDF Report
+            </Button>
             <Button
               variant="primary"
               onClick={() => handleExport('all', 'excel')}
@@ -144,7 +155,7 @@ const DataExport = () => {
               icon={FileSpreadsheet}
               className="w-full"
             >
-              Complete Excel Report
+              Excel Report
             </Button>
             <Button
               variant="outline"
@@ -153,7 +164,7 @@ const DataExport = () => {
               icon={FileJson}
               className="w-full"
             >
-              Complete JSON Export
+              JSON Export
             </Button>
           </div>
         </div>
@@ -162,6 +173,10 @@ const DataExport = () => {
         <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
           <h4 className="font-semibold text-gray-900 mb-2">Export Formats</h4>
           <ul className="text-sm text-gray-700 space-y-2">
+            <li className="flex items-start gap-2">
+              <FileBarChart className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
+              <span><strong>PDF:</strong> Professional report with charts, insights, and visual analysis</span>
+            </li>
             <li className="flex items-start gap-2">
               <FileText className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
               <span><strong>CSV:</strong> Compatible with Excel, Google Sheets, and most spreadsheet apps</span>

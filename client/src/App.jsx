@@ -12,6 +12,7 @@ import Dashboard from './pages/Dashboard'
 import PWAInstallPrompt from './components/ui/PWAInstallPrompt'
 import OfflineIndicator from './components/ui/OfflineIndicator'
 import ErrorBoundary from './components/ui/ErrorBoundary'
+import SnowEffect from './components/ui/SnowEffect'
 import { pageTransition } from './utils/animations'
 import api from './services/api'
 
@@ -166,6 +167,7 @@ function App() {
         <AuthProvider>
           <ExpenseProvider>
             <IncomeProvider>
+              <SnowEffect intensity={50} speed="medium" />
               <Toaster
                 position="top-right"
                 toastOptions={{

@@ -23,5 +23,13 @@ export { MicrophonePulse, Waveform, TypingIndicator } from './VoiceAnimation'
 // Loading & Background Components
 export { default as LoadingSpinner, ButtonSpinner, SkeletonLoader as ContentSkeleton } from './LoadingSpinner'
 export { default as AnimatedBackground } from './AnimatedBackground'
+export { default as SnowEffect } from './SnowEffect'
 
-
+// Advanced Animations
+export { LiquidProgress, WaveProgress } from './LiquidProgress'
+export { AnimatedLineChart, AnimatedBarChart, AnimatedPieChart } from './ChartDrawing'
+export { Card3DFlip, Card3DTilt } from './Card3DFlip'
+export { NumberMorph, OdometerNumber, FlipNumber } from './NumberMorph'
+export { ParticleBurst, SparkleEffect, RippleEffect } from './ParticleBurst'
+export { MoneyRain, CoinBurst } from './MoneyRain'
+export { ParallaxSection, ParallaxLayer, ParallaxCard } from './ParallaxScroll'

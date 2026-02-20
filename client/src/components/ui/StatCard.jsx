@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import { fadeInUp, hoverScale, counterVariants } from '../../utils/animations';
 import AnimatedCounter from './AnimatedCounter';
+import { ParticleBurst } from './ParticleBurst';
+import { useState } from 'react';
 
 const StatCard = ({ 
   title, 
@@ -13,6 +15,8 @@ const StatCard = ({
   delay = 0,
   animateValue = false
 }) => {
+  const [burst, setBurst] = useState({ active: false, x: 0, y: 0 });
+
   const colors = {
     blue: 'from-blue-500 to-blue-700',
     green: 'from-green-500 to-green-700',
@@ -22,6 +26,16 @@ const StatCard = ({
     indigo: 'from-indigo-500 to-indigo-700'
   }
 
+  const handleClick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setBurst({ 
+      active: true, 
+      x: rect.left + rect.width / 2, 
+      y: rect.top + rect.height / 2 
+    });
+    setTimeout(() => setBurst({ active: false, x: 0, y: 0 }), 100);
+  };
+
   // Extract numeric value for animation
   const numericValue = typeof value === 'string' 
     ? parseFloat(value.replace(/[^0-9.-]+/g, '')) 
@@ -30,8 +44,9 @@ const StatCard = ({
   const suffix = typeof value === 'string' ? value.match(/[^\d.-]+$/)?.[0] || '' : '';
 
   return (
+    <>
     <motion.div 
-      className={`bg-gradient-to-br ${colors[color]} text-white rounded-lg sm:rounded-xl shadow-card p-4 sm:p-6 relative overflow-hidden font-sans ${className}`}
+      className={`bg-gradient-to-br ${colors[color]} text-white rounded-lg sm:rounded-xl shadow-card p-4 sm:p-6 relative overflow-hidden font-sans ${className} cursor-pointer`}
       initial={fadeInUp.initial}
       animate={fadeInUp.animate}
       transition={{ ...fadeInUp.transition, delay }}
@@ -40,6 +55,7 @@ const StatCard = ({
         boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
         transition: { duration: 0.2 }
       }}
+      onClick={handleClick}
     >
       {/* Animated background gradient */}
       <motion.div
@@ -106,6 +122,13 @@ const StatCard = ({
         transition={{ duration: 0.6 }}
       />
     </motion.div>
+    <ParticleBurst 
+      x={burst.x} 
+      y={burst.y} 
+      active={burst.active}
+      count={15}
+    />
+    </>
   )
 }
 

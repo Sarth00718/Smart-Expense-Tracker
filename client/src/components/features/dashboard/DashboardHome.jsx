@@ -6,7 +6,7 @@ import { analyticsService } from '../../../services/analyticsService'
 import { TrendingUp, TrendingDown, Wallet, Plus, Receipt, Camera, Mic, ArrowUpRight, Calendar, DollarSign, Zap, Repeat } from 'lucide-react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend as RechartsLegend, Tooltip as RechartsTooltip } from 'recharts'
 import toast from 'react-hot-toast'
-import { StatCard, Card, Button, EmptyState, Modal, SkeletonCard, SkeletonList } from '../../ui'
+import { StatCard, Card, Button, EmptyState, Modal, SkeletonCard, SkeletonList, MoneyRain, Card3DTilt } from '../../ui'
 import { format } from 'date-fns'
 import { useNavigate } from 'react-router-dom'
 import VoiceExpenseInput from '../voice/VoiceExpenseInput'
@@ -25,6 +25,7 @@ const DashboardHome = () => {
   const [showReceiptScanner, setShowReceiptScanner] = useState(false)
   const [showAddExpense, setShowAddExpense] = useState(false)
   const [showAddIncome, setShowAddIncome] = useState(false)
+  const [moneyRain, setMoneyRain] = useState(false)
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     category: '',
@@ -80,6 +81,13 @@ const DashboardHome = () => {
     try {
       await addIncomeToContext(incomeFormData)
       toast.success('Income added successfully!')
+      
+      // Trigger money rain for large income
+      if (parseFloat(incomeFormData.amount) > 10000) {
+        setMoneyRain(true)
+        setTimeout(() => setMoneyRain(false), 3000)
+      }
+      
       setIncomeFormData({
         date: new Date().toISOString().split('T')[0],
         source: 'Salary',
@@ -424,44 +432,46 @@ const DashboardHome = () => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.6, duration: 0.4 }}
         >
-          <Card title="Spending by Category" subtitle="This month">
-            {chartData.length > 0 ? (
-              <div className="w-full" style={{ minHeight: '240px', height: '280px' }}>
-                <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={240}>
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={window.innerWidth < 640 ? 60 : window.innerWidth < 1024 ? 70 : 85}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {chartData.map((entry) => (
-                        <Cell key={`cell-${entry.name}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip 
-                      formatter={(value) => `₹${value.toFixed(2)}`}
-                    />
-                    <RechartsLegend 
-                      verticalAlign="bottom" 
-                      height={36}
-                      iconSize={10}
-                      wrapperStyle={{ fontSize: '11px' }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <EmptyState
-                icon={Receipt}
-                title="No expenses yet"
-                description="Add your first expense to see the breakdown"
-              />
-            )}
-          </Card>
+          <Card3DTilt>
+            <Card title="Spending by Category" subtitle="This month">
+              {chartData.length > 0 ? (
+                <div className="w-full" style={{ minHeight: '240px', height: '280px' }}>
+                  <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={240}>
+                    <PieChart>
+                      <Pie
+                        data={chartData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={window.innerWidth < 640 ? 60 : window.innerWidth < 1024 ? 70 : 85}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {chartData.map((entry) => (
+                          <Cell key={`cell-${entry.name}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip 
+                        formatter={(value) => `₹${value.toFixed(2)}`}
+                      />
+                      <RechartsLegend 
+                        verticalAlign="bottom" 
+                        height={36}
+                        iconSize={10}
+                        wrapperStyle={{ fontSize: '11px' }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <EmptyState
+                  icon={Receipt}
+                  title="No expenses yet"
+                  description="Add your first expense to see the breakdown"
+                />
+              )}
+            </Card>
+          </Card3DTilt>
         </motion.div>
       </motion.div>
 
@@ -664,6 +674,9 @@ const DashboardHome = () => {
           </Button>
         </form>
       </Modal>
+      
+      {/* Money Rain Effect */}
+      <MoneyRain active={moneyRain} duration={3000} intensity={25} />
     </motion.div>
   )
 }

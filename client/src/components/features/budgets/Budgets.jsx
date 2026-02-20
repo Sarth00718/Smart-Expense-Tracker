@@ -5,6 +5,7 @@ import { expenseService } from '../../../services/expenseService'
 import BudgetRecommendations from './BudgetRecommendations'
 import toast from 'react-hot-toast'
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns'
+import { LiquidProgress } from '../../ui'
 
 const Budgets = () => {
   const [activeTab, setActiveTab] = useState('budgets') // 'budgets', 'history', or 'recommendations'
@@ -319,7 +320,7 @@ const Budgets = () => {
 
                     {/* Progress Bar */}
                     <div className="mb-3">
-                      <div className="flex justify-between text-xs sm:text-sm mb-1">
+                      <div className="flex justify-between text-xs sm:text-sm mb-2">
                         <span className="text-gray-600">
                           ₹{budget.spent.toFixed(2)} / ₹{budget.budget.toFixed(2)}
                         </span>
@@ -327,12 +328,17 @@ const Budgets = () => {
                           {budget.percentage.toFixed(1)}%
                         </span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3 overflow-hidden">
-                        <div
-                          className={`h-full transition-all duration-300 ${getProgressBarColor(budget.status, budget.percentage)}`}
-                          style={{ width: `${Math.min(budget.percentage, 100)}%` }}
-                        ></div>
-                      </div>
+                      <LiquidProgress 
+                        value={budget.spent} 
+                        max={budget.budget}
+                        height={120}
+                        color={
+                          budget.status === 'over' ? '#ef4444' :
+                          budget.percentage > 80 ? '#f97316' :
+                          budget.percentage > 60 ? '#eab308' :
+                          '#10b981'
+                        }
+                      />
                     </div>
 
                     {/* Stats */}

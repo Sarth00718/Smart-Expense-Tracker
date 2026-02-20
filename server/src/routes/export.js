@@ -306,189 +306,474 @@ router.get('/comprehensive-pdf', auth, async (req, res) => {
     // Note: Chart generation removed to reduce dependencies
     // Charts can be generated on the frontend using recharts
 
-    // Create PDF
+    // Create PDF with better configuration
     const doc = new PDFDocument({ 
       margin: 50,
       size: 'A4',
-      bufferPages: true
+      bufferPages: true,
+      autoFirstPage: true,
+      info: {
+        Title: 'Comprehensive Financial Report',
+        Author: 'Smart Expense Tracker',
+        Subject: 'Financial Analysis Report',
+        Keywords: 'finance, expenses, income, budget'
+      }
     });
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=comprehensive-report-${Date.now()}.pdf`);
+    res.setHeader('Content-Disposition', `attachment; filename=financial-report-${new Date().toISOString().split('T')[0]}.pdf`);
     doc.pipe(res);
 
-    // Cover Page
-    doc.fontSize(32).font('Helvetica-Bold').fillColor('#4361ee')
-       .text('Comprehensive Financial Report', { align: 'center' });
-    doc.moveDown(0.5);
-    doc.fontSize(14).font('Helvetica').fillColor('#666')
-       .text(`Generated on ${new Date().toLocaleDateString('en-US', { 
+    // Helper function to draw a colored box
+    const drawBox = (x, y, width, height, fillColor, strokeColor = null) => {
+      doc.rect(x, y, width, height).fill(fillColor);
+      if (strokeColor) {
+        doc.rect(x, y, width, height).stroke(strokeColor);
+      }
+    };
+
+    // Helper function to add section header
+    const addSectionHeader = (title, icon = '') => {
+      if (doc.y > 700) doc.addPage();
+      doc.moveDown(0.5);
+      drawBox(50, doc.y, 495, 35, '#4361ee');
+      doc.fontSize(16).font('Helvetica-Bold').fillColor('#ffffff')
+         .text(`${icon} ${title}`, 60, doc.y + 10);
+      doc.moveDown(1.5);
+      doc.fillColor('#000000');
+    };
+
+    // Cover Page with gradient effect
+    doc.rect(0, 0, 612, 792).fill('#4361ee');
+    
+    // Title
+    doc.fontSize(40).font('Helvetica-Bold').fillColor('#ffffff')
+       .text('Financial Report', 50, 200, { align: 'center', width: 512 });
+    
+    doc.fontSize(18).font('Helvetica').fillColor('#e0e7ff')
+       .text('Comprehensive Analysis', 50, 260, { align: 'center', width: 512 });
+    
+    // Date box
+    drawBox(156, 320, 300, 80, '#ffffff');
+    doc.fontSize(12).font('Helvetica-Bold').fillColor('#4361ee')
+       .text('Report Generated', 156, 335, { align: 'center', width: 300 });
+    doc.fontSize(14).font('Helvetica').fillColor('#1e293b')
+       .text(new Date().toLocaleDateString('en-US', { 
          year: 'numeric', month: 'long', day: 'numeric' 
-       })}`, { align: 'center' });
-    doc.moveDown(0.5);
-    doc.fontSize(12).text(
-      `Report Period: ${start.toLocaleDateString()} - ${end.toLocaleDateString()}`,
-      { align: 'center' }
-    );
-    doc.moveDown(3);
+       }), 156, 355, { align: 'center', width: 300 });
+    doc.fontSize(11).fillColor('#64748b')
+       .text(`Period: ${start.toLocaleDateString('en-US')} - ${end.toLocaleDateString('en-US')}`, 
+             156, 375, { align: 'center', width: 300 });
+    
+    // Stats preview
+    doc.fontSize(24).font('Helvetica-Bold').fillColor('#ffffff')
+       .text(`Rs ${netBalance.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 50, 480, { align: 'center', width: 512 });
+    doc.fontSize(12).font('Helvetica').fillColor('#e0e7ff')
+       .text('Net Balance', 50, 515, { align: 'center', width: 512 });
+    
+    // Footer
+    doc.fontSize(10).fillColor('#e0e7ff')
+       .text('Smart Expense Tracker', 50, 720, { align: 'center', width: 512 });
 
-    // Executive Summary Box
-    doc.roundedRect(50, doc.y, 495, 200, 10).fillAndStroke('#f0f4ff', '#4361ee');
-    doc.fillColor('#000');
-    doc.fontSize(18).font('Helvetica-Bold').text('Executive Summary', 70, doc.y + 20);
-    
-    const summaryY = doc.y + 50;
-    doc.fontSize(12).font('Helvetica');
-    doc.fillColor('#10b981').text(`Total Income:`, 70, summaryY);
-    doc.fillColor('#000').text(`₹${totalIncome.toFixed(2)}`, 250, summaryY);
-    
-    doc.fillColor('#ef4444').text(`Total Expenses:`, 70, summaryY + 25);
-    doc.fillColor('#000').text(`₹${totalExpenses.toFixed(2)}`, 250, summaryY + 25);
-    
-    doc.fillColor(netBalance >= 0 ? '#10b981' : '#ef4444')
-       .text(`Net Balance:`, 70, summaryY + 50);
-    doc.fillColor(netBalance >= 0 ? '#10b981' : '#ef4444')
-       .text(`₹${netBalance.toFixed(2)}`, 250, summaryY + 50);
-    
-    doc.fillColor('#4361ee').text(`Savings Rate:`, 70, summaryY + 75);
-    doc.fillColor('#000').text(`${savingsRate}%`, 250, summaryY + 75);
-
-    doc.fillColor('#666').text(`Transactions:`, 70, summaryY + 100);
-    doc.fillColor('#000').text(`${expenses.length + income.length}`, 250, summaryY + 100);
-
-    // Visual Summary (text-based)
+    // Page 2: Executive Summary
     doc.addPage();
-    doc.fontSize(20).font('Helvetica-Bold').fillColor('#4361ee')
-       .text('Financial Summary', { align: 'center' });
-    doc.moveDown(2);
+    addSectionHeader('Executive Summary', '📊');
 
-    // Income vs Expense Summary
-    doc.fontSize(14).font('Helvetica-Bold').fillColor('#000')
-       .text('Income vs Expenses Overview');
-    doc.moveDown(0.5);
-    doc.fontSize(11).font('Helvetica').fillColor('#10b981')
-       .text(`Total Income: ₹${totalIncome.toFixed(2)}`);
-    doc.fillColor('#ef4444')
-       .text(`Total Expenses: ₹${totalExpenses.toFixed(2)}`);
-    doc.fillColor(netBalance >= 0 ? '#10b981' : '#ef4444')
-       .text(`Net Savings: ₹${netBalance.toFixed(2)}`);
-    doc.moveDown(2);
+    // Summary cards
+    const cardWidth = 230;
+    const cardHeight = 100;
+    const cardSpacing = 35;
+    let cardY = doc.y;
+
+    // Income Card
+    drawBox(50, cardY, cardWidth, cardHeight, '#f0fdf4');
+    doc.rect(50, cardY, cardWidth, cardHeight).stroke('#10b981');
+    doc.fontSize(12).font('Helvetica').fillColor('#059669')
+       .text('Total Income', 60, cardY + 15);
+    doc.fontSize(22).font('Helvetica-Bold').fillColor('#047857')
+       .text(`Rs ${totalIncome.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 60, cardY + 40);
+    doc.fontSize(10).font('Helvetica').fillColor('#6b7280')
+       .text(`${income.length} transactions`, 60, cardY + 75);
+
+    // Expenses Card
+    drawBox(315, cardY, cardWidth, cardHeight, '#fef2f2');
+    doc.rect(315, cardY, cardWidth, cardHeight).stroke('#ef4444');
+    doc.fontSize(12).font('Helvetica').fillColor('#dc2626')
+       .text('Total Expenses', 325, cardY + 15);
+    doc.fontSize(22).font('Helvetica-Bold').fillColor('#b91c1c')
+       .text(`Rs ${totalExpenses.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 325, cardY + 40);
+    doc.fontSize(10).font('Helvetica').fillColor('#6b7280')
+       .text(`${expenses.length} transactions`, 325, cardY + 75);
+
+    cardY += cardHeight + cardSpacing;
+
+    // Net Balance Card
+    const balanceColor = netBalance >= 0 ? '#10b981' : '#ef4444';
+    const balanceBg = netBalance >= 0 ? '#f0fdf4' : '#fef2f2';
+    drawBox(50, cardY, cardWidth, cardHeight, balanceBg);
+    doc.rect(50, cardY, cardWidth, cardHeight).stroke(balanceColor);
+    doc.fontSize(12).font('Helvetica').fillColor(balanceColor)
+       .text('Net Balance', 60, cardY + 15);
+    doc.fontSize(22).font('Helvetica-Bold').fillColor(balanceColor)
+       .text(`Rs ${netBalance.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 60, cardY + 40);
+    doc.fontSize(10).font('Helvetica').fillColor('#6b7280')
+       .text(netBalance >= 0 ? 'Surplus' : 'Deficit', 60, cardY + 75);
+
+    // Savings Rate Card
+    drawBox(315, cardY, cardWidth, cardHeight, '#eff6ff');
+    doc.rect(315, cardY, cardWidth, cardHeight).stroke('#3b82f6');
+    doc.fontSize(12).font('Helvetica').fillColor('#2563eb')
+       .text('Savings Rate', 325, cardY + 15);
+    doc.fontSize(24).font('Helvetica-Bold').fillColor('#1d4ed8')
+       .text(`${savingsRate}%`, 325, cardY + 40);
+    doc.fontSize(10).font('Helvetica').fillColor('#6b7280')
+       .text('of total income', 325, cardY + 75);
+
+    doc.y = cardY + cardHeight + 40;
+
+    // Key Insights
+    addSectionHeader('Key Insights', '💡');
+    
+    const insights = [];
+    
+    // Top spending category
+    if (categoryData.length > 0) {
+      insights.push(`Your highest spending category is ${categoryData[0].category} with Rs ${categoryData[0].total.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
+    }
+    
+    // Savings insight
+    if (savingsRate > 20) {
+      insights.push(`Excellent! You're saving ${savingsRate}% of your income`);
+    } else if (savingsRate > 10) {
+      insights.push(`Good job! You're saving ${savingsRate}% of your income`);
+    } else if (savingsRate > 0) {
+      insights.push(`You're saving ${savingsRate}% of your income. Consider increasing this to 20%+`);
+    } else {
+      insights.push(`Your expenses exceed your income. Review your spending to improve your financial health`);
+    }
+    
+    // Transaction frequency
+    const avgDailyExpenses = expenses.length / Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
+    insights.push(`You average ${avgDailyExpenses.toFixed(1)} transactions per day`);
+    
+    // Budget adherence
+    if (budgets.length > 0) {
+      const budgetsOnTrack = budgets.filter(b => {
+        const spent = categoryBreakdown[b.category] || 0;
+        return spent <= b.monthlyBudget;
+      }).length;
+      insights.push(`${budgetsOnTrack} out of ${budgets.length} budgets are on track`);
+    }
+
+    insights.forEach((insight, index) => {
+      if (doc.y > 700) doc.addPage();
+      drawBox(50, doc.y, 495, 50, '#f8fafc');
+      doc.rect(50, doc.y, 495, 50).stroke('#e2e8f0');
+      doc.fontSize(11).font('Helvetica').fillColor('#1e293b')
+         .text(`${index + 1}. ${insight}`, 65, doc.y + 18, { width: 465 });
+      doc.moveDown(2.5);
+    });
 
     // Detailed Breakdown
     doc.addPage();
-    doc.fontSize(20).font('Helvetica-Bold').fillColor('#4361ee')
-       .text('Detailed Category Breakdown', { align: 'left' });
-    doc.moveDown(1);
+    addSectionHeader('Category Breakdown', '📈');
 
-    categoryData.forEach((cat, index) => {
-      if (doc.y > 700) doc.addPage();
-      
-      const percentage = ((cat.total / totalExpenses) * 100).toFixed(1);
-      doc.fontSize(14).font('Helvetica-Bold').fillColor('#000')
-         .text(`${index + 1}. ${cat.category}`);
-      doc.fontSize(11).font('Helvetica').fillColor('#666')
-         .text(`Amount: ₹${cat.total.toFixed(2)} (${percentage}% of total expenses)`);
-      
-      const categoryExpenses = expenses.filter(exp => exp.category === cat.category);
-      doc.fontSize(10).fillColor('#888')
-         .text(`Transactions: ${categoryExpenses.length}`);
-      
-      doc.moveDown(0.8);
-    });
+    if (categoryData.length === 0) {
+      doc.fontSize(12).font('Helvetica').fillColor('#6b7280')
+         .text('No expense data available for this period', { align: 'center' });
+    } else {
+      // Table header
+      drawBox(50, doc.y, 495, 30, '#f1f5f9');
+      doc.fontSize(11).font('Helvetica-Bold').fillColor('#1e293b')
+         .text('Category', 60, doc.y + 10)
+         .text('Amount', 280, doc.y + 10)
+         .text('% of Total', 400, doc.y + 10)
+         .text('Transactions', 480, doc.y + 10);
+      doc.moveDown(1.5);
+
+      categoryData.forEach((cat, index) => {
+        if (doc.y > 720) {
+          doc.addPage();
+          addSectionHeader('Category Breakdown (continued)', '📈');
+        }
+        
+        const percentage = ((cat.total / totalExpenses) * 100).toFixed(1);
+        const categoryExpenses = expenses.filter(exp => exp.category === cat.category);
+        const bgColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
+        
+        drawBox(50, doc.y, 495, 35, bgColor);
+        doc.rect(50, doc.y, 495, 35).stroke('#e5e7eb');
+        
+        doc.fontSize(11).font('Helvetica-Bold').fillColor('#1e293b')
+           .text(cat.category, 60, doc.y + 12, { width: 200 });
+        doc.font('Helvetica').fillColor('#ef4444')
+           .text(`Rs ${cat.total.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 280, doc.y + 12);
+        doc.fillColor('#6b7280')
+           .text(`${percentage}%`, 400, doc.y + 12);
+        doc.fillColor('#6b7280')
+           .text(categoryExpenses.length.toString(), 490, doc.y + 12);
+        
+        doc.moveDown(1.8);
+      });
+    }
 
     // Budget Status
     if (budgets.length > 0) {
       doc.addPage();
-      doc.fontSize(20).font('Helvetica-Bold').fillColor('#4361ee')
-         .text('Budget Status', { align: 'left' });
-      doc.moveDown(1);
+      addSectionHeader('Budget Analysis', '💰');
 
-      budgets.forEach(budget => {
-        if (doc.y > 700) doc.addPage();
+      budgets.forEach((budget, index) => {
+        if (doc.y > 680) {
+          doc.addPage();
+          addSectionHeader('Budget Analysis (continued)', '💰');
+        }
         
         const spent = categoryBreakdown[budget.category] || 0;
         const remaining = budget.monthlyBudget - spent;
         const percentUsed = ((spent / budget.monthlyBudget) * 100).toFixed(1);
         
-        doc.fontSize(14).font('Helvetica-Bold').fillColor('#000')
-           .text(budget.category);
-        doc.fontSize(11).font('Helvetica').fillColor('#666')
-           .text(`Budget: ₹${budget.monthlyBudget.toFixed(2)} | Spent: ₹${spent.toFixed(2)} | Remaining: ₹${remaining.toFixed(2)}`);
-        doc.fontSize(10).fillColor(percentUsed > 100 ? '#ef4444' : percentUsed > 80 ? '#f59e0b' : '#10b981')
-           .text(`${percentUsed}% utilized`);
+        // Budget card
+        const cardColor = percentUsed > 100 ? '#fef2f2' : percentUsed > 80 ? '#fffbeb' : '#f0fdf4';
+        const borderColor = percentUsed > 100 ? '#ef4444' : percentUsed > 80 ? '#f59e0b' : '#10b981';
+        const statusColor = percentUsed > 100 ? '#dc2626' : percentUsed > 80 ? '#d97706' : '#059669';
         
-        doc.moveDown(0.8);
+        drawBox(50, doc.y, 495, 90, cardColor);
+        doc.rect(50, doc.y, 495, 90).stroke(borderColor);
+        
+        // Category name
+        doc.fontSize(14).font('Helvetica-Bold').fillColor('#1e293b')
+           .text(budget.category, 65, doc.y + 15);
+        
+        // Budget bar visualization
+        const barWidth = 400;
+        const barHeight = 20;
+        const barX = 65;
+        const barY = doc.y + 40;
+        
+        // Background bar
+        drawBox(barX, barY, barWidth, barHeight, '#e5e7eb');
+        
+        // Progress bar
+        const progressWidth = Math.min((spent / budget.monthlyBudget) * barWidth, barWidth);
+        drawBox(barX, barY, progressWidth, barHeight, statusColor);
+        
+        // Bar border
+        doc.rect(barX, barY, barWidth, barHeight).stroke('#9ca3af');
+        
+        // Percentage text on bar
+        doc.fontSize(10).font('Helvetica-Bold').fillColor('#ffffff')
+           .text(`${percentUsed}%`, barX + progressWidth - 35, barY + 5);
+        
+        // Budget details
+        doc.fontSize(10).font('Helvetica').fillColor('#6b7280')
+           .text(`Budget: Rs ${budget.monthlyBudget.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 65, doc.y + 70)
+           .text(`Spent: Rs ${spent.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 220, doc.y + 70)
+           .text(`Remaining: Rs ${remaining.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 370, doc.y + 70);
+        
+        doc.moveDown(5);
       });
     }
 
     // Savings Goals
     if (goals.length > 0) {
       doc.addPage();
-      doc.fontSize(20).font('Helvetica-Bold').fillColor('#4361ee')
-         .text('Savings Goals Progress', { align: 'left' });
-      doc.moveDown(1);
+      addSectionHeader('Savings Goals', '🎯');
 
-      goals.forEach(goal => {
-        if (doc.y > 700) doc.addPage();
+      goals.forEach((goal, index) => {
+        if (doc.y > 680) {
+          doc.addPage();
+          addSectionHeader('Savings Goals (continued)', '🎯');
+        }
         
         const progress = ((goal.currentAmount / goal.targetAmount) * 100).toFixed(1);
         const remaining = goal.targetAmount - goal.currentAmount;
+        const isComplete = progress >= 100;
         
-        doc.fontSize(14).font('Helvetica-Bold').fillColor('#000')
-           .text(goal.name);
-        doc.fontSize(11).font('Helvetica').fillColor('#666')
-           .text(`Target: ₹${goal.targetAmount.toFixed(2)} | Current: ₹${goal.currentAmount.toFixed(2)} | Remaining: ₹${remaining.toFixed(2)}`);
-        doc.fontSize(10).fillColor('#4361ee')
-           .text(`${progress}% complete`);
-        if (goal.deadline) {
-          doc.fontSize(9).fillColor('#888')
-             .text(`Deadline: ${new Date(goal.deadline).toLocaleDateString()}`);
+        // Goal card
+        const cardColor = isComplete ? '#f0fdf4' : '#eff6ff';
+        const borderColor = isComplete ? '#10b981' : '#3b82f6';
+        
+        drawBox(50, doc.y, 495, 110, cardColor);
+        doc.rect(50, doc.y, 495, 110).stroke(borderColor);
+        
+        // Goal name and category
+        doc.fontSize(14).font('Helvetica-Bold').fillColor('#1e293b')
+           .text(goal.name, 65, doc.y + 15);
+        if (goal.category) {
+          doc.fontSize(10).font('Helvetica').fillColor('#6b7280')
+             .text(goal.category, 65, doc.y + 35);
         }
         
-        doc.moveDown(0.8);
+        // Progress bar
+        const barWidth = 400;
+        const barHeight = 25;
+        const barX = 65;
+        const barY = doc.y + 50;
+        
+        // Background bar
+        drawBox(barX, barY, barWidth, barHeight, '#e5e7eb');
+        
+        // Progress bar
+        const progressWidth = Math.min((goal.currentAmount / goal.targetAmount) * barWidth, barWidth);
+        const progressColor = isComplete ? '#10b981' : '#3b82f6';
+        drawBox(barX, barY, progressWidth, barHeight, progressColor);
+        
+        // Bar border
+        doc.rect(barX, barY, barWidth, barHeight).stroke('#9ca3af');
+        
+        // Percentage text on bar
+        doc.fontSize(11).font('Helvetica-Bold').fillColor('#ffffff')
+           .text(`${progress}%`, barX + (progressWidth > 50 ? progressWidth - 45 : progressWidth + 5), barY + 7);
+        
+        // Goal details
+        doc.fontSize(10).font('Helvetica').fillColor('#6b7280')
+           .text(`Target: Rs ${goal.targetAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 65, doc.y + 85)
+           .text(`Current: Rs ${goal.currentAmount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 220, doc.y + 85)
+           .text(`Remaining: Rs ${remaining.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 370, doc.y + 85);
+        
+        if (goal.deadline) {
+          const daysRemaining = Math.ceil((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24));
+          doc.fontSize(9).fillColor('#6b7280')
+             .text(`Deadline: ${new Date(goal.deadline).toLocaleDateString()} (${daysRemaining} days)`, 65, doc.y + 100);
+        }
+        
+        doc.moveDown(6);
       });
     }
 
     // Recent Transactions
     doc.addPage();
-    doc.fontSize(20).font('Helvetica-Bold').fillColor('#4361ee')
-       .text('Recent Transactions', { align: 'left' });
-    doc.moveDown(1);
+    addSectionHeader('Recent Transactions', '📝');
 
     const recentTransactions = [...expenses, ...income]
       .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 20);
+      .slice(0, 30);
 
-    recentTransactions.forEach(trans => {
-      if (doc.y > 720) doc.addPage();
-      
-      const isExpense = trans.category !== undefined;
-      const amount = isExpense ? -trans.amount : trans.amount;
-      const type = isExpense ? 'Expense' : 'Income';
-      const category = isExpense ? trans.category : trans.source;
-      
-      doc.fontSize(10).font('Helvetica').fillColor('#666')
-         .text(new Date(trans.date).toLocaleDateString(), 50, doc.y);
-      doc.fillColor('#000')
-         .text(category, 150, doc.y);
-      doc.fillColor(isExpense ? '#ef4444' : '#10b981')
-         .text(`₹${Math.abs(amount).toFixed(2)}`, 350, doc.y);
-      doc.fillColor('#888')
-         .text(type, 470, doc.y);
-      
-      doc.moveDown(0.5);
-    });
+    if (recentTransactions.length === 0) {
+      doc.fontSize(12).font('Helvetica').fillColor('#6b7280')
+         .text('No transactions found for this period', { align: 'center' });
+    } else {
+      // Table header
+      drawBox(50, doc.y, 495, 30, '#f1f5f9');
+      doc.fontSize(10).font('Helvetica-Bold').fillColor('#1e293b')
+         .text('Date', 60, doc.y + 10)
+         .text('Category', 140, doc.y + 10)
+         .text('Description', 260, doc.y + 10)
+         .text('Amount', 420, doc.y + 10)
+         .text('Type', 500, doc.y + 10);
+      doc.moveDown(1.5);
+
+      recentTransactions.forEach((trans, index) => {
+        if (doc.y > 720) {
+          doc.addPage();
+          addSectionHeader('Recent Transactions (continued)', '📝');
+          // Repeat header
+          drawBox(50, doc.y, 495, 30, '#f1f5f9');
+          doc.fontSize(10).font('Helvetica-Bold').fillColor('#1e293b')
+             .text('Date', 60, doc.y + 10)
+             .text('Category', 140, doc.y + 10)
+             .text('Description', 260, doc.y + 10)
+             .text('Amount', 420, doc.y + 10)
+             .text('Type', 500, doc.y + 10);
+          doc.moveDown(1.5);
+        }
+        
+        const isExpense = trans.category !== undefined;
+        const amount = trans.amount;
+        const type = isExpense ? 'Expense' : 'Income';
+        const category = isExpense ? trans.category : trans.source;
+        const description = trans.description || '-';
+        const bgColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
+        
+        drawBox(50, doc.y, 495, 30, bgColor);
+        doc.rect(50, doc.y, 495, 30).stroke('#e5e7eb');
+        
+        doc.fontSize(9).font('Helvetica').fillColor('#6b7280')
+           .text(new Date(trans.date).toLocaleDateString('en-US', { 
+             month: 'short', day: 'numeric', year: '2-digit' 
+           }), 60, doc.y + 10);
+        doc.fillColor('#1e293b')
+           .text(category.substring(0, 15), 140, doc.y + 10);
+        doc.fillColor('#6b7280')
+           .text(description.substring(0, 20), 260, doc.y + 10);
+        doc.fillColor(isExpense ? '#ef4444' : '#10b981')
+           .text(`${isExpense ? '-' : '+'}Rs ${amount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 420, doc.y + 10);
+        doc.fontSize(8).fillColor('#6b7280')
+           .text(type, 500, doc.y + 11);
+        
+        doc.moveDown(1.5);
+      });
+    }
+
+    // Monthly Summary
+    if (monthlyData.length > 0) {
+      doc.addPage();
+      addSectionHeader('Monthly Comparison', '📅');
+
+      // Table header
+      drawBox(50, doc.y, 495, 30, '#f1f5f9');
+      doc.fontSize(11).font('Helvetica-Bold').fillColor('#1e293b')
+         .text('Month', 60, doc.y + 10)
+         .text('Income', 220, doc.y + 10)
+         .text('Expenses', 340, doc.y + 10)
+         .text('Net', 460, doc.y + 10);
+      doc.moveDown(1.5);
+
+      monthlyData.forEach((month, index) => {
+        if (doc.y > 720) doc.addPage();
+        
+        const net = month.income - month.expense;
+        const bgColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
+        
+        drawBox(50, doc.y, 495, 35, bgColor);
+        doc.rect(50, doc.y, 495, 35).stroke('#e5e7eb');
+        
+        doc.fontSize(10).font('Helvetica').fillColor('#1e293b')
+           .text(month.month, 60, doc.y + 12);
+        doc.fillColor('#10b981')
+           .text(`Rs ${month.income.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 220, doc.y + 12);
+        doc.fillColor('#ef4444')
+           .text(`Rs ${month.expense.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 340, doc.y + 12);
+        doc.fillColor(net >= 0 ? '#10b981' : '#ef4444')
+           .text(`Rs ${net.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 460, doc.y + 12);
+        
+        doc.moveDown(1.8);
+      });
+    }
 
     // Footer on all pages
     const pages = doc.bufferedPageRange();
     for (let i = 0; i < pages.count; i++) {
       doc.switchToPage(i);
-      doc.fontSize(9).font('Helvetica').fillColor('#999');
+      
+      // Footer line
+      doc.moveTo(50, doc.page.height - 60).lineTo(545, doc.page.height - 60).stroke('#e5e7eb');
+      
+      // Footer text
+      doc.fontSize(9).font('Helvetica').fillColor('#9ca3af');
       doc.text(
-        `Smart Expense Tracker | Page ${i + 1} of ${pages.count}`,
+        'Smart Expense Tracker',
         50,
-        doc.page.height - 50,
-        { align: 'center', width: 495 }
+        doc.page.height - 45,
+        { width: 200, align: 'left' }
+      );
+      doc.text(
+        `Page ${i + 1} of ${pages.count}`,
+        345,
+        doc.page.height - 45,
+        { width: 200, align: 'right' }
+      );
+      
+      // Timestamp
+      doc.fontSize(8).fillColor('#cbd5e1');
+      doc.text(
+        `Generated: ${new Date().toLocaleString('en-US', { 
+          month: 'short', day: 'numeric', year: 'numeric', 
+          hour: '2-digit', minute: '2-digit' 
+        })}`,
+        50,
+        doc.page.height - 30,
+        { width: 495, align: 'center' }
       );
     }
 
