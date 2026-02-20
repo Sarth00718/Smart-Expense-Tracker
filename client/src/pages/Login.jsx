@@ -231,7 +231,7 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-indigo-900 to-violet-900 p-4 sm:p-6 lg:p-6 xl:p-8 relative overflow-hidden font-sans antialiased">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 via-blue-600 to-blue-900 p-4 sm:p-6 lg:p-6 xl:p-8 relative overflow-hidden font-sans antialiased">
       {/* Animated Background */}
       <AnimatedBackground />
 
