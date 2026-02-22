@@ -33,15 +33,27 @@ class OfflineQueue {
 
   // Add request to queue
   addToQueue(request) {
+    const generateId = () => {
+      try {
+        return crypto.randomUUID();
+      } catch {
+        // Fallback for non-secure contexts
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+          const r = (crypto.getRandomValues(new Uint8Array(1))[0] & 15) >> (c === 'x' ? 0 : 2);
+          return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+        });
+      }
+    };
+
     const queueItem = {
-      id: crypto.randomUUID(), // Use crypto.randomUUID() for guaranteed uniqueness
+      id: generateId(),
       timestamp: new Date().toISOString(),
       ...request
     };
-    
+
     this.queue.push(queueItem);
     this.saveQueue();
-    
+
     return queueItem.id;
   }
 
@@ -69,7 +81,7 @@ class OfflineQueue {
     }
 
     // Processing offline requests
-    
+
     const results = {
       success: true,
       processed: 0,
@@ -79,7 +91,7 @@ class OfflineQueue {
 
     // Process each queued request
     const queueCopy = [...this.queue];
-    
+
     for (const item of queueCopy) {
       try {
         await this.executeRequest(item);
@@ -92,7 +104,7 @@ class OfflineQueue {
           error: error.message
         });
         console.error('Failed to sync request:', item, error);
-        
+
         // Remove failed requests older than 24 hours
         const itemAge = Date.now() - new Date(item.timestamp).getTime();
         if (itemAge > 24 * 60 * 60 * 1000) {
@@ -111,10 +123,10 @@ class OfflineQueue {
   // Execute a queued request
   async executeRequest(item) {
     const { method, url, data, headers } = item;
-    
+
     // Import axios dynamically to avoid circular dependencies
     const api = (await import('../services/api.js')).default;
-    
+
     const config = {
       method: method.toLowerCase(),
       url,
@@ -132,13 +144,13 @@ class OfflineQueue {
       // Wait a bit to ensure connection is stable
       setTimeout(async () => {
         const results = await this.processQueue();
-        
+
         if (results.processed > 0) {
           // Dispatch custom event for UI updates
           window.dispatchEvent(new CustomEvent('offline-sync-complete', {
             detail: results
           }));
-          
+
           // Show browser notification if permitted
           if ('Notification' in window && Notification.permission === 'granted') {
             new Notification('Synced!', {
@@ -148,7 +160,7 @@ class OfflineQueue {
             });
           }
         }
-        
+
         if (results.failed > 0) {
           window.dispatchEvent(new CustomEvent('offline-sync-failed', {
             detail: results

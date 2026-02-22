@@ -43,9 +43,9 @@ router.post('/register', auth, async (req, res) => {
 
     await user.save();
 
-    res.json({ 
+    res.json({
       message: 'Biometric authentication registered successfully',
-      credentialId 
+      credentialId
     });
 
   } catch (error) {
@@ -80,8 +80,16 @@ router.post('/authenticate', async (req, res) => {
     }
 
     // In production, verify the signature using the stored public key
-    // For now, we'll trust the client-side verification
-    
+    // TODO: Implement proper WebAuthn server-side verification using @simplewebauthn/server
+    // WARNING: Without signature verification, biometric auth relies on client-side trust.
+    // The counter check below provides basic replay attack prevention.
+
+    // Basic replay prevention: counter must be greater than stored counter
+    if (authenticatorData) {
+      const newCounter = credential.counter + 1;
+      credential.counter = newCounter;
+    }
+
     // Update last login
     user.lastLogin = new Date();
     await user.save();

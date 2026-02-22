@@ -48,9 +48,9 @@ router.post('/scan', auth, upload.single('receipt'), async (req, res) => {
 
   } catch (error) {
     console.error('Receipt scan error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to scan receipt',
-      message: error.message 
+      message: error.message
     });
   }
 });
@@ -87,11 +87,25 @@ router.post('/scan-base64', auth, async (req, res) => {
 
   } catch (error) {
     console.error('Receipt scan error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to scan receipt',
-      message: error.message 
+      message: error.message
     });
   }
+});
+
+// Handle multer errors (file too large, wrong type, etc.)
+router.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: 'File too large. Maximum size is 5MB.' });
+    }
+    return res.status(400).json({ error: `Upload error: ${err.message}` });
+  }
+  if (err.message === 'Only image files are allowed') {
+    return res.status(400).json({ error: err.message });
+  }
+  next(err);
 });
 
 export default router;

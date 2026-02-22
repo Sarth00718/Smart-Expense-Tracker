@@ -18,7 +18,7 @@ export const authService = {
     } catch (backendError) {
       // If backend returns validation error (400) or conflict (409), throw with proper message
       if (backendError.response?.status === 400 || backendError.response?.status === 409) {
-        const error = new Error(backendError.response?.data?.message || 'Registration failed')
+        const error = new Error(backendError.response?.data?.error || backendError.response?.data?.message || 'Registration failed')
         error.response = backendError.response
         throw error
       }
@@ -79,7 +79,7 @@ export const authService = {
     } catch (backendError) {
       // If backend returns 401 (invalid credentials), throw with proper message
       if (backendError.response?.status === 401) {
-        const error = new Error(backendError.response?.data?.message || 'Invalid email or password')
+        const error = new Error(backendError.response?.data?.error || backendError.response?.data?.message || 'Invalid email or password')
         error.response = backendError.response
         throw error
       }
