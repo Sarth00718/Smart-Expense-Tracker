@@ -71,23 +71,23 @@ app.use(sanitizeInput);
 // Connect to database
 await database.connect();
 
-// API Routes with rate limiting
+// API Routes with smart rate limiting
 app.use('/api/auth', authLimiter, authRoutes);
-app.use('/api/expenses', apiLimiter, expenseRoutes);
-app.use('/api/income', apiLimiter, incomeRoutes);
-app.use('/api/budgets', apiLimiter, budgetRoutes);
-app.use('/api/goals', apiLimiter, goalRoutes);
-app.use('/api/analytics', apiLimiter, analyticsRoutes);
+app.use('/api/health', healthRoutes); // No rate limit for health checks
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/income', incomeRoutes);
+app.use('/api/budgets', budgetRoutes);
+app.use('/api/goals', goalRoutes);
+app.use('/api/analytics', analyticsRoutes);
 app.use('/api/ai', aiLimiter, aiRoutes);
-app.use('/api/achievements', apiLimiter, achievementRoutes);
-app.use('/api/receipts', apiLimiter, receiptRoutes);
-app.use('/api/budget-recommendations', apiLimiter, budgetRecommendationsRoutes);
-app.use('/api/health', healthRoutes);
-app.use('/api/reports', apiLimiter, reportsRoutes);
-app.use('/api/voice', apiLimiter, voiceRoutes);
-app.use('/api/filters', apiLimiter, filtersRoutes);
-app.use('/api/users', apiLimiter, usersRoutes);
-app.use('/api/export', apiLimiter, exportRoutes);
+app.use('/api/achievements', achievementRoutes);
+app.use('/api/receipts', receiptRoutes);
+app.use('/api/budget-recommendations', budgetRecommendationsRoutes);
+app.use('/api/reports', reportsRoutes);
+app.use('/api/voice', voiceRoutes);
+app.use('/api/filters', filtersRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/export', exportRoutes);
 app.use('/api/biometric', authLimiter, biometricRoutes);
 
 // Root endpoint

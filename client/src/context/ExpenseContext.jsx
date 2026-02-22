@@ -80,7 +80,8 @@ export const ExpenseProvider = ({ children }) => {
       setExpenses([])
       setLoading(false)
     }
-  }, [user, loadExpenses])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]) // Only depend on user, not loadExpenses
 
   const addExpense = async (expense) => {
     const response = await expenseService.add(expense)

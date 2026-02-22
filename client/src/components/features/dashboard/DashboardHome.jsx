@@ -1,23 +1,18 @@
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect, lazy, Suspense, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useExpense } from '../../../context/ExpenseContext'
 import { useIncome } from '../../../context/IncomeContext'
 import { useTheme } from '../../../context/ThemeContext'
 import { analyticsService } from '../../../services/analyticsService'
 import { TrendingUp, TrendingDown, Wallet, Plus, Receipt, Camera, Mic, ArrowUpRight, Calendar, DollarSign, Zap, Repeat } from 'lucide-react'
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend as RechartsLegend, Tooltip as RechartsTooltip } from 'recharts'
 import toast from 'react-hot-toast'
 import { StatCard, Card, Button, EmptyState, Modal, SkeletonCard, SkeletonList, MoneyRain, Card3DTilt } from '../../ui'
 import { format } from 'date-fns'
 import { useNavigate } from 'react-router-dom'
 import { staggerContainer, staggerItem, fadeInUp } from '../../../utils/animations'
 
-// Lazy load heavy components
-const PieChart = lazy(() => import('recharts').then(module => ({ default: module.PieChart })))
-const Pie = lazy(() => import('recharts').then(module => ({ default: module.Pie })))
-const Cell = lazy(() => import('recharts').then(module => ({ default: module.Cell })))
-const ResponsiveContainer = lazy(() => import('recharts').then(module => ({ default: module.ResponsiveContainer })))
-const RechartsLegend = lazy(() => import('recharts').then(module => ({ default: module.Legend })))
-const RechartsTooltip = lazy(() => import('recharts').then(module => ({ default: module.Tooltip })))
+// Lazy load only modals (not recharts - causes issues)
 const VoiceExpenseInput = lazy(() => import('../voice/VoiceExpenseInput'))
 const ReceiptScanner = lazy(() => import('../receipts/ReceiptScanner'))
 
@@ -25,11 +20,9 @@ const COLORS = ['#4361ee', '#7209b7', '#f72585', '#4cc9f0', '#f8961e', '#38b000'
 
 const DashboardHome = () => {
   const { expenses, addExpense, fetchExpenses } = useExpense()
-  const { addIncome: addIncomeToContext } = useIncome()
+  const { income, addIncome: addIncomeToContext } = useIncome()
   const { isDark } = useTheme()
   const navigate = useNavigate()
-  const [stats, setStats] = useState(null)
-  const [loading, setLoading] = useState(true)
   const [showVoiceInput, setShowVoiceInput] = useState(false)
   const [showReceiptScanner, setShowReceiptScanner] = useState(false)
   const [showAddExpense, setShowAddExpense] = useState(false)
@@ -49,33 +42,32 @@ const DashboardHome = () => {
     isRecurring: false
   })
 
-  useEffect(() => {
-    // Defer stats loading to not block initial render
-    const timer = setTimeout(() => {
-      loadStats()
-    }, 200)
-    
-    return () => clearTimeout(timer)
-  }, [expenses])
-
-  const loadStats = async () => {
-    try {
-      setLoading(true)
-      const response = await analyticsService.getDashboard()
-      setStats(response.data)
-    } catch (error) {
-      console.error('Error loading stats:', error)
-      // Set default stats on error to prevent blank screen
-      setStats({
-        totalIncome: 0,
-        totalExpenses: 0,
-        netBalance: 0,
-        monthNetBalance: 0
-      })
-    } finally {
-      setLoading(false)
-    }
+  // Calculate stats locally instead of API call - much faster!
+  const stats = {
+    totalIncome: Array.isArray(income) ? income.reduce((sum, item) => sum + (item.amount || 0), 0) : 0,
+    totalExpenses: Array.isArray(expenses) ? expenses.reduce((sum, item) => sum + (item.amount || 0), 0) : 0,
+    netBalance: 0,
+    monthNetBalance: 0
   }
+  stats.netBalance = stats.totalIncome - stats.totalExpenses
+  
+  // Calculate this month's balance
+  const now = new Date()
+  const thisMonthExpenses = Array.isArray(expenses) 
+    ? expenses.filter(e => {
+        const expDate = new Date(e.date)
+        return expDate.getMonth() === now.getMonth() && expDate.getFullYear() === now.getFullYear()
+      }).reduce((sum, e) => sum + (e.amount || 0), 0)
+    : 0
+  const thisMonthIncome = Array.isArray(income)
+    ? income.filter(i => {
+        const incDate = new Date(i.date)
+        return incDate.getMonth() === now.getMonth() && incDate.getFullYear() === now.getFullYear()
+      }).reduce((sum, i) => sum + (i.amount || 0), 0)
+    : 0
+  stats.monthNetBalance = thisMonthIncome - thisMonthExpenses
+  
+  const loading = false // No loading needed since we calculate locally
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -315,24 +307,22 @@ const DashboardHome = () => {
           <Card3DTilt>
             <Card title="Spending by Category" subtitle="This month">
               {chartData.length > 0 ? (
-                <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="spinner border-4 w-8 h-8"></div></div>}>
-                  <div className="w-full" style={{ minHeight: '240px', height: '280px' }}>
-                    <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={240}>
-                      <PieChart>
-                        <Pie data={chartData} cx="50%" cy="50%" labelLine={false}
-                          outerRadius={window.innerWidth < 640 ? 60 : window.innerWidth < 1024 ? 70 : 85}
-                          fill="#8884d8" dataKey="value">
-                          {chartData.map((entry) => (<Cell key={`cell-${entry.name}`} fill={entry.color} />))}
-                        </Pie>
-                        <RechartsTooltip
-                          formatter={(value) => `₹${value.toFixed(2)}`}
-                          contentStyle={tooltipStyle}
-                        />
-                        <RechartsLegend verticalAlign="bottom" height={36} iconSize={10} wrapperStyle={{ fontSize: '11px', color: isDark ? '#94a3b8' : '#6b7280' }} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </Suspense>
+                <div className="w-full" style={{ minHeight: '240px', height: '280px' }}>
+                  <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={240}>
+                    <PieChart>
+                      <Pie data={chartData} cx="50%" cy="50%" labelLine={false}
+                        outerRadius={window.innerWidth < 640 ? 60 : window.innerWidth < 1024 ? 70 : 85}
+                        fill="#8884d8" dataKey="value">
+                        {chartData.map((entry) => (<Cell key={`cell-${entry.name}`} fill={entry.color} />))}
+                      </Pie>
+                      <RechartsTooltip
+                        formatter={(value) => `₹${value.toFixed(2)}`}
+                        contentStyle={tooltipStyle}
+                      />
+                      <RechartsLegend verticalAlign="bottom" height={36} iconSize={10} wrapperStyle={{ fontSize: '11px', color: isDark ? '#94a3b8' : '#6b7280' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               ) : (
                 <EmptyState icon={Receipt} title="No expenses yet" description="Add your first expense to see the breakdown" />
               )}

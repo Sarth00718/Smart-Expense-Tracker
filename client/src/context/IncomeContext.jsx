@@ -68,7 +68,8 @@ export const IncomeProvider = ({ children }) => {
       setIncome([])
       setLoading(false)
     }
-  }, [user, loadIncome])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]) // Only depend on user, not loadIncome
 
   const addIncome = async (incomeData) => {
     const response = await incomeService.add(incomeData)
