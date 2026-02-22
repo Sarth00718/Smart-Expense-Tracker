@@ -68,22 +68,22 @@ const BiometricSettings = () => {
   if (!isSupported) {
     return (
       <Card>
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-4 mb-3">
-              <div className="w-14 h-14 bg-yellow-100 rounded-xl flex items-center justify-center">
-                <Fingerprint className="w-7 h-7 text-yellow-600" />
+        <div className="flex flex-col sm:flex-row items-start gap-4">
+          <div className="flex-1 w-full">
+            <div className="flex items-start gap-3 sm:gap-4 mb-3">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Fingerprint className="w-6 h-6 sm:w-7 sm:h-7 text-yellow-600 dark:text-yellow-400" />
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-slate-100">
                   Biometric Authentication
                 </h3>
-                <p className="text-sm text-yellow-600">
+                <p className="text-sm text-yellow-600 dark:text-yellow-400 mt-1">
                   Not supported on this device
                 </p>
               </div>
             </div>
-            <p className="text-gray-600 ml-18">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-slate-400 sm:ml-16">
               Biometric authentication is not supported on this device or browser.
               Please use a device with fingerprint or face recognition capabilities.
             </p>
@@ -97,28 +97,28 @@ const BiometricSettings = () => {
     <Card>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-4 mb-3">
-              <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
-                isRegistered ? 'bg-blue-100' : 'bg-gray-100'
+        <div className="flex flex-col sm:flex-row items-start gap-4">
+          <div className="flex-1 w-full">
+            <div className="flex items-start gap-3 sm:gap-4 mb-3">
+              <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                isRegistered ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-gray-100 dark:bg-slate-700'
               }`}>
-                <Fingerprint className={`w-7 h-7 ${
-                  isRegistered ? 'text-blue-600' : 'text-gray-600'
+                <Fingerprint className={`w-6 h-6 sm:w-7 sm:h-7 ${
+                  isRegistered ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-slate-400'
                 }`} />
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-slate-100">
                   Biometric Authentication
                 </h3>
-                <p className={`text-sm ${
-                  isRegistered ? 'text-green-600' : 'text-gray-500'
+                <p className={`text-sm mt-1 ${
+                  isRegistered ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-slate-400'
                 }`}>
                   {isRegistered ? 'Enabled' : 'Not enabled'}
                 </p>
               </div>
             </div>
-            <p className="text-gray-600 ml-18">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-slate-400 sm:ml-16">
               {isRegistered 
                 ? 'Use fingerprint or face recognition to log in securely.'
                 : 'Enable biometric authentication for faster and more secure login.'
@@ -132,7 +132,7 @@ const BiometricSettings = () => {
               onClick={handleRegister}
               disabled={loading}
               icon={Fingerprint}
-              className="ml-4"
+              className="w-full sm:w-auto sm:ml-4 flex-shrink-0"
             >
               {loading ? 'Enabling...' : 'Enable'}
             </Button>
@@ -141,11 +141,11 @@ const BiometricSettings = () => {
 
         {/* Status Banner */}
         {isRegistered && (
-          <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-medium text-green-800">Biometric Login Active</p>
-              <p className="text-sm text-green-700 mt-1">
+          <div className="flex items-start gap-3 p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+            <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-green-800 dark:text-green-300">Biometric Login Active</p>
+              <p className="text-sm text-green-700 dark:text-green-400 mt-1">
                 You can now use fingerprint or face recognition to log in securely.
               </p>
             </div>
@@ -155,20 +155,20 @@ const BiometricSettings = () => {
         {/* Registered Credentials */}
         {credentials.length > 0 && (
           <div>
-            <h4 className="font-semibold text-gray-900 mb-3">Registered Devices</h4>
+            <h4 className="font-semibold text-gray-900 dark:text-slate-100 mb-3 text-sm sm:text-base">Registered Devices</h4>
             <div className="space-y-2">
               {credentials.map((cred, index) => (
                 <div 
                   key={cred.credentialId}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg border border-gray-200 dark:border-slate-600"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                      <Fingerprint className="w-5 h-5 text-primary" />
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Fingerprint className="w-5 h-5 text-primary dark:text-primary-400" />
                     </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Device {index + 1}</p>
-                      <p className="text-sm text-gray-600">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 dark:text-slate-100 text-sm sm:text-base">Device {index + 1}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-slate-400">
                         Registered {new Date(cred.createdAt).toLocaleDateString()}
                       </p>
                     </div>
@@ -179,7 +179,7 @@ const BiometricSettings = () => {
                     onClick={() => handleRemove(cred.credentialId)}
                     disabled={loading}
                     icon={Trash2}
-                    className="text-red-600 hover:bg-red-50"
+                    className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 w-full sm:w-auto"
                   >
                     Remove
                   </Button>
@@ -190,26 +190,26 @@ const BiometricSettings = () => {
         )}
 
         {/* Info */}
-        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+        <div className="p-3 sm:p-4 bg-gray-50 dark:bg-slate-700/50 rounded-lg border border-gray-200 dark:border-slate-600">
+          <h4 className="font-semibold text-gray-900 dark:text-slate-100 mb-2 flex items-center gap-2 text-sm sm:text-base">
             <Shield className="w-4 h-4" />
             How It Works
           </h4>
-          <ul className="text-sm text-gray-700 space-y-2">
+          <ul className="text-xs sm:text-sm text-gray-700 dark:text-slate-300 space-y-2">
             <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">•</span>
+              <span className="text-primary dark:text-primary-400 mt-0.5">•</span>
               <span>Your biometric data never leaves your device</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">•</span>
+              <span className="text-primary dark:text-primary-400 mt-0.5">•</span>
               <span>Uses your device's built-in security features</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">•</span>
+              <span className="text-primary dark:text-primary-400 mt-0.5">•</span>
               <span>Works with fingerprint, face recognition, or PIN</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">•</span>
+              <span className="text-primary dark:text-primary-400 mt-0.5">•</span>
               <span>Can be disabled anytime from settings</span>
             </li>
           </ul>

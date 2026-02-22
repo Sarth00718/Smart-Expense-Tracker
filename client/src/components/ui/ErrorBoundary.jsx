@@ -31,12 +31,12 @@ class ErrorBoundary extends React.Component {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full"
+                        className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-md w-full border border-gray-200 dark:border-slate-700"
                     >
                         <div className="text-center">
-                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/40 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <svg
-                                    className="w-8 h-8 text-red-600"
+                                    className="w-8 h-8 text-red-600 dark:text-red-400"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -49,20 +49,20 @@ class ErrorBoundary extends React.Component {
                                     />
                                 </svg>
                             </div>
-                            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-2">
                                 Oops! Something went wrong
                             </h1>
-                            <p className="text-gray-600 mb-6">
+                            <p className="text-gray-600 dark:text-slate-400 mb-6">
                                 We encountered an unexpected error. Don't worry, your data is safe.
                             </p>
 
                             {process.env.NODE_ENV === 'development' && this.state.error && (
-                                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 text-left">
-                                    <p className="text-sm font-mono text-red-800 mb-2">
+                                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6 text-left">
+                                    <p className="text-sm font-mono text-red-800 dark:text-red-300 mb-2">
                                         {this.state.error.toString()}
                                     </p>
                                     {this.state.errorInfo && (
-                                        <details className="text-xs text-red-700">
+                                        <details className="text-xs text-red-700 dark:text-red-400">
                                             <summary className="cursor-pointer font-semibold mb-1">
                                                 Stack trace
                                             </summary>
@@ -76,7 +76,7 @@ class ErrorBoundary extends React.Component {
 
                             <button
                                 onClick={this.handleReset}
-                                className="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+                                className="w-full bg-primary hover:bg-primary-dark dark:bg-primary-500 dark:hover:bg-primary-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
                             >
                                 Return to Dashboard
                             </button>

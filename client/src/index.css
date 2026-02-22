@@ -2,13 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── CSS Custom Properties (Light / Dark) ──────────────────────── */
+:root {
+  --surface-0: #ffffff;
+  --surface-1: #f8fafc;
+  --surface-2: #f1f5f9;
+  --surface-3: #e2e8f0;
+  --border:    #e2e8f0;
+  --text-primary:   #0f172a;
+  --text-secondary: #475569;
+  --text-muted:     #94a3b8;
+  --shadow-card: 0 4px 6px -1px rgba(0,0,0,0.1);
+  --shadow-card-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+}
+
+.dark {
+  --surface-0: #1e293b;
+  --surface-1: #0f172a;
+  --surface-2: #1e293b;
+  --surface-3: #334155;
+  --border:    #334155;
+  --text-primary:   #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted:     #64748b;
+  --shadow-card: 0 4px 6px -1px rgba(0,0,0,0.4);
+  --shadow-card-lg: 0 10px 15px -3px rgba(0,0,0,0.4);
+}
+
 @layer base {
   * {
     @apply box-border;
   }
 
+  html {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-slate-100 antialiased;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -18,6 +49,7 @@
     line-height: 1.6;
     letter-spacing: -0.011em;
     overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -25,7 +57,7 @@
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.022em;
-    color: #0f172a;
+    color: var(--text-primary);
   }
 
   h1 { font-size: 2.5rem; font-weight: 800; }
@@ -53,9 +85,9 @@
   }
 
   ::-webkit-scrollbar { @apply w-2 h-2; }
-  ::-webkit-scrollbar-track { @apply bg-gray-100; }
-  ::-webkit-scrollbar-thumb { @apply bg-gray-400 rounded; }
-  ::-webkit-scrollbar-thumb:hover { @apply bg-primary; }
+  ::-webkit-scrollbar-track { @apply bg-gray-100 dark:bg-slate-800; }
+  ::-webkit-scrollbar-thumb { @apply bg-gray-400 dark:bg-slate-600 rounded; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-primary dark:bg-primary-400; }
 }
 
 @layer components {
@@ -67,14 +99,18 @@
     @apply inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin;
   }
 
+  /* ── Card ──────────────────────────────────────────── */
   .card {
-    @apply bg-white rounded-xl shadow-card p-4 sm:p-6;
+    @apply bg-white dark:bg-slate-800 rounded-xl shadow-card p-4 sm:p-6
+           border border-transparent dark:border-slate-700
+           transition-colors duration-300;
   }
 
   @media (max-width: 640px) {
     .card { @apply rounded-lg; }
   }
 
+  /* ── Buttons ───────────────────────────────────────── */
   .btn {
     @apply px-4 py-2 rounded-lg font-semibold transition-all duration-200 inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed no-select;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -94,7 +130,7 @@
   }
 
   .btn-secondary {
-    @apply bg-white text-primary-600 border-2 border-primary-500 hover:bg-primary-500 hover:text-white active:scale-95;
+    @apply bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 border-2 border-primary-500 hover:bg-primary-500 hover:text-white active:scale-95;
   }
 
   .btn-success {
@@ -105,8 +141,15 @@
     @apply bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-lg active:scale-95 shadow-md;
   }
 
+  /* ── Inputs ────────────────────────────────────────── */
   .input {
-    @apply w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 transition-all font-sans;
+    @apply w-full px-4 py-2.5
+           bg-white dark:bg-slate-800
+           border-2 border-gray-200 dark:border-slate-600
+           text-gray-900 dark:text-slate-100
+           placeholder-gray-400 dark:placeholder-slate-500
+           rounded-lg focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20
+           transition-all font-sans;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 400;
     font-size: 16px;
@@ -119,7 +162,14 @@
   }
 
   .input-auth {
-    @apply w-full pl-12 pr-4 py-3 sm:py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 hover:border-gray-300 transition-all text-sm sm:text-base font-medium;
+    @apply w-full pl-12 pr-4 py-3 sm:py-4
+           bg-white dark:bg-slate-800
+           border-2 border-gray-200 dark:border-slate-600
+           text-gray-900 dark:text-slate-100
+           placeholder-gray-400 dark:placeholder-slate-500
+           rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20
+           hover:border-gray-300 dark:hover:border-slate-500
+           transition-all text-sm sm:text-base font-medium;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 500;
     line-height: 1.5;
@@ -127,9 +177,10 @@
   }
 
   .input-auth-error {
-    @apply border-red-500 focus:border-red-500 focus:ring-red-500/20 bg-red-50;
+    @apply border-red-500 focus:border-red-500 focus:ring-red-500/20 bg-red-50 dark:bg-red-900/20;
   }
 
+  /* ── Badges ────────────────────────────────────────── */
   .badge {
     @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -139,14 +190,14 @@
     letter-spacing: -0.006em;
   }
 
-  .badge-food { @apply bg-orange-100 text-orange-700; }
-  .badge-travel { @apply bg-blue-100 text-blue-700; }
-  .badge-shopping { @apply bg-pink-100 text-pink-700; }
-  .badge-bills { @apply bg-purple-100 text-purple-700; }
-  .badge-entertainment { @apply bg-indigo-100 text-indigo-700; }
-  .badge-healthcare { @apply bg-red-100 text-red-700; }
-  .badge-education { @apply bg-green-100 text-green-700; }
-  .badge-other { @apply bg-gray-100 text-gray-700; }
+  .badge-food { @apply bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300; }
+  .badge-travel { @apply bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300; }
+  .badge-shopping { @apply bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300; }
+  .badge-bills { @apply bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300; }
+  .badge-entertainment { @apply bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300; }
+  .badge-healthcare { @apply bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300; }
+  .badge-education { @apply bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300; }
+  .badge-other { @apply bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300; }
 }
 
 @layer utilities {
@@ -155,10 +206,10 @@
   .safe-area-bottom { padding-bottom: max(env(safe-area-inset-bottom), 0.5rem); }
   .safe-area-left { padding-left: max(env(safe-area-inset-left), 0.5rem); }
   .safe-area-right { padding-right: max(env(safe-area-inset-right), 0.5rem); }
-  
+
   .container-responsive { @apply w-full mx-auto px-4 sm:px-6 lg:px-8; }
   .tap-target { @apply min-h-[44px] min-w-[44px]; }
-  
+
   @media (max-width: 640px) {
     .tap-target { @apply min-h-[40px] min-w-[40px]; }
   }
@@ -230,8 +281,14 @@
 
   .space-responsive { @apply space-y-4 sm:space-y-5 md:space-y-6; }
   .gap-responsive { @apply gap-3 sm:gap-4 md:gap-5 lg:gap-6; }
+
+  /* Dark mode smooth transition for all elements */
+  .theme-transition {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
 }
 
+/* ─── Static gradient/purple utilities (kept as-is, still work in dark) ─── */
 .gradient-background {
   background: linear-gradient(135deg, #4361ee 0%, #7209b7 50%, #f72585 100%);
   min-height: 100vh;
@@ -287,6 +344,11 @@
   background: linear-gradient(135deg, rgba(67, 97, 238, 0.05) 0%, rgba(114, 9, 183, 0.05) 50%, rgba(247, 37, 133, 0.05) 100%);
   border: 1px solid rgba(67, 97, 238, 0.2);
   transition: all 0.3s ease;
+}
+
+.dark .card-purple {
+  background: linear-gradient(135deg, rgba(67, 97, 238, 0.15) 0%, rgba(114, 9, 183, 0.15) 50%, rgba(247, 37, 133, 0.15) 100%);
+  border-color: rgba(67, 97, 238, 0.3);
 }
 
 .card-purple:hover {

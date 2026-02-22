@@ -4,7 +4,7 @@ import { expenseService } from '../../../services/expenseService'
 import { Trash2, Calendar, Edit2, X, Trash, Search, ArrowUpDown, Filter, Repeat, Plus, Mic, Camera } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
-import { Button, Modal } from '../../ui'
+import { Button, Modal, LoadingSpinner } from '../../ui'
 import { useNavigate } from 'react-router-dom'
 import AdvancedSearch from './AdvancedSearch'
 import RecurringExpenses from './RecurringExpenses'
@@ -169,17 +169,17 @@ const Expenses = () => {
 
   // Filter and sort expenses
   const filteredAndSortedExpenses = useMemo(() => {
-    let result = advancedSearchResults 
-      ? advancedSearchResults.expenses 
-      : nlResults 
-        ? nlResults.results 
+    let result = advancedSearchResults
+      ? advancedSearchResults.expenses
+      : nlResults
+        ? nlResults.results
         : [...expenses]
 
     // Apply time period filter
     if (filterPeriod !== 'all') {
       const now = new Date()
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-      
+
       result = result.filter(exp => {
         const expDate = new Date(exp.date)
         return filterPeriod === 'month' ? expDate >= startOfMonth : true
@@ -189,7 +189,7 @@ const Expenses = () => {
     // Apply text search
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
-      result = result.filter(exp => 
+      result = result.filter(exp =>
         exp.category.toLowerCase().includes(query) ||
         (exp.description && exp.description.toLowerCase().includes(query))
       )
@@ -198,7 +198,7 @@ const Expenses = () => {
     // Sort
     result.sort((a, b) => {
       let comparison = 0
-      
+
       switch (sortBy) {
         case 'date':
           comparison = new Date(a.date) - new Date(b.date)
@@ -212,7 +212,7 @@ const Expenses = () => {
         default:
           comparison = 0
       }
-      
+
       return sortOrder === 'asc' ? comparison : -comparison
     })
 
@@ -220,11 +220,7 @@ const Expenses = () => {
   }, [expenses, nlResults, advancedSearchResults, filterPeriod, searchQuery, sortBy, sortOrder])
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="spinner"></div>
-      </div>
-    )
+    return <LoadingSpinner size="lg" text="Loading expenses..." />
   }
 
   return (
@@ -233,16 +229,16 @@ const Expenses = () => {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 mb-2 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 dark:text-slate-100 mb-2 tracking-tight">
               Expense Tracker
             </h1>
-            <p className="text-gray-600 text-sm sm:text-base lg:text-lg leading-relaxed">Manage and track all your expenses</p>
+            <p className="text-gray-600 dark:text-slate-400 text-sm sm:text-base lg:text-lg leading-relaxed">Manage and track all your expenses</p>
           </div>
-          
+
           {/* Secondary Actions */}
           <div className="flex flex-wrap gap-2">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="md"
               icon={Repeat}
               onClick={() => setShowRecurring(true)}
@@ -250,8 +246,8 @@ const Expenses = () => {
               Recurring
             </Button>
             {expenses.length > 0 && (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="md"
                 icon={Trash}
                 onClick={handleClearAll}
@@ -265,24 +261,24 @@ const Expenses = () => {
 
         {/* Quick Action Buttons */}
         <div className="flex flex-wrap gap-2">
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             size="md"
             icon={Plus}
             onClick={() => setShowAddExpense(true)}
           >
             Add Expense
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="md"
             icon={Mic}
             onClick={() => setShowVoiceInput(true)}
           >
             Voice
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="md"
             icon={Camera}
             onClick={() => setShowReceiptScanner(true)}
@@ -306,16 +302,16 @@ const Expenses = () => {
               className="input pl-10 w-full"
             />
           </div>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="md"
             icon={Filter}
             onClick={() => setShowAdvancedSearch(true)}
           >
             Advanced
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="md"
             icon={Search}
             onClick={() => setShowNLSearch(!showNLSearch)}
@@ -347,16 +343,16 @@ const Expenses = () => {
                 placeholder="e.g., food over ₹500 last week"
                 className="input flex-1"
               />
-              <Button 
-                variant="primary" 
+              <Button
+                variant="primary"
                 size="md"
                 onClick={handleNaturalLanguageSearch}
               >
                 Search
               </Button>
               {nlResults && (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="md"
                   onClick={clearNLSearch}
                 >
@@ -375,28 +371,26 @@ const Expenses = () => {
         )}
 
         {/* Filter Controls */}
-        <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-gray-200">
-          <span className="text-sm font-semibold text-gray-700">Filters:</span>
-          
+        <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-gray-200 dark:border-slate-700">
+          <span className="text-sm font-semibold text-gray-700 dark:text-slate-300">Filters:</span>
+
           {/* Period Filter */}
-          <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex gap-1 bg-gray-100 dark:bg-slate-700 rounded-lg p-1">
             <button
               onClick={() => setFilterPeriod('all')}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                filterPeriod === 'all' 
-                  ? 'bg-white text-primary shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${filterPeriod === 'all'
+                  ? 'bg-white dark:bg-slate-600 text-primary shadow-sm'
+                  : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
+                }`}
             >
               All Time
             </button>
             <button
               onClick={() => setFilterPeriod('month')}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                filterPeriod === 'month' 
-                  ? 'bg-white text-primary shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${filterPeriod === 'month'
+                  ? 'bg-white dark:bg-slate-600 text-primary shadow-sm'
+                  : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
+                }`}
             >
               This Month
             </button>
@@ -472,13 +466,13 @@ const Expenses = () => {
       <div className="card">
         {expenses.length === 0 ? (
           <div className="text-center py-16">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Calendar className="w-10 h-10 text-gray-400" />
+            <div className="w-20 h-20 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Calendar className="w-10 h-10 text-gray-400 dark:text-slate-500" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2 tracking-tight">No expenses yet</h3>
-            <p className="text-sm text-gray-500 mb-6 leading-relaxed">Start tracking your expenses to see them here</p>
-            <Button 
-              variant="primary" 
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-2 tracking-tight">No expenses yet</h3>
+            <p className="text-sm text-gray-500 dark:text-slate-400 mb-6 leading-relaxed">Start tracking your expenses to see them here</p>
+            <Button
+              variant="primary"
               size="md"
               onClick={() => navigate('/dashboard')}
             >
@@ -488,123 +482,123 @@ const Expenses = () => {
         ) : (
           <div className="overflow-x-auto -mx-6">
             <table className="w-full">
-              <thead className="bg-gray-50 border-y border-gray-200">
+              <thead className="bg-gray-50 dark:bg-slate-700/60 border-y border-gray-200 dark:border-slate-700">
                 <tr>
-                  <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest">Date</th>
-                  <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest">Category</th>
-                  <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest">Description</th>
-                  <th className="text-right py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest">Amount</th>
-                  <th className="text-center py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest">Actions</th>
+                  <th className="text-left py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest">Date</th>
+                  <th className="text-left py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest">Category</th>
+                  <th className="text-left py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest">Description</th>
+                  <th className="text-right py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest">Amount</th>
+                  <th className="text-center py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
                 {filteredAndSortedExpenses.map((expense) => (
                   editingExpense === expense._id ? (
-                    <tr key={expense._id} className="bg-gradient-to-r from-blue-50 to-indigo-50">
-                        <td colSpan="5" className="py-5 px-6">
-                          <form onSubmit={handleUpdate} className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                            <div>
-                              <label className="block text-xs font-semibold text-gray-700 mb-1 tracking-tight">Date</label>
-                              <input
-                                type="date"
-                                value={editForm.date}
-                                onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
-                                required
-                                className="input"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-xs font-semibold text-gray-700 mb-1 tracking-tight">Category</label>
-                              <select
-                                value={editForm.category}
-                                onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-                                required
-                                className="input"
-                              >
-                                <option value="Food">🍔 Food</option>
-                                <option value="Travel">✈️ Travel</option>
-                                <option value="Transport">🚗 Transport</option>
-                                <option value="Shopping">🛍️ Shopping</option>
-                                <option value="Bills">📄 Bills</option>
-                                <option value="Entertainment">🎬 Entertainment</option>
-                                <option value="Healthcare">🏥 Healthcare</option>
-                                <option value="Education">📚 Education</option>
-                                <option value="Other">📦 Other</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-xs font-semibold text-gray-700 mb-1 tracking-tight">Description</label>
-                              <input
-                                type="text"
-                                value={editForm.description}
-                                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                                placeholder="Description"
-                                className="input"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-xs font-semibold text-gray-700 mb-1 tracking-tight">Amount (₹)</label>
-                              <input
-                                type="number"
-                                step="0.01"
-                                min="0.01"
-                                value={editForm.amount}
-                                onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })}
-                                required
-                                className="input"
-                              />
-                            </div>
-                            <div className="flex gap-2 items-end">
-                              <Button type="submit" variant="primary" className="flex-1">
-                                Save
-                              </Button>
-                              <button
-                                type="button"
-                                onClick={cancelEdit}
-                                className="btn btn-secondary px-3"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </form>
-                        </td>
-                      </tr>
-                    ) : (
-                      <tr key={expense._id} className="hover:bg-gray-50 transition-colors">
-                        <td className="py-4 px-6 text-gray-700 font-medium">
-                          {format(new Date(expense.date), 'MMM dd, yyyy')}
-                        </td>
-                        <td className="py-4 px-6">
-                          <span className={`badge ${getCategoryBadgeClass(expense.category)}`}>
-                            {expense.category}
-                          </span>
-                        </td>
-                        <td className="py-4 px-6 text-gray-600">
-                          {expense.description || <span className="text-gray-400 italic">No description</span>}
-                        </td>
-                        <td className="py-4 px-6 text-right font-semibold text-gray-900 text-base sm:text-lg tabular-nums tracking-tight">
-                          ₹{expense.amount.toFixed(2)}
-                        </td>
-                        <td className="py-4 px-6 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => startEdit(expense)}
-                              className="p-2.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all hover:scale-110"
-                              title="Edit expense"
+                    <tr key={expense._id} className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-700 dark:to-slate-700/80">
+                      <td colSpan="5" className="py-5 px-6">
+                        <form onSubmit={handleUpdate} className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                          <div>
+                            <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1 tracking-tight">Date</label>
+                            <input
+                              type="date"
+                              value={editForm.date}
+                              onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+                              required
+                              className="input"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1 tracking-tight">Category</label>
+                            <select
+                              value={editForm.category}
+                              onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                              required
+                              className="input"
                             >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
+                              <option value="Food">🍔 Food</option>
+                              <option value="Travel">✈️ Travel</option>
+                              <option value="Transport">🚗 Transport</option>
+                              <option value="Shopping">🛍️ Shopping</option>
+                              <option value="Bills">📄 Bills</option>
+                              <option value="Entertainment">🎬 Entertainment</option>
+                              <option value="Healthcare">🏥 Healthcare</option>
+                              <option value="Education">📚 Education</option>
+                              <option value="Other">📦 Other</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1 tracking-tight">Description</label>
+                            <input
+                              type="text"
+                              value={editForm.description}
+                              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                              placeholder="Description"
+                              className="input"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1 tracking-tight">Amount (₹)</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0.01"
+                              value={editForm.amount}
+                              onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })}
+                              required
+                              className="input"
+                            />
+                          </div>
+                          <div className="flex gap-2 items-end">
+                            <Button type="submit" variant="primary" className="flex-1">
+                              Save
+                            </Button>
                             <button
-                              onClick={() => handleDelete(expense._id)}
-                              className="p-2.5 text-red-600 hover:bg-red-50 rounded-lg transition-all hover:scale-110"
-                              title="Delete expense"
+                              type="button"
+                              onClick={cancelEdit}
+                              className="btn btn-secondary px-3"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <X className="w-4 h-4" />
                             </button>
                           </div>
-                        </td>
-                      </tr>
-                    )
+                        </form>
+                      </td>
+                    </tr>
+                  ) : (
+                    <tr key={expense._id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                      <td className="py-4 px-6 text-gray-700 dark:text-slate-300 font-medium">
+                        {format(new Date(expense.date), 'MMM dd, yyyy')}
+                      </td>
+                      <td className="py-4 px-6">
+                        <span className={`badge ${getCategoryBadgeClass(expense.category)}`}>
+                          {expense.category}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-gray-600 dark:text-slate-400">
+                        {expense.description || <span className="text-gray-400 dark:text-slate-500 italic">No description</span>}
+                      </td>
+                      <td className="py-4 px-6 text-right font-semibold text-gray-900 dark:text-slate-100 text-base sm:text-lg tabular-nums tracking-tight">
+                        ₹{expense.amount.toFixed(2)}
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => startEdit(expense)}
+                            className="p-2.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all hover:scale-110"
+                            title="Edit expense"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(expense._id)}
+                            className="p-2.5 text-red-600 hover:bg-red-50 rounded-lg transition-all hover:scale-110"
+                            title="Delete expense"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
                 ))}
               </tbody>
             </table>
@@ -630,8 +624,8 @@ const Expenses = () => {
       )}
 
       {/* Add Expense Modal */}
-      <Modal 
-        isOpen={showAddExpense} 
+      <Modal
+        isOpen={showAddExpense}
         onClose={() => setShowAddExpense(false)}
         title="Add New Expense"
         size="md"
@@ -711,8 +705,8 @@ const Expenses = () => {
 
       {/* Voice Input Modal */}
       {showVoiceInput && (
-        <Modal 
-          isOpen={showVoiceInput} 
+        <Modal
+          isOpen={showVoiceInput}
           onClose={() => setShowVoiceInput(false)}
           size="md"
           showCloseButton={false}
@@ -726,8 +720,8 @@ const Expenses = () => {
 
       {/* Receipt Scanner Modal */}
       {showReceiptScanner && (
-        <Modal 
-          isOpen={showReceiptScanner} 
+        <Modal
+          isOpen={showReceiptScanner}
           onClose={() => setShowReceiptScanner(false)}
           size="xl"
           title="Receipt Scanner"

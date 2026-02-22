@@ -47,38 +47,38 @@ const PWAInstallPrompt = () => {
   if (!showPrompt) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-white rounded-lg shadow-2xl border border-gray-200 p-4 z-50 animate-slide-up">
+    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-white dark:bg-slate-800 rounded-lg shadow-2xl border border-gray-200 dark:border-slate-700 p-4 z-50 animate-slide-up">
       <button
         onClick={handleDismiss}
-        className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+        className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-300"
         aria-label="Dismiss"
       >
         <X size={20} />
       </button>
       
       <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-          <Download className="text-blue-600" size={24} />
+        <div className="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center">
+          <Download className="text-blue-600 dark:text-blue-400" size={24} />
         </div>
         
         <div className="flex-1">
-          <h3 className="font-semibold text-gray-900 mb-1">
+          <h3 className="font-semibold text-gray-900 dark:text-slate-100 mb-1">
             Install App
           </h3>
-          <p className="text-sm text-gray-600 mb-3">
+          <p className="text-sm text-gray-600 dark:text-slate-400 mb-3">
             Install our app for quick access and offline support
           </p>
           
           <div className="flex gap-2">
             <button
               onClick={handleInstall}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
               Install
             </button>
             <button
               onClick={handleDismiss}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm font-medium"
+              className="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-slate-400 dark:hover:text-slate-300 text-sm font-medium"
             >
               Not now
             </button>

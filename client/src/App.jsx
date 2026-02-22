@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ThemeProvider, useTheme } from './context/ThemeContext'
 import { ExpenseProvider } from './context/ExpenseContext'
 import { IncomeProvider } from './context/IncomeContext'
 import Login from './pages/Login'
@@ -12,7 +13,7 @@ import Dashboard from './pages/Dashboard'
 import PWAInstallPrompt from './components/ui/PWAInstallPrompt'
 import OfflineIndicator from './components/ui/OfflineIndicator'
 import ErrorBoundary from './components/ui/ErrorBoundary'
-import SnowEffect from './components/ui/SnowEffect'
+import LoadingSpinner from './components/ui/LoadingSpinner'
 import { pageTransition } from './utils/animations'
 import api from './services/api'
 
@@ -22,7 +23,7 @@ const useServerKeepAlive = () => {
     // Ping server every 5 minutes to keep it awake
     const pingInterval = setInterval(async () => {
       try {
-        await api.get('/health/ping', { 
+        await api.get('/health/ping', {
           timeout: 5000,
           retry: 0 // Don't retry pings
         })
@@ -32,41 +33,28 @@ const useServerKeepAlive = () => {
       }
     }, 5 * 60 * 1000) // 5 minutes
 
-    // Initial ping on mount
-    api.get('/health/ping', { timeout: 5000, retry: 0 }).catch(() => {})
+    // Defer initial ping to not block page load
+    const initialPing = setTimeout(() => {
+      api.get('/health/ping', { timeout: 5000, retry: 0 }).catch(() => { })
+    }, 3000)
 
-    return () => clearInterval(pingInterval)
+    return () => {
+      clearInterval(pingInterval)
+      clearTimeout(initialPing)
+    }
   }, [])
 }
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth()
-  
+
   // Keep server alive when user is logged in
   useServerKeepAlive()
 
   if (loading) {
     return (
-      <motion.div
-        className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary to-[#3a0ca3]"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-      >
-        <motion.div
-          className="spinner border-4 w-12 h-12"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-        />
-        <motion.p
-          className="mt-4 text-white text-lg"
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          Loading...
-        </motion.p>
-      </motion.div>
+      <LoadingSpinner fullScreen text="Loading..." variant="logo" />
     )
   }
 
@@ -79,9 +67,7 @@ const PublicRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="spinner"></div>
-      </div>
+      <LoadingSpinner fullScreen text="Loading..." />
     )
   }
 
@@ -130,7 +116,10 @@ const AnimatedRoutes = () => {
   );
 };
 
-function App() {
+// App content wrapper to access theme context
+const AppContent = () => {
+  const { isDark } = useTheme()
+
   // Setup offline sync listeners
   useEffect(() => {
     const handleSyncComplete = (event) => {
@@ -167,28 +156,30 @@ function App() {
         <AuthProvider>
           <ExpenseProvider>
             <IncomeProvider>
-              <SnowEffect intensity={50} speed="medium" />
               <Toaster
                 position="top-right"
                 toastOptions={{
                   duration: 3000,
                   style: {
-                    background: '#fff',
-                    color: '#1e293b',
+                    background: isDark ? '#1e293b' : '#fff',
+                    color: isDark ? '#f1f5f9' : '#1e293b',
                     padding: '16px',
                     borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    boxShadow: isDark 
+                      ? '0 4px 6px -1px rgba(0, 0, 0, 0.4)' 
+                      : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    border: isDark ? '1px solid #334155' : 'none',
                   },
                   success: {
                     iconTheme: {
                       primary: '#10b981',
-                      secondary: '#fff',
+                      secondary: isDark ? '#1e293b' : '#fff',
                     },
                   },
                   error: {
                     iconTheme: {
                       primary: '#ef4444',
-                      secondary: '#fff',
+                      secondary: isDark ? '#1e293b' : '#fff',
                     },
                   },
                 }}
@@ -201,6 +192,14 @@ function App() {
         </AuthProvider>
       </Router>
     </ErrorBoundary>
+  )
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   )
 }
 

@@ -64,15 +64,15 @@ const LoadingSpinner = ({
   return (
     <div className="flex flex-col items-center justify-center gap-3 p-4">
       <div className="relative">
-        <Loader2 className={`${sizeClasses[size]} text-primary-500 animate-spin`} />
+        <Loader2 className={`${sizeClasses[size]} text-primary-500 dark:text-primary-400 animate-spin`} />
         {size === 'lg' || size === 'xl' ? (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className={`${sizeClasses[size === 'xl' ? 'lg' : 'md']} border-2 border-primary-200 rounded-full animate-pulse`}></div>
+            <div className={`${sizeClasses[size === 'xl' ? 'lg' : 'md']} border-2 border-primary-200 dark:border-primary-800 rounded-full animate-pulse`}></div>
           </div>
         ) : null}
       </div>
       {text && (
-        <p className={`${textSizeClasses[size]} text-gray-600 font-medium`}>{text}</p>
+        <p className={`${textSizeClasses[size]} text-gray-600 dark:text-slate-400 font-medium`}>{text}</p>
       )}
     </div>
   )
@@ -98,8 +98,8 @@ export const SkeletonLoader = ({ className = '', count = 1 }) => {
     <div className="space-y-3">
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className={`animate-pulse ${className}`}>
-          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-3/4 mb-2"></div>
+          <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-1/2"></div>
         </div>
       ))}
     </div>

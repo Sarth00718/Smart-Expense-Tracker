@@ -6,7 +6,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json'
   },
-  timeout: 60000, // Increased from 30s to 60s for slow wake-ups
+  timeout: 5000, // 5 seconds - fail fast if server is down
   withCredentials: false
 })
 
@@ -18,9 +18,9 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`
     }
     
-    // Add retry config to all requests
-    config.retry = config.retry || 3
-    config.retryDelay = config.retryDelay || 1000
+    // Add retry config to all requests (reduced for faster fallback)
+    config.retry = config.retry || 1
+    config.retryDelay = config.retryDelay || 500
     
     return config
   },
@@ -49,11 +49,11 @@ api.interceptors.response.use(
     if (shouldRetry && config.retry > 0) {
       config.retry -= 1
       
-      console.log(`Retrying request... (${3 - config.retry}/3)`)
+      console.log(`Retrying request... (${2 - config.retry}/2)`)
       
-      // Wait before retrying (exponential backoff)
+      // Wait before retrying (shorter delay)
       await new Promise(resolve => 
-        setTimeout(resolve, config.retryDelay * (4 - config.retry))
+        setTimeout(resolve, config.retryDelay)
       )
       
       return api(config)

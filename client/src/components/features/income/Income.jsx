@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useIncome } from '../../../context/IncomeContext'
 import { incomeService } from '../../../services/incomeService'
 import { DollarSign, Plus, Edit2, Trash2, TrendingUp, Calendar, Repeat, X } from 'lucide-react'
-import { Card, Button, StatCard, EmptyState } from '../../ui'
+import { Card, Button, StatCard, EmptyState, LoadingSpinner } from '../../ui'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 
@@ -98,24 +98,20 @@ const Income = () => {
 
   const getSourceBadgeClass = (source) => {
     const classes = {
-      Salary: 'bg-blue-100 text-blue-700',
-      Freelance: 'bg-purple-100 text-purple-700',
-      Investment: 'bg-green-100 text-green-700',
-      Business: 'bg-orange-100 text-orange-700',
-      Gift: 'bg-pink-100 text-pink-700',
-      Bonus: 'bg-indigo-100 text-indigo-700',
-      Rental: 'bg-yellow-100 text-yellow-700',
-      Other: 'bg-gray-100 text-gray-700'
+      Salary: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
+      Freelance: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300',
+      Investment: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
+      Business: 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300',
+      Gift: 'bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300',
+      Bonus: 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300',
+      Rental: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300',
+      Other: 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300'
     }
-    return classes[source] || 'bg-gray-100 text-gray-700'
+    return classes[source] || 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300'
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="spinner"></div>
-      </div>
-    )
+    return <LoadingSpinner size="lg" text="Loading income data..." />
   }
 
   return (
@@ -123,11 +119,11 @@ const Income = () => {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 mb-2 flex items-center gap-3 tracking-tight">
-            <DollarSign className="w-8 h-8 text-green-600" />
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 dark:text-slate-100 mb-2 flex items-center gap-3 tracking-tight">
+            <DollarSign className="w-8 h-8 text-green-600 dark:text-green-400" />
             Income Tracker
           </h1>
-          <p className="text-gray-600 text-lg">Track and manage your income sources</p>
+          <p className="text-gray-600 dark:text-slate-400 text-lg">Track and manage your income sources</p>
         </div>
         
         <Button 
@@ -174,7 +170,7 @@ const Income = () => {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
                   Date
                 </label>
                 <input
@@ -187,7 +183,7 @@ const Income = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
                   Source
                 </label>
                 <select
@@ -204,7 +200,7 @@ const Income = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
                 Amount (₹)
               </label>
               <input
@@ -220,7 +216,7 @@ const Income = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
                 Description (Optional)
               </label>
               <input
@@ -238,11 +234,11 @@ const Income = () => {
                   type="checkbox"
                   checked={formData.isRecurring}
                   onChange={(e) => setFormData({ ...formData, isRecurring: e.target.checked })}
-                  className="w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary mr-3"
+                  className="w-5 h-5 text-primary border-gray-300 dark:border-slate-600 rounded focus:ring-primary mr-3"
                 />
                 <div className="flex items-center gap-2">
-                  <Repeat className="w-5 h-5 text-gray-600" />
-                  <span className="text-sm font-medium text-gray-700">Recurring Income</span>
+                  <Repeat className="w-5 h-5 text-gray-600 dark:text-slate-400" />
+                  <span className="text-sm font-medium text-gray-700 dark:text-slate-300">Recurring Income</span>
                 </div>
               </label>
             </div>
@@ -275,20 +271,20 @@ const Income = () => {
         ) : (
           <div className="overflow-x-auto -mx-6">
             <table className="w-full">
-              <thead className="bg-gray-50 border-y border-gray-200">
+              <thead className="bg-gray-50 dark:bg-slate-700/50 border-y border-gray-200 dark:border-slate-600">
                 <tr>
-                  <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest">Date</th>
-                  <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest">Source</th>
-                  <th className="text-right py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest">Amount</th>
-                  <th className="text-left py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest hidden sm:table-cell">Description</th>
-                  <th className="text-center py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest hidden md:table-cell">Recurring</th>
-                  <th className="text-center py-4 px-6 font-semibold text-gray-700 text-sm uppercase tracking-widest">Actions</th>
+                  <th className="text-left py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest">Date</th>
+                  <th className="text-left py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest">Source</th>
+                  <th className="text-right py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest">Amount</th>
+                  <th className="text-left py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest hidden sm:table-cell">Description</th>
+                  <th className="text-center py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest hidden md:table-cell">Recurring</th>
+                  <th className="text-center py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
                 {income.map(incomeItem => (
-                  <tr key={incomeItem._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-6 text-gray-700 font-medium">
+                  <tr key={incomeItem._id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                    <td className="py-4 px-6 text-gray-700 dark:text-slate-300 font-medium">
                       {format(new Date(incomeItem.date), 'MMM dd, yyyy')}
                     </td>
                     <td className="py-4 px-6">
@@ -296,34 +292,34 @@ const Income = () => {
                         {incomeItem.source}
                       </span>
                     </td>
-                    <td className="py-4 px-6 text-right font-semibold text-green-600 text-base sm:text-lg tabular-nums tracking-tight">
+                    <td className="py-4 px-6 text-right font-semibold text-green-600 dark:text-green-400 text-base sm:text-lg tabular-nums tracking-tight">
                       ₹{incomeItem.amount.toFixed(2)}
                     </td>
-                    <td className="py-4 px-6 text-gray-600 hidden sm:table-cell">
-                      {incomeItem.description || <span className="text-gray-400 italic">No description</span>}
+                    <td className="py-4 px-6 text-gray-600 dark:text-slate-400 hidden sm:table-cell">
+                      {incomeItem.description || <span className="text-gray-400 dark:text-slate-500 italic">No description</span>}
                     </td>
                     <td className="py-4 px-6 text-center hidden md:table-cell">
                       {incomeItem.isRecurring ? (
-                        <span className="inline-flex items-center gap-1 text-blue-600">
+                        <span className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400">
                           <Repeat className="w-4 h-4" />
                           <span className="text-sm font-medium">Yes</span>
                         </span>
                       ) : (
-                        <span className="text-gray-400">-</span>
+                        <span className="text-gray-400 dark:text-slate-500">-</span>
                       )}
                     </td>
                     <td className="py-4 px-6 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <button 
                           onClick={() => handleEdit(incomeItem)} 
-                          className="p-2.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all hover:scale-110"
+                          className="p-2.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all hover:scale-110"
                           title="Edit income"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button 
                           onClick={() => handleDelete(incomeItem._id)} 
-                          className="p-2.5 text-red-600 hover:bg-red-50 rounded-lg transition-all hover:scale-110"
+                          className="p-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all hover:scale-110"
                           title="Delete income"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -339,7 +335,7 @@ const Income = () => {
 
         {/* Pagination */}
         {pagination.pages > 1 && (
-          <div className="flex items-center justify-center gap-4 mt-6 pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-center gap-4 mt-6 pt-6 border-t border-gray-200 dark:border-slate-700">
             <Button
               variant="outline"
               size="sm"
@@ -348,7 +344,7 @@ const Income = () => {
             >
               Previous
             </Button>
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-gray-700 dark:text-slate-300">
               Page {pagination.page} of {pagination.pages}
             </span>
             <Button

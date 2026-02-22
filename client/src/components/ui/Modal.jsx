@@ -3,13 +3,13 @@ import { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { modalBackdrop, modalContent } from '../../utils/animations'
 
-const Modal = ({ 
-  isOpen, 
-  onClose, 
-  title, 
-  children, 
+const Modal = ({
+  isOpen,
+  onClose,
+  title,
+  children,
   size = 'md',
-  showCloseButton = true 
+  showCloseButton = true
 }) => {
   useEffect(() => {
     if (isOpen) {
@@ -35,19 +35,19 @@ const Modal = ({
       {isOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           {/* Animated Backdrop */}
-          <motion.div 
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+          <motion.div
+            className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm"
             onClick={onClose}
             variants={modalBackdrop}
             initial="initial"
             animate="animate"
             exit="exit"
           />
-          
+
           {/* Modal */}
           <div className="flex min-h-full items-center justify-center p-3 sm:p-4">
-            <motion.div 
-              className={`relative bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full font-sans ${sizes[size]} max-h-[90vh] overflow-y-auto smooth-scroll`}
+            <motion.div
+              className={`relative bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-2xl w-full font-sans ${sizes[size]} max-h-[90vh] overflow-y-auto smooth-scroll border border-transparent dark:border-slate-700`}
               onClick={(e) => e.stopPropagation()}
               variants={modalContent}
               initial="initial"
@@ -56,10 +56,10 @@ const Modal = ({
             >
               {/* Header */}
               {(title || showCloseButton) && (
-                <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+                <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 z-10 rounded-t-xl sm:rounded-t-2xl">
                   {title && (
-                    <motion.h3 
-                      className="text-lg sm:text-xl font-semibold text-gray-900 truncate pr-2 tracking-tight"
+                    <motion.h3
+                      className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-slate-100 truncate pr-2 tracking-tight"
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.1 }}
@@ -70,18 +70,18 @@ const Modal = ({
                   {showCloseButton && (
                     <motion.button
                       onClick={onClose}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0 tap-target"
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors flex-shrink-0 tap-target"
                       whileHover={{ scale: 1.1, rotate: 90 }}
                       whileTap={{ scale: 0.9 }}
                     >
-                      <X className="w-5 h-5 text-gray-500" />
+                      <X className="w-5 h-5 text-gray-500 dark:text-slate-400" />
                     </motion.button>
                   )}
                 </div>
               )}
-              
+
               {/* Content */}
-              <motion.div 
+              <motion.div
                 className="p-4 sm:p-6"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

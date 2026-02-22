@@ -4,7 +4,10 @@ import { useAuth } from '../context/AuthContext'
 import { biometricService, isBiometricSupported } from '../services/biometricService'
 import toast from 'react-hot-toast'
 import { Wallet, Mail, Lock, LogIn, AlertCircle, Eye, EyeOff, TrendingUp, Shield, Zap, Sparkles, ArrowRight, Fingerprint } from 'lucide-react'
-import { AnimatedBackground, ButtonSpinner } from '../components/ui'
+
+const ButtonSpinner = () => (
+  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+)
 
 const Login = () => {
   const [email, setEmail] = useState('')
@@ -232,8 +235,13 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 via-blue-600 to-blue-900 p-4 sm:p-6 lg:p-6 xl:p-8 relative overflow-hidden font-sans antialiased">
-      {/* Animated Background */}
-      <AnimatedBackground />
+      {/* Simple background pattern instead of AnimatedBackground */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0" style={{
+          backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+          backgroundSize: '40px 40px'
+        }}></div>
+      </div>
 
       <div className={`w-full max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center relative z-10 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
         {/* Left Side - Enhanced Branding */}

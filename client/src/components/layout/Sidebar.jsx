@@ -1,18 +1,16 @@
 import { NavLink } from 'react-router-dom'
-import { 
-  LayoutDashboard, 
-  Receipt, 
-  PieChart, 
-  Target, 
-  Sparkles, 
-  TrendingUp, 
+import {
+  LayoutDashboard,
+  Receipt,
+  PieChart,
+  Target,
+  Sparkles,
+  TrendingUp,
   Trophy,
   Wallet,
   X,
   DollarSign,
   Settings as SettingsIcon,
-  Camera,
-  Mic
 } from 'lucide-react'
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -32,38 +30,40 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     <>
       {/* Mobile Overlay */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-200"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <aside 
+      <aside
         className={`
           fixed lg:static inset-y-0 left-0 z-50 font-sans
-          w-64 sm:w-72 lg:w-64 xl:w-72 bg-white border-r border-gray-200
+          w-64 sm:w-72 lg:w-64 xl:w-72
+          bg-white dark:bg-slate-800
+          border-r border-gray-200 dark:border-slate-700
           flex flex-col shadow-xl lg:shadow-none
-          transition-transform duration-300 ease-out
+          transition-all duration-300 ease-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
         {/* Logo */}
-        <div className="h-14 sm:h-16 flex items-center justify-between px-4 sm:px-5 lg:px-6 border-b border-gray-200 flex-shrink-0">
+        <div className="h-14 sm:h-16 flex items-center justify-between px-4 sm:px-5 lg:px-6 border-b border-gray-200 dark:border-slate-700 flex-shrink-0">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             <div className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gradient-to-br from-primary to-[#3a0ca3] rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
               <Wallet className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
             </div>
             <div className="min-w-0 flex-1">
-              <span className="font-semibold text-base sm:text-lg text-gray-900 block truncate tracking-tight">Smart Expense</span>
-              <p className="text-xs text-gray-500 hidden sm:block tracking-tight">Tracker</p>
+              <span className="font-semibold text-base sm:text-lg text-gray-900 dark:text-slate-100 block truncate tracking-tight">Smart Expense</span>
+              <p className="text-xs text-gray-500 dark:text-slate-400 hidden sm:block tracking-tight">Tracker</p>
             </div>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors tap-target flex-shrink-0"
+            className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors tap-target flex-shrink-0"
           >
-            <X className="w-5 h-5 text-gray-700" />
+            <X className="w-5 h-5 text-gray-700 dark:text-slate-300" />
           </button>
         </div>
 
@@ -78,9 +78,9 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               className={({ isActive }) => `
                 flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl
                 transition-all duration-200 group tap-target
-                ${isActive 
-                  ? 'bg-gradient-to-r from-primary to-[#3a0ca3] text-white shadow-md' 
-                  : 'text-gray-700 hover:bg-gray-50 hover:translate-x-1'
+                ${isActive
+                  ? 'bg-gradient-to-r from-primary to-[#3a0ca3] text-white shadow-md'
+                  : 'text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700/60 hover:translate-x-1'
                 }
               `}
             >
@@ -90,11 +90,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           ))}
         </nav>
 
-        {/* Footer */}
-        <div className="p-3 sm:p-4 border-t border-gray-200 flex-shrink-0">
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-3 sm:p-4">
-            <p className="text-xs sm:text-sm font-semibold text-gray-900 mb-1 tracking-tight">💡 Pro Tip</p>
-            <p className="text-xs text-gray-600 leading-snug">Track daily for better insights!</p>
+        {/* Footer Tip */}
+        <div className="p-3 sm:p-4 border-t border-gray-200 dark:border-slate-700 flex-shrink-0">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-700 dark:to-slate-700/80 rounded-xl p-3 sm:p-4">
+            <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1 tracking-tight">💡 Pro Tip</p>
+            <p className="text-xs text-gray-600 dark:text-slate-400 leading-snug">Track daily for better insights!</p>
           </div>
         </div>
       </aside>

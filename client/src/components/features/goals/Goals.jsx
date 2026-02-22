@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Target, Plus, Trash2, TrendingUp, Calendar, DollarSign } from 'lucide-react'
 import { goalService } from '../../../services/goalService'
-import { Card, Button, EmptyState } from '../../ui'
+import { Card, Button, EmptyState, LoadingSpinner } from '../../ui'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 
@@ -89,11 +89,7 @@ const Goals = () => {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="spinner"></div>
-      </div>
-    )
+    return <LoadingSpinner size="lg" text="Loading goals..." />
   }
 
   return (
@@ -101,13 +97,13 @@ const Goals = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 mb-2 flex items-center gap-3 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 dark:text-slate-100 mb-2 flex items-center gap-3 tracking-tight">
             <Target className="w-8 h-8 text-primary" />
             Savings Goals
           </h1>
-          <p className="text-gray-600 text-lg">Set and track your financial goals</p>
+          <p className="text-gray-600 dark:text-slate-400 text-lg">Set and track your financial goals</p>
         </div>
-        
+
         <Button
           variant="primary"
           size="md"
@@ -120,14 +116,14 @@ const Goals = () => {
 
       {/* Add Goal Form */}
       {showForm && (
-        <Card 
+        <Card
           title="Create New Goal"
           icon={Plus}
           subtitle="Set a target and track your progress"
         >
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
                 Goal Name
               </label>
               <input
@@ -142,7 +138,7 @@ const Goals = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
                   Target Amount (₹)
                 </label>
                 <input
@@ -157,7 +153,7 @@ const Goals = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
                   Current Amount (₹)
                 </label>
                 <input
@@ -173,7 +169,7 @@ const Goals = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
                 Deadline (Optional)
               </label>
               <input
@@ -202,12 +198,12 @@ const Goals = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {goals.map((goal) => (
-              <div key={goal.id} className="p-6 border-2 border-gray-200 rounded-xl hover:border-primary hover:shadow-lg transition-all">
+              <div key={goal.id} className="p-6 border-2 border-gray-200 dark:border-slate-600 rounded-xl hover:border-primary dark:hover:border-primary hover:shadow-lg transition-all dark:bg-slate-800/40">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2 tracking-tight">{goal.name}</h3>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-2 tracking-tight">{goal.name}</h3>
                     {goal.deadline && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-400">
                         <Calendar className="w-4 h-4" />
                         <span>{format(new Date(goal.deadline), 'MMM dd, yyyy')}</span>
                         {goal.daysLeft !== null && (
@@ -220,7 +216,7 @@ const Goals = () => {
                   </div>
                   <button
                     onClick={() => handleDelete(goal.id, goal.name)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all hover:scale-110 flex-shrink-0"
+                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all hover:scale-110 flex-shrink-0"
                     title="Delete Goal"
                   >
                     <Trash2 className="w-5 h-5" />
@@ -230,26 +226,25 @@ const Goals = () => {
                 {/* Progress */}
                 <div className="mb-5">
                   <div className="flex justify-between text-sm mb-2">
-                    <span className="text-gray-600 font-medium">
+                    <span className="text-gray-600 dark:text-slate-400 font-medium">
                       ₹{goal.current.toFixed(2)}
                     </span>
-                    <span className="text-gray-400">
+                    <span className="text-gray-400 dark:text-slate-500">
                       / ₹{goal.target.toFixed(2)}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden mb-2">
+                  <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-4 overflow-hidden mb-2">
                     <div
                       className={`h-full transition-all duration-500 ${getProgressColor(goal.percentage)}`}
                       style={{ width: `${Math.min(goal.percentage, 100)}%` }}
                     ></div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={`text-lg font-bold ${
-                      goal.percentage >= 100 ? 'text-green-600' :
-                      goal.percentage >= 75 ? 'text-blue-600' :
-                      goal.percentage >= 50 ? 'text-yellow-600' :
-                      'text-orange-600'
-                    }`}>
+                    <span className={`text-lg font-bold ${goal.percentage >= 100 ? 'text-green-600' :
+                        goal.percentage >= 75 ? 'text-blue-600' :
+                          goal.percentage >= 50 ? 'text-yellow-600' :
+                            'text-orange-600'
+                      }`}>
                       {goal.percentage.toFixed(1)}%
                     </span>
                     {goal.percentage >= 100 && (
@@ -259,16 +254,16 @@ const Goals = () => {
                 </div>
 
                 {/* Stats */}
-                <div className="space-y-2 mb-5 p-4 bg-gray-50 rounded-lg">
+                <div className="space-y-2 mb-5 p-4 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Remaining:</span>
-                    <span className="font-bold text-gray-900">
+                    <span className="text-gray-600 dark:text-slate-400">Remaining:</span>
+                    <span className="font-bold text-gray-900 dark:text-slate-100">
                       ₹{(goal.target - goal.current).toFixed(2)}
                     </span>
                   </div>
                   {goal.neededPerDay > 0 && (
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Save per day:</span>
+                      <span className="text-gray-600 dark:text-slate-400">Save per day:</span>
                       <span className="font-bold text-primary">
                         ₹{goal.neededPerDay.toFixed(2)}
                       </span>
@@ -294,20 +289,20 @@ const Goals = () => {
       {/* Update Modal */}
       {showUpdateModal && selectedGoal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 max-w-md w-full shadow-2xl">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
                 <DollarSign className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h3 className="text-2xl font-semibold text-gray-900 tracking-tight">Update Progress</h3>
-                <p className="text-gray-600">{selectedGoal.name}</p>
+                <h3 className="text-2xl font-semibold text-gray-900 dark:text-slate-100 tracking-tight">Update Progress</h3>
+                <p className="text-gray-600 dark:text-slate-400">{selectedGoal.name}</p>
               </div>
             </div>
-            
+
             <form onSubmit={handleUpdate} className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-tight">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
                   Current Amount (₹)
                 </label>
                 <input
@@ -319,11 +314,11 @@ const Goals = () => {
                   required
                   className="input w-full text-lg"
                 />
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-gray-500 dark:text-slate-400 mt-2">
                   Target: ₹{selectedGoal.target.toFixed(2)}
                 </p>
               </div>
-              
+
               <div className="flex gap-3 pt-2">
                 <Button type="submit" variant="primary" fullWidth size="lg">
                   Update
@@ -350,4 +345,3 @@ const Goals = () => {
 }
 
 export default Goals
-

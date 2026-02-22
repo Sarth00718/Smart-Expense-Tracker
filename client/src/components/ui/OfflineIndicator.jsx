@@ -45,7 +45,7 @@ const OfflineIndicator = () => {
           <Wifi size={18} />
           <span className="text-sm font-medium">Back online</span>
           {queueSize > 0 && (
-            <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
+            <span className="text-xs bg-white/20 dark:bg-slate-700/50 px-2 py-0.5 rounded-full">
               Syncing {queueSize}...
             </span>
           )}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Trophy, Award, Star, Zap, Target } from 'lucide-react'
 import { analyticsService } from '../../../services/analyticsService'
-import { Card, StatCard, EmptyState } from '../../ui'
+import { Card, StatCard, EmptyState, LoadingSpinner } from '../../ui'
 import { format } from 'date-fns'
 
 const Achievements = () => {
@@ -62,22 +62,18 @@ const Achievements = () => {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="spinner"></div>
-      </div>
-    )
+    return <LoadingSpinner size="lg" text="Loading achievements..." />
   }
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto font-sans">
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 mb-2 flex items-center gap-3 tracking-tight">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 dark:text-slate-100 mb-2 flex items-center gap-3 tracking-tight">
           <Trophy className="w-8 h-8 text-yellow-600" />
           Achievements
         </h1>
-        <p className="text-gray-600 text-sm sm:text-base lg:text-lg leading-relaxed">Track your financial milestones and earn rewards</p>
+        <p className="text-gray-600 dark:text-slate-400 text-sm sm:text-base lg:text-lg leading-relaxed">Track your financial milestones and earn rewards</p>
       </div>
 
       {/* Financial Health Score */}
@@ -178,18 +174,18 @@ const Achievements = () => {
               {achievements.map((achievement, index) => (
                 <div
                   key={index}
-                  className="p-6 border-2 border-gray-200 rounded-2xl hover:shadow-xl hover:border-primary transition-all hover:scale-105"
+                  className="p-6 border-2 border-gray-200 dark:border-slate-600 rounded-2xl hover:shadow-xl hover:border-primary dark:hover:border-primary transition-all hover:scale-105 dark:bg-slate-800/50"
                 >
                   <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${getBadgeColor(achievement.badgeType)} flex items-center justify-center text-white mb-4 mx-auto shadow-lg`}>
                     <span className="text-4xl">{achievement.icon}</span>
                   </div>
-                  <h3 className="text-xl font-semibold text-center mb-2 text-gray-900 tracking-tight">
+                  <h3 className="text-xl font-semibold text-center mb-2 text-gray-900 dark:text-slate-100 tracking-tight">
                     {achievement.title}
                   </h3>
-                  <p className="text-sm text-gray-600 text-center mb-4">
+                  <p className="text-sm text-gray-600 dark:text-slate-400 text-center mb-4">
                     {achievement.description}
                   </p>
-                  <div className="flex items-center justify-center gap-2 text-xs text-gray-500 bg-gray-50 rounded-lg py-2">
+                  <div className="flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-700 rounded-lg py-2">
                     <Award className="w-4 h-4" />
                     <span>
                       Earned {format(new Date(achievement.earnedAt), 'MMM dd, yyyy')}
@@ -202,12 +198,12 @@ const Achievements = () => {
         )}
 
         {/* Available Achievements Info */}
-        <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl">
-          <h4 className="font-semibold text-blue-900 mb-4 text-lg flex items-center gap-2 tracking-tight">
+        <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl">
+          <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-4 text-lg flex items-center gap-2 tracking-tight">
             <Target className="w-5 h-5" />
             Available Achievements
           </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-blue-700">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-blue-700 dark:text-blue-400">
             <div className="flex items-center gap-2">
               <span className="text-xl">🎯</span>
               <span>First Step - Add your first expense</span>
@@ -248,4 +244,3 @@ const Achievements = () => {
 }
 
 export default Achievements
-

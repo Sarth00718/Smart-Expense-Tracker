@@ -1,6 +1,6 @@
-const Card = ({ 
-  children, 
-  title, 
+const Card = ({
+  children,
+  title,
   subtitle,
   icon: Icon,
   action,
@@ -15,13 +15,13 @@ const Card = ({
     default: 'p-4 sm:p-6',
     lg: 'p-6 sm:p-8'
   }
-  
+
   const hoverClass = hover ? 'hover:shadow-card-lg transition-shadow' : ''
-  
+
   return (
-    <div 
-      id={id} 
-      className={`bg-white rounded-lg sm:rounded-xl shadow-card font-sans ${paddingClasses[padding]} ${hoverClass} ${className}`}
+    <div
+      id={id}
+      className={`bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow-card border border-transparent dark:border-slate-700 font-sans ${paddingClasses[padding]} ${hoverClass} transition-colors duration-300 ${className}`}
     >
       {(title || action) && (
         <div className="flex items-start justify-between mb-4 sm:mb-6 gap-3">
@@ -32,8 +32,8 @@ const Card = ({
               </div>
             )}
             <div className="min-w-0">
-              {title && <h3 className="text-lg sm:text-xl font-semibold text-gray-900 truncate tracking-tight">{title}</h3>}
-              {subtitle && <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1 truncate leading-snug">{subtitle}</p>}
+              {title && <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-slate-100 truncate tracking-tight">{title}</h3>}
+              {subtitle && <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400 mt-0.5 sm:mt-1 truncate leading-snug">{subtitle}</p>}
             </div>
           </div>
           {action && <div className="flex-shrink-0">{action}</div>}

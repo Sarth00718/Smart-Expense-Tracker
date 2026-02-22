@@ -68,7 +68,7 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
               <User className="w-10 h-10 text-white" />
             )}
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-1 tracking-tight">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-1 tracking-tight">
             {user?.fullName || 'User'}
           </h2>
           <div className="flex gap-2 justify-center">
@@ -85,67 +85,67 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
 
         {/* User Details */}
         <div className="space-y-3">
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Mail className="w-5 h-5 text-blue-600" />
+          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
+            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-gray-500 mb-0.5 tracking-tight">Email</p>
-              <p className="text-sm font-medium text-gray-900 truncate tracking-tight">
+              <p className="text-xs text-gray-500 dark:text-slate-400 mb-0.5 tracking-tight">Email</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-slate-100 truncate tracking-tight">
                 {user?.email || 'Not provided'}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Calendar className="w-5 h-5 text-green-600" />
+          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
+            <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Calendar className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-gray-500 mb-0.5 tracking-tight">Member Since</p>
-              <p className="text-sm font-medium text-gray-900 tracking-tight">
+              <p className="text-xs text-gray-500 dark:text-slate-400 mb-0.5 tracking-tight">Member Since</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-slate-100 tracking-tight">
                 {formatMemberSince(user?.createdAt)}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Shield className="w-5 h-5 text-purple-600" />
+          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
+            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Shield className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-gray-500 mb-0.5 tracking-tight">Account Status</p>
-              <p className="text-sm font-medium text-gray-900 tracking-tight">Active & Secure</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400 mb-0.5 tracking-tight">Account Status</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-slate-100 tracking-tight">Active & Secure</p>
             </div>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 pt-4 border-t border-gray-200">
+        <div className="grid grid-cols-3 gap-3 pt-4 border-t border-gray-200 dark:border-slate-700">
           <div className="text-center">
-            <p className="text-2xl font-semibold text-primary tabular-nums tracking-tight">
+            <p className="text-2xl font-semibold text-primary dark:text-primary-400 tabular-nums tracking-tight">
               {loading ? '...' : stats.expenses}
             </p>
-            <p className="text-xs text-gray-600 tracking-tight">Expenses</p>
+            <p className="text-xs text-gray-600 dark:text-slate-400 tracking-tight">Expenses</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-semibold text-green-600 tabular-nums tracking-tight">
+            <p className="text-2xl font-semibold text-green-600 dark:text-green-400 tabular-nums tracking-tight">
               {loading ? '...' : stats.budgets}
             </p>
-            <p className="text-xs text-gray-600 tracking-tight">Budgets</p>
+            <p className="text-xs text-gray-600 dark:text-slate-400 tracking-tight">Budgets</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-semibold text-orange-600 tabular-nums tracking-tight">
+            <p className="text-2xl font-semibold text-orange-600 dark:text-orange-400 tabular-nums tracking-tight">
               {loading ? '...' : stats.goals}
             </p>
-            <p className="text-xs text-gray-600 tracking-tight">Goals</p>
+            <p className="text-xs text-gray-600 dark:text-slate-400 tracking-tight">Goals</p>
           </div>
         </div>
 
         {/* Action Button */}
         <button
           onClick={onClose}
-          className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium text-sm rounded-lg transition-colors tracking-tight"
+          className="w-full py-3 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-slate-300 font-medium text-sm rounded-lg transition-colors tracking-tight"
         >
           Close
         </button>

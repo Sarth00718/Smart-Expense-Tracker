@@ -21,6 +21,7 @@ export const IncomeProvider = ({ children }) => {
   const loadIncome = useCallback(async (signal, params = {}) => {
     if (!user) {
       setIncome([])
+      setLoading(false)
       return
     }
     
@@ -40,7 +41,6 @@ export const IncomeProvider = ({ children }) => {
       console.error('Error loading income:', error)
       
       // Don't clear income on error - keep stale data
-      // This prevents blank screen after timeout
       if (income.length === 0) {
         setIncome([])
       }
@@ -55,12 +55,18 @@ export const IncomeProvider = ({ children }) => {
     const abortController = new AbortController()
 
     if (user) {
-      loadIncome(abortController.signal)
-    }
-
-    // Cleanup function to abort pending requests
-    return () => {
-      abortController.abort()
+      // Defer income loading to not block initial render
+      const timer = setTimeout(() => {
+        loadIncome(abortController.signal)
+      }, 300)
+      
+      return () => {
+        clearTimeout(timer)
+        abortController.abort()
+      }
+    } else {
+      setIncome([])
+      setLoading(false)
     }
   }, [user, loadIncome])
 

@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
     
     const initializeAuth = async () => {
       try {
-        // Check localStorage first (fastest)
+        // Check localStorage first (fastest) - synchronous
         const storedUser = authService.getCurrentUser()
         const authMethod = authService.getAuthMethod()
         const storedToken = localStorage.getItem('token')
@@ -30,44 +30,40 @@ export const AuthProvider = ({ children }) => {
         // If we have stored user and token, use them immediately
         if (storedUser && storedToken) {
           setUser(storedUser)
+          setLoading(false) // Set loading false immediately
           setInitialCheckDone(true)
 
-          // Only set up Firebase listener if using Firebase auth
+          // Only set up Firebase listener if using Firebase auth (async, non-blocking)
           if (authMethod === 'firebase') {
-            unsubscribe = setupFirebaseListener()
-          } else {
-            // Backend or biometric auth - no need for Firebase listener
-            setLoading(false)
+            setTimeout(() => {
+              unsubscribe = setupFirebaseListener()
+            }, 0)
           }
           return
         }
 
-        // Check for Firebase redirect result (only if no stored user)
-        if (authMethod === 'firebase') {
-          try {
-            const result = await firebaseAuth.handleRedirectResult()
-            if (result) {
-              localStorage.setItem('token', result.token)
-              localStorage.setItem('user', JSON.stringify(result.user))
-              localStorage.setItem('authMethod', 'firebase')
-              setUser(result.user)
-              setLoading(false)
-              setInitialCheckDone(true)
-              unsubscribe = setupFirebaseListener()
-              return
-            }
-          } catch (error) {
-            console.error('Redirect result error:', error)
-          }
-        }
+        // No stored user - set loading false immediately to show login
+        setLoading(false)
+        setInitialCheckDone(true)
 
-        // No stored user, check Firebase auth state (only if Firebase method)
+        // Check for Firebase redirect result in background (only if no stored user)
         if (authMethod === 'firebase') {
-          unsubscribe = setupFirebaseListener()
-        } else {
-          // Backend auth, no user found
-          setLoading(false)
-          setInitialCheckDone(true)
+          firebaseAuth.handleRedirectResult()
+            .then(result => {
+              if (result) {
+                localStorage.setItem('token', result.token)
+                localStorage.setItem('user', JSON.stringify(result.user))
+                localStorage.setItem('authMethod', 'firebase')
+                setUser(result.user)
+                unsubscribe = setupFirebaseListener()
+              } else {
+                unsubscribe = setupFirebaseListener()
+              }
+            })
+            .catch(error => {
+              console.error('Redirect result error:', error)
+              unsubscribe = setupFirebaseListener()
+            })
         }
       } catch (error) {
         console.error('Auth initialization error:', error)

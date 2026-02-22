@@ -21,16 +21,17 @@ export const ExpenseProvider = ({ children }) => {
   const loadExpenses = useCallback(async (signal, options = {}) => {
     if (!user) {
       setExpenses([])
+      setLoading(false)
       return
     }
 
     try {
       setLoading(true)
       
-      // Use pagination with reasonable limit - only load recent expenses for context
+      // Load only recent 50 expenses for faster initial load
       const response = await expenseService.getExpenses({ 
         page: options.page || 1, 
-        limit: options.limit || 100,
+        limit: options.limit || 50,
         ...options 
       })
 
@@ -52,7 +53,6 @@ export const ExpenseProvider = ({ children }) => {
       console.error('Error loading expenses:', error)
       
       // Don't clear expenses on error - keep stale data
-      // This prevents blank screen after timeout
       if (expenses.length === 0) {
         setExpenses([])
       }
@@ -67,12 +67,18 @@ export const ExpenseProvider = ({ children }) => {
     const abortController = new AbortController()
 
     if (user) {
-      loadExpenses(abortController.signal)
-    }
-
-    // Cleanup function to abort pending requests
-    return () => {
-      abortController.abort()
+      // Defer expense loading to not block initial render
+      const timer = setTimeout(() => {
+        loadExpenses(abortController.signal)
+      }, 100)
+      
+      return () => {
+        clearTimeout(timer)
+        abortController.abort()
+      }
+    } else {
+      setExpenses([])
+      setLoading(false)
     }
   }, [user, loadExpenses])
 
