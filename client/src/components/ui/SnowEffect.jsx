@@ -1,16 +1,27 @@
-import { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 
-const SnowEffect = ({ intensity = 50, speed = 'medium' }) => {
+const SnowEffect = ({ intensity = 30, speed = 'medium' }) => {
   const canvasRef = useRef(null);
   const snowflakes = useRef([]);
   const animationFrameId = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    // Delay snow effect to not block initial render
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 2000); // Start after 2 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true });
     
     // Set canvas size
     const resizeCanvas = () => {
@@ -29,10 +40,10 @@ const SnowEffect = ({ intensity = 50, speed = 'medium' }) => {
       reset() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * -canvas.height;
-        this.radius = Math.random() * 3 + 1;
-        this.speedY = Math.random() * 1 + 0.5;
-        this.speedX = Math.random() * 0.5 - 0.25;
-        this.opacity = Math.random() * 0.6 + 0.4;
+        this.radius = Math.random() * 2.5 + 0.5; // Smaller snowflakes
+        this.speedY = Math.random() * 0.8 + 0.3; // Slower
+        this.speedX = Math.random() * 0.3 - 0.15;
+        this.opacity = Math.random() * 0.5 + 0.3; // More transparent
       }
 
       update() {
@@ -63,19 +74,28 @@ const SnowEffect = ({ intensity = 50, speed = 'medium' }) => {
       snowflakes.current.push(new Snowflake());
     }
 
-    // Animation loop
-    const animate = () => {
+    // Animation loop with throttling (30fps instead of 60fps)
+    let lastTime = 0;
+    const fps = 30;
+    const interval = 1000 / fps;
+
+    const animate = (currentTime) => {
+      animationFrameId.current = requestAnimationFrame(animate);
+
+      const deltaTime = currentTime - lastTime;
+      if (deltaTime < interval) return;
+
+      lastTime = currentTime - (deltaTime % interval);
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       snowflakes.current.forEach(snowflake => {
         snowflake.update();
         snowflake.draw();
       });
-
-      animationFrameId.current = requestAnimationFrame(animate);
     };
 
-    animate();
+    animationFrameId.current = requestAnimationFrame(animate);
 
     // Cleanup
     return () => {
@@ -84,7 +104,9 @@ const SnowEffect = ({ intensity = 50, speed = 'medium' }) => {
         cancelAnimationFrame(animationFrameId.current);
       }
     };
-  }, [intensity, speed]);
+  }, [intensity, speed, isVisible]);
+
+  if (!isVisible) return null;
 
   return (
     <canvas

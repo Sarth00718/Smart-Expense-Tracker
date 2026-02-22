@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import { Toaster } from 'react-hot-toast'
 import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useEffect } from 'react'
+import { useEffect, lazy, Suspense } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ThemeProvider, useTheme } from './context/ThemeContext'
 import { ExpenseProvider } from './context/ExpenseContext'
@@ -16,6 +16,9 @@ import ErrorBoundary from './components/ui/ErrorBoundary'
 import LoadingSpinner from './components/ui/LoadingSpinner'
 import { pageTransition } from './utils/animations'
 import api from './services/api'
+
+// Lazy load SnowEffect to not block initial render
+const SnowEffect = lazy(() => import('./components/ui/SnowEffect'))
 
 // Keep-alive ping to prevent server sleep
 const useServerKeepAlive = () => {
@@ -156,6 +159,10 @@ const AppContent = () => {
         <AuthProvider>
           <ExpenseProvider>
             <IncomeProvider>
+              {/* Lazy load SnowEffect - loads after page is interactive */}
+              <Suspense fallback={null}>
+                <SnowEffect intensity={30} speed="medium" />
+              </Suspense>
               <Toaster
                 position="top-right"
                 toastOptions={{
