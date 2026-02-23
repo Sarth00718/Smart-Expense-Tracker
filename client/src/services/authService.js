@@ -2,11 +2,19 @@ import { firebaseAuth } from '../config/firebase'
 import api from './api'
 
 export const authService = {
-  // Register - Try backend first, fallback to Firebase
+  // Register - Try backend first, fallback to Firebase only on network errors
   register: async (email, password, fullName) => {
-    // Try backend authentication first
+    // Try backend authentication first with short timeout
     try {
-      const response = await api.post('/auth/register', { email, password, fullName })
+      const response = await api.post('/auth/register', { 
+        email, 
+        password, 
+        fullName 
+      }, {
+        timeout: 8000, // 8 second timeout for auth
+        skipCache: true // Don't cache auth requests
+      })
+      
       // Backend returns data in response.data.data structure
       const { token, user } = response.data.data || response.data
       if (token) {
@@ -16,14 +24,26 @@ export const authService = {
       }
       return { token, user }
     } catch (backendError) {
-      // If backend returns validation error (400) or conflict (409), throw with proper message
+      console.log('Backend register error:', backendError.message)
+      
+      // If backend returns validation error (400) or conflict (409), throw immediately
       if (backendError.response?.status === 400 || backendError.response?.status === 409) {
         const error = new Error(backendError.response?.data?.error || backendError.response?.data?.message || 'Registration failed')
         error.response = backendError.response
         throw error
       }
       
-      // For other backend errors (500, network issues), fallback to Firebase
+      // Only fallback to Firebase on network errors or 500 errors
+      const isNetworkError = !backendError.response || backendError.code === 'ECONNABORTED' || backendError.code === 'ERR_NETWORK'
+      const isServerError = backendError.response?.status >= 500
+      
+      if (!isNetworkError && !isServerError) {
+        // Backend is reachable but returned an error - don't try Firebase
+        throw backendError
+      }
+      
+      // Network error or server error - try Firebase as fallback
+      console.log('Trying Firebase fallback...')
       try {
         const result = await firebaseAuth.register(email, password, fullName)
         
@@ -33,41 +53,42 @@ export const authService = {
           localStorage.setItem('authMethod', 'firebase')
         }
 
-        // Sync with backend to link accounts
-        try {
-          const syncResponse = await api.post('/auth/firebase-sync', {
-            uid: result.user.uid,
-            email: result.user.email,
-            fullName: result.user.fullName
-          })
-          
-          // Use backend token and user data if sync successful
+        // Try to sync with backend in background (don't wait)
+        api.post('/auth/firebase-sync', {
+          uid: result.user.uid,
+          email: result.user.email,
+          fullName: result.user.fullName
+        }).then(syncResponse => {
           const syncData = syncResponse.data.data || syncResponse.data
           if (syncData.token) {
             localStorage.setItem('token', syncData.token)
             localStorage.setItem('user', JSON.stringify(syncData.user))
-            return {
-              token: syncData.token,
-              user: syncData.user
-            }
           }
-        } catch (error) {
-          console.warn('Backend sync failed:', error)
-        }
+        }).catch(err => {
+          console.warn('Backend sync failed:', err)
+        })
 
         return result
       } catch (firebaseError) {
+        console.error('Firebase register error:', firebaseError)
         // Firebase error - use the message from Firebase
         throw firebaseError
       }
     }
   },
 
-  // Login - Try backend first, fallback to Firebase
+  // Login - Try backend first, fallback to Firebase only on network errors
   login: async (email, password) => {
-    // Try backend authentication first
+    // Try backend authentication first with short timeout
     try {
-      const response = await api.post('/auth/login', { email, password })
+      const response = await api.post('/auth/login', { 
+        email, 
+        password 
+      }, {
+        timeout: 8000, // 8 second timeout for auth
+        skipCache: true // Don't cache auth requests
+      })
+      
       // Backend returns data in response.data.data structure
       const { token, user } = response.data.data || response.data
       if (token) {
@@ -77,14 +98,33 @@ export const authService = {
       }
       return { token, user }
     } catch (backendError) {
-      // If backend returns 401 (invalid credentials), throw with proper message
+      console.log('Backend login error:', backendError.message)
+      
+      // If backend returns 401 (invalid credentials), throw immediately - don't try Firebase
       if (backendError.response?.status === 401) {
         const error = new Error(backendError.response?.data?.error || backendError.response?.data?.message || 'Invalid email or password')
         error.response = backendError.response
         throw error
       }
       
-      // For other backend errors (500, network issues), fallback to Firebase
+      // If backend returns 400 (validation error), throw immediately
+      if (backendError.response?.status === 400) {
+        const error = new Error(backendError.response?.data?.error || backendError.response?.data?.message || 'Invalid request')
+        error.response = backendError.response
+        throw error
+      }
+      
+      // Only fallback to Firebase on network errors or 500 errors
+      const isNetworkError = !backendError.response || backendError.code === 'ECONNABORTED' || backendError.code === 'ERR_NETWORK'
+      const isServerError = backendError.response?.status >= 500
+      
+      if (!isNetworkError && !isServerError) {
+        // Backend is reachable but returned an error - don't try Firebase
+        throw backendError
+      }
+      
+      // Network error or server error - try Firebase as fallback
+      console.log('Trying Firebase fallback...')
       try {
         const result = await firebaseAuth.login(email, password)
         
@@ -94,30 +134,24 @@ export const authService = {
           localStorage.setItem('authMethod', 'firebase')
         }
 
-        // Sync with backend to link accounts
-        try {
-          const syncResponse = await api.post('/auth/firebase-sync', {
-            uid: result.user.uid,
-            email: result.user.email,
-            fullName: result.user.fullName
-          })
-          
-          // Use backend token and user data if sync successful
+        // Try to sync with backend in background (don't wait)
+        api.post('/auth/firebase-sync', {
+          uid: result.user.uid,
+          email: result.user.email,
+          fullName: result.user.fullName
+        }).then(syncResponse => {
           const syncData = syncResponse.data.data || syncResponse.data
           if (syncData.token) {
             localStorage.setItem('token', syncData.token)
             localStorage.setItem('user', JSON.stringify(syncData.user))
-            return {
-              token: syncData.token,
-              user: syncData.user
-            }
           }
-        } catch (error) {
-          console.warn('Backend sync failed:', error)
-        }
+        }).catch(err => {
+          console.warn('Backend sync failed:', err)
+        })
 
         return result
       } catch (firebaseError) {
+        console.error('Firebase login error:', firebaseError)
         // Firebase error - use the message from Firebase
         throw firebaseError
       }
