@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Camera, Upload, Scan, X, CheckCircle } from 'lucide-react'
+import { Camera, Upload, Scan, X, CheckCircle, Sparkles, Image as ImageIcon } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useExpense } from '../../../context/ExpenseContext'
 import { receiptService } from '../../../services/receiptService'
+import ScanAnimation from '../../ui/ScanAnimation'
 
 const ReceiptScanner = ({ onSuccess }) => {
   const { addExpense } = useExpense()
@@ -130,39 +131,54 @@ const ReceiptScanner = ({ onSuccess }) => {
 
   return (
     <div className="space-y-6">
-      <div className="card">
-        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <Camera className="w-6 h-6 text-primary" />
-          Receipt Scanner
-        </h2>
+      <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl p-8 border border-gray-100">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-8">
+          <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-3 shadow-lg">
+            <Camera className="w-7 h-7 text-white" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Receipt Scanner
+            </h2>
+            <p className="text-sm text-gray-500">Scan and extract expense data automatically</p>
+          </div>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Upload Section */}
           <div>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary transition-colors">
+            <div className="relative border-3 border-dashed border-gray-300 rounded-2xl p-10 text-center hover:border-purple-400 transition-all duration-300 bg-gradient-to-br from-blue-50/30 to-purple-50/30 hover:from-blue-50 hover:to-purple-50">
               {preview ? (
-                <div className="relative">
+                <div className="relative group">
+                  {scanning && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-xl z-10">
+                      <ScanAnimation />
+                    </div>
+                  )}
                   <img
                     src={preview}
                     alt="Receipt preview"
-                    className="max-h-64 mx-auto rounded-lg shadow-lg"
+                    className="max-h-80 mx-auto rounded-xl shadow-2xl border-4 border-white"
                   />
                   <button
                     onClick={handleClear}
-                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600"
+                    className="absolute top-3 right-3 p-3 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-full hover:from-red-600 hover:to-red-700 shadow-lg transform hover:scale-110 transition-all"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
               ) : (
-                <div>
-                  <Upload className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 mb-2">Upload receipt image</p>
-                  <p className="text-sm text-gray-500 mb-4">
+                <div className="py-8">
+                  <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <ImageIcon className="w-10 h-10 text-white" />
+                  </div>
+                  <p className="text-gray-700 font-semibold text-lg mb-2">Upload Receipt Image</p>
+                  <p className="text-sm text-gray-500 mb-6">
                     PNG, JPG up to 5MB
                   </p>
-                  <label className="btn btn-primary cursor-pointer">
-                    <Upload className="w-4 h-4" />
+                  <label className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl font-semibold cursor-pointer transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
+                    <Upload className="w-5 h-5" />
                     Choose File
                     <input
                       type="file"
@@ -179,16 +195,16 @@ const ReceiptScanner = ({ onSuccess }) => {
               <button
                 onClick={handleScan}
                 disabled={scanning}
-                className="btn btn-primary w-full mt-4"
+                className="w-full mt-6 px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 transform hover:scale-105"
               >
                 {scanning ? (
                   <>
-                    <div className="spinner-small"></div>
-                    Scanning...
+                    <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Scanning Receipt...
                   </>
                 ) : (
                   <>
-                    <Scan className="w-5 h-5" />
+                    <Scan className="w-6 h-6" />
                     Scan Receipt
                   </>
                 )}
@@ -196,13 +212,13 @@ const ReceiptScanner = ({ onSuccess }) => {
             )}
 
             {extractedData && (
-              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <span className="font-semibold text-green-900">Scan Complete!</span>
+              <div className="mt-6 p-5 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl shadow-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <CheckCircle className="w-6 h-6 text-green-600" />
+                  <span className="font-bold text-green-900 text-lg">Scan Complete!</span>
                 </div>
-                <p className="text-sm text-green-700">
-                  Data extracted and filled in the form. Review and submit.
+                <p className="text-sm text-green-700 font-medium">
+                  Data extracted successfully. Review and submit below.
                 </p>
               </div>
             )}
@@ -210,93 +226,109 @@ const ReceiptScanner = ({ onSuccess }) => {
 
           {/* Form Section */}
           <div>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Date
-                </label>
-                <input
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  required
-                  className="input w-full"
-                />
+            <div className="bg-gradient-to-br from-blue-50/50 to-purple-50/50 rounded-2xl p-6 border-2 border-gray-200">
+              <div className="flex items-center gap-2 mb-6">
+                <Sparkles className="w-5 h-5 text-purple-600" />
+                <h3 className="text-xl font-bold text-gray-800">Expense Details</h3>
               </div>
+              
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    required
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-lg"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Category
-                </label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  required
-                  className="input w-full"
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Category
+                  </label>
+                  <select
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    required
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-lg"
+                  >
+                    <option value="Food">🍔 Food</option>
+                    <option value="Travel">✈️ Travel</option>
+                    <option value="Transport">🚗 Transport</option>
+                    <option value="Shopping">🛍️ Shopping</option>
+                    <option value="Bills">📄 Bills</option>
+                    <option value="Entertainment">🎬 Entertainment</option>
+                    <option value="Healthcare">🏥 Healthcare</option>
+                    <option value="Education">📚 Education</option>
+                    <option value="Other">📦 Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Amount (₹)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    value={formData.amount}
+                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                    required
+                    placeholder="0.00"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-lg font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Optional description"
+                    rows="3"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all resize-none"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2"
                 >
-                  <option value="Food">Food</option>
-                  <option value="Travel">Travel</option>
-                  <option value="Transport">Transport</option>
-                  <option value="Shopping">Shopping</option>
-                  <option value="Bills">Bills</option>
-                  <option value="Entertainment">Entertainment</option>
-                  <option value="Healthcare">Healthcare</option>
-                  <option value="Education">Education</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Amount (₹)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0.01"
-                  value={formData.amount}
-                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                  required
-                  placeholder="0.00"
-                  className="input w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Optional description"
-                  rows="3"
-                  className="input w-full"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="btn btn-primary w-full"
-              >
-                Add Expense
-              </button>
-            </form>
+                  <CheckCircle className="w-6 h-6" />
+                  Add Expense
+                </button>
+              </form>
+            </div>
           </div>
         </div>
 
         {/* Instructions */}
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h4 className="font-semibold text-blue-900 mb-2">📸 How to use:</h4>
-          <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
+        <div className="mt-8 p-6 bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200 rounded-2xl shadow-inner">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg p-2">
+              <Camera className="w-5 h-5 text-white" />
+            </div>
+            <h4 className="font-bold text-gray-800 text-lg">How to use Receipt Scanner</h4>
+          </div>
+          <ol className="text-sm text-gray-700 space-y-2 list-decimal list-inside font-medium">
             <li>Take a clear photo of your receipt or upload an existing image</li>
-            <li>Click "Scan Receipt" to extract data using OCR</li>
-            <li>Review and edit the extracted information</li>
-            <li>Click "Add Expense" to save</li>
+            <li>Click "Scan Receipt" to extract data using AI-powered OCR</li>
+            <li>Review and edit the extracted information if needed</li>
+            <li>Click "Add Expense" to save to your expense tracker</li>
           </ol>
-          <p className="text-xs text-blue-600 mt-2">
-            💡 Tip: Ensure the receipt is well-lit and text is clearly visible for best results
-          </p>
+          <div className="mt-4 p-3 bg-white rounded-lg border border-blue-200">
+            <p className="text-sm text-gray-600 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-purple-600" />
+              <span className="font-semibold">Pro Tip:</span> Ensure the receipt is well-lit and text is clearly visible for best results
+            </p>
+          </div>
         </div>
       </div>
     </div>
