@@ -9,22 +9,22 @@ class Database {
   async connect() {
     try {
       const options = {
-        serverSelectionTimeoutMS: 30000,
+        serverSelectionTimeoutMS: 10000, // Reduced from 30s — fail faster on bad URI
         socketTimeoutMS: 45000,
         family: 4,
         maxPoolSize: 10,
-        minPoolSize: 5,
+        minPoolSize: 2,          // Reduced minimum to save resources on cold start
         retryWrites: true,
         retryReads: true,
+        // Faster heartbeat for better connection health detection
+        heartbeatFrequencyMS: 10000,
       };
 
       this.connection = await mongoose.connect(config.mongoUri, options);
 
       this.setupEventHandlers();
 
-      if (config.nodeEnv === 'development') {
-        console.log('MongoDB Connected');
-      }
+      console.log(`MongoDB Connected: ${mongoose.connection.host}`);
 
       return this.connection;
     } catch (error) {
@@ -39,26 +39,27 @@ class Database {
     });
 
     mongoose.connection.on('disconnected', () => {
-      if (config.nodeEnv === 'development') {
-        console.log('MongoDB disconnected. Reconnecting...');
-      }
+      console.log('MongoDB disconnected');
     });
 
     mongoose.connection.on('reconnected', () => {
-      if (config.nodeEnv === 'development') {
-        console.log('MongoDB Reconnected');
-      }
+      console.log('MongoDB reconnected');
     });
   }
 
   async disconnect() {
     if (this.connection) {
       await mongoose.connection.close();
+      this.connection = null;
     }
   }
 
   getConnection() {
-    return this.connection;
+    return mongoose.connection.readyState === 1; // 1 = connected
+  }
+
+  isConnected() {
+    return mongoose.connection.readyState === 1;
   }
 }
 

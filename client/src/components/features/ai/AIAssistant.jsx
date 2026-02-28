@@ -499,7 +499,7 @@ const AIAssistant = () => {
 
         {/* Error Message */}
         {lastError && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700/50 rounded-lg">
             <div className="flex items-start gap-3">
               <span className="text-red-500 text-xl">❌</span>
               <div className="flex-1">
@@ -507,11 +507,11 @@ const AIAssistant = () => {
                 <p className="text-xs text-red-600 mb-2">{lastError}</p>
 
                 {lastError.includes('AI_NOT_CONFIGURED') || lastError.includes('API key') ? (
-                  <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs">
-                    <p className="font-semibold text-yellow-800 mb-2">🔧 Setup Required:</p>
-                    <ol className="list-decimal list-inside space-y-1 text-yellow-700">
-                      <li>Get a free API key from <a href="https://console.groq.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-yellow-900">console.groq.com</a></li>
-                      <li>Add it to your <code className="bg-yellow-100 px-1 rounded">server/.env</code> file as <code className="bg-yellow-100 px-1 rounded">GROQ_API_KEY=your_key</code></li>
+                  <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 rounded text-xs">
+                    <p className="font-semibold text-yellow-800 dark:text-yellow-300 mb-2">🔧 Setup Required:</p>
+                    <ol className="list-decimal list-inside space-y-1 text-yellow-700 dark:text-yellow-400">
+                      <li>Get a free API key from <a href="https://console.groq.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-yellow-900 dark:hover:text-yellow-200">console.groq.com</a></li>
+                      <li>Add it to your <code className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">server/.env</code> file as <code className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">GROQ_API_KEY=your_key</code></li>
                       <li>Restart your server</li>
                     </ol>
                   </div>

@@ -50,23 +50,23 @@ const DashboardHome = () => {
     monthNetBalance: 0
   }
   stats.netBalance = stats.totalIncome - stats.totalExpenses
-  
+
   // Calculate this month's balance
   const now = new Date()
-  const thisMonthExpenses = Array.isArray(expenses) 
+  const thisMonthExpenses = Array.isArray(expenses)
     ? expenses.filter(e => {
-        const expDate = new Date(e.date)
-        return expDate.getMonth() === now.getMonth() && expDate.getFullYear() === now.getFullYear()
-      }).reduce((sum, e) => sum + (e.amount || 0), 0)
+      const expDate = new Date(e.date)
+      return expDate.getMonth() === now.getMonth() && expDate.getFullYear() === now.getFullYear()
+    }).reduce((sum, e) => sum + (e.amount || 0), 0)
     : 0
   const thisMonthIncome = Array.isArray(income)
     ? income.filter(i => {
-        const incDate = new Date(i.date)
-        return incDate.getMonth() === now.getMonth() && incDate.getFullYear() === now.getFullYear()
-      }).reduce((sum, i) => sum + (i.amount || 0), 0)
+      const incDate = new Date(i.date)
+      return incDate.getMonth() === now.getMonth() && incDate.getFullYear() === now.getFullYear()
+    }).reduce((sum, i) => sum + (i.amount || 0), 0)
     : 0
   stats.monthNetBalance = thisMonthIncome - thisMonthExpenses
-  
+
   const loading = false // No loading needed since we calculate locally
 
   const handleSubmit = async (e) => {
@@ -82,7 +82,6 @@ const DashboardHome = () => {
       })
       setShowAddExpense(false)
       await fetchExpenses()
-      await loadStats()
     } catch (error) {
       toast.error('Failed to add expense')
     }
@@ -105,7 +104,6 @@ const DashboardHome = () => {
         isRecurring: false
       })
       setShowAddIncome(false)
-      await loadStats()
     } catch (error) {
       toast.error('Failed to add income')
     }
@@ -113,14 +111,12 @@ const DashboardHome = () => {
 
   const handleVoiceExpenseCreated = async () => {
     await fetchExpenses()
-    await loadStats()
     setShowVoiceInput(false)
     toast.success('Expense created from voice input!')
   }
 
   const handleReceiptScanned = async () => {
     await fetchExpenses()
-    await loadStats()
     setShowReceiptScanner(false)
   }
 
@@ -269,18 +265,18 @@ const DashboardHome = () => {
                   >
                     <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
                       <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 ${expense.category === 'Food' ? 'bg-orange-100 dark:bg-orange-900/30' :
-                          expense.category === 'Travel' ? 'bg-blue-100 dark:bg-blue-900/30' :
-                            expense.category === 'Shopping' ? 'bg-pink-100 dark:bg-pink-900/30' :
-                              expense.category === 'Bills' ? 'bg-purple-100 dark:bg-purple-900/30' :
-                                expense.category === 'Entertainment' ? 'bg-indigo-100 dark:bg-indigo-900/30' :
-                                  'bg-gray-100 dark:bg-slate-700'
+                        expense.category === 'Travel' ? 'bg-blue-100 dark:bg-blue-900/30' :
+                          expense.category === 'Shopping' ? 'bg-pink-100 dark:bg-pink-900/30' :
+                            expense.category === 'Bills' ? 'bg-purple-100 dark:bg-purple-900/30' :
+                              expense.category === 'Entertainment' ? 'bg-indigo-100 dark:bg-indigo-900/30' :
+                                'bg-gray-100 dark:bg-slate-700'
                         }`}>
                         <Receipt className={`w-5 h-5 sm:w-6 sm:h-6 ${expense.category === 'Food' ? 'text-orange-600 dark:text-orange-400' :
-                            expense.category === 'Travel' ? 'text-blue-600 dark:text-blue-400' :
-                              expense.category === 'Shopping' ? 'text-pink-600 dark:text-pink-400' :
-                                expense.category === 'Bills' ? 'text-purple-600 dark:text-purple-400' :
-                                  expense.category === 'Entertainment' ? 'text-indigo-600 dark:text-indigo-400' :
-                                    'text-gray-600 dark:text-slate-400'
+                          expense.category === 'Travel' ? 'text-blue-600 dark:text-blue-400' :
+                            expense.category === 'Shopping' ? 'text-pink-600 dark:text-pink-400' :
+                              expense.category === 'Bills' ? 'text-purple-600 dark:text-purple-400' :
+                                expense.category === 'Entertainment' ? 'text-indigo-600 dark:text-indigo-400' :
+                                  'text-gray-600 dark:text-slate-400'
                           }`} />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -369,7 +365,7 @@ const DashboardHome = () => {
 
       {/* Voice Input Modal */}
       {showVoiceInput && (
-        <Modal isOpen={showVoiceInput} onClose={() => setShowVoiceInput(false)} size="md" showCloseButton={false}>
+        <Modal isOpen={showVoiceInput} onClose={() => setShowVoiceInput(false)} size="lg" showCloseButton={false} noPadding>
           <Suspense fallback={<div className="flex items-center justify-center p-8"><div className="spinner border-4 w-8 h-8"></div></div>}>
             <VoiceExpenseInput onExpenseCreated={handleVoiceExpenseCreated} onClose={() => setShowVoiceInput(false)} />
           </Suspense>
@@ -378,7 +374,7 @@ const DashboardHome = () => {
 
       {/* Receipt Scanner Modal */}
       {showReceiptScanner && (
-        <Modal isOpen={showReceiptScanner} onClose={() => setShowReceiptScanner(false)} size="xl" title="Receipt Scanner">
+        <Modal isOpen={showReceiptScanner} onClose={() => setShowReceiptScanner(false)} size="xl" showCloseButton={false} noPadding>
           <Suspense fallback={<div className="flex items-center justify-center p-8"><div className="spinner border-4 w-8 h-8"></div></div>}>
             <ReceiptScanner onSuccess={handleReceiptScanned} />
           </Suspense>

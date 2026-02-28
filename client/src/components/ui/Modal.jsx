@@ -9,7 +9,8 @@ const Modal = ({
   title,
   children,
   size = 'md',
-  showCloseButton = true
+  showCloseButton = true,
+  noPadding = false
 }) => {
   useEffect(() => {
     if (isOpen) {
@@ -82,7 +83,7 @@ const Modal = ({
 
               {/* Content */}
               <motion.div
-                className="p-4 sm:p-6"
+                className={noPadding ? '' : 'p-4 sm:p-6'}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}

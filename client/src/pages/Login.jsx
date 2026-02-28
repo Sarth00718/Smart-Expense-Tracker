@@ -364,7 +364,7 @@ const Login = () => {
                       className={`input-auth ${emailError ? 'input-auth-error' : ''}`}
                     />
                     {focusedField === 'email' && !emailError && (
-                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/5 to-secondary-purple/5 pointer-events-none"></div>
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/5 to-secondary/5 pointer-events-none"></div>
                     )}
                   </div>
                   {emailError && (
@@ -405,7 +405,7 @@ const Login = () => {
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                     {focusedField === 'password' && !passwordError && (
-                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/5 to-secondary-purple/5 pointer-events-none"></div>
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/5 to-secondary/5 pointer-events-none"></div>
                     )}
                   </div>
                   {passwordError && (
@@ -422,7 +422,7 @@ const Login = () => {
                   disabled={loading || emailError || passwordError}
                   className="group relative w-full py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold text-base rounded-xl tracking-tight focus:outline-none focus:ring-4 focus:ring-primary-500/50 transition-all duration-300 hover:scale-[1.02] hover:from-primary-600 hover:to-primary-700 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary-600 via-secondary-purple to-primary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary-600 via-secondary to-primary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="relative flex items-center justify-center gap-2">
                     {loading ? (
                       <ButtonSpinner size="md" />

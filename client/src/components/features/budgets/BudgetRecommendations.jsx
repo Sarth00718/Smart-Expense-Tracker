@@ -51,8 +51,8 @@ const BudgetRecommendations = () => {
     return (
       <div className="p-4 sm:p-6">
         <div className="text-center py-8">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <p className="mt-4 text-gray-600">Analyzing your spending patterns...</p>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
+          <p className="mt-4 text-gray-600 dark:text-slate-400">Analyzing your spending patterns...</p>
         </div>
       </div>
     )
@@ -62,19 +62,19 @@ const BudgetRecommendations = () => {
     return (
       <div className="p-4 sm:p-6">
         <h2 className="text-xl sm:text-2xl font-semibold mb-6 tracking-tight font-sans">💡 Budget Recommendations</h2>
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 sm:p-6">
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 rounded-lg p-4 sm:p-6">
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0">
-              <svg className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-6 w-6 text-yellow-600 dark:text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-base sm:text-lg font-medium text-yellow-800">No Expense Data</h3>
-              <p className="mt-2 text-sm sm:text-base text-yellow-700">
+              <h3 className="text-base sm:text-lg font-medium text-yellow-800 dark:text-yellow-300">No Expense Data</h3>
+              <p className="mt-2 text-sm sm:text-base text-yellow-700 dark:text-yellow-400">
                 {recommendations?.message || 'Start tracking your expenses to get personalized budget recommendations.'}
               </p>
-              <p className="mt-2 text-xs sm:text-sm text-yellow-600">
+              <p className="mt-2 text-xs sm:text-sm text-yellow-600 dark:text-yellow-500">
                 Add expenses in different categories, and we'll analyze your spending patterns to suggest optimal budgets!
               </p>
             </div>
@@ -87,14 +87,14 @@ const BudgetRecommendations = () => {
   return (
     <div className="space-y-4">
       {/* Header Info */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-700/50 rounded-lg p-4">
         <div className="flex items-start gap-3">
-          <Lightbulb className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
+          <Lightbulb className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
           <div className="flex-1">
-            <h3 className="text-base font-semibold text-blue-900 mb-1">
+            <h3 className="text-base font-semibold text-blue-900 dark:text-blue-300 mb-1">
               Smart Budget Recommendations
             </h3>
-            <p className="text-sm text-blue-700">
+            <p className="text-sm text-blue-700 dark:text-blue-400">
               Based on {recommendations.monthsAnalyzed} month{recommendations.monthsAnalyzed > 1 ? 's' : ''} of your spending history
               {recommendations.monthsAnalyzed === 1 && ' (Track more months for better accuracy)'}
             </p>
@@ -104,11 +104,11 @@ const BudgetRecommendations = () => {
 
       {/* Single Month Warning */}
       {recommendations.monthsAnalyzed === 1 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <Calendar className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <Calendar className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm text-amber-700">
+              <p className="text-sm text-amber-700 dark:text-amber-400">
                 These recommendations are based on limited data (1 month). Continue tracking your expenses for more accurate and personalized budget suggestions!
               </p>
             </div>
@@ -118,17 +118,17 @@ const BudgetRecommendations = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-          <h3 className="text-gray-600 text-xs sm:text-sm mb-1">Total Recommended Budget</h3>
-          <p className="text-xl sm:text-2xl font-bold text-blue-600">₹{recommendations.totalRecommendedBudget.toLocaleString()}</p>
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow border border-gray-200 dark:border-slate-700">
+          <h3 className="text-gray-600 dark:text-slate-400 text-xs sm:text-sm mb-1">Total Recommended Budget</h3>
+          <p className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400">₹{recommendations.totalRecommendedBudget.toLocaleString()}</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-          <h3 className="text-gray-600 text-xs sm:text-sm mb-1">Avg Monthly Income</h3>
-          <p className="text-xl sm:text-2xl font-bold text-green-600">₹{recommendations.avgMonthlyIncome.toLocaleString()}</p>
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow border border-gray-200 dark:border-slate-700">
+          <h3 className="text-gray-600 dark:text-slate-400 text-xs sm:text-sm mb-1">Avg Monthly Income</h3>
+          <p className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">₹{recommendations.avgMonthlyIncome.toLocaleString()}</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow border border-gray-200 sm:col-span-2 lg:col-span-1">
-          <h3 className="text-gray-600 text-xs sm:text-sm mb-1">Potential Savings</h3>
-          <p className="text-xl sm:text-2xl font-bold text-purple-600">
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow border border-gray-200 dark:border-slate-700 sm:col-span-2 lg:col-span-1">
+          <h3 className="text-gray-600 dark:text-slate-400 text-xs sm:text-sm mb-1">Potential Savings</h3>
+          <p className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
             ₹{Math.max(0, recommendations.avgMonthlyIncome - recommendations.totalRecommendedBudget).toLocaleString()}
           </p>
         </div>
@@ -137,7 +137,7 @@ const BudgetRecommendations = () => {
       {/* Recommendations List */}
       <div className="space-y-4">
         {recommendations.recommendations.map((rec, index) => (
-          <div key={index} className="bg-white rounded-lg shadow border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow border border-gray-200 dark:border-slate-700 p-4 sm:p-6 hover:shadow-md transition-shadow">
             <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-4">
               <div className="flex-1 min-w-0">
                 <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">{rec.category}</h3>
@@ -152,28 +152,28 @@ const BudgetRecommendations = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                <p className="text-xs sm:text-sm text-gray-600 mb-1">Current Average</p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">₹{rec.currentAverage.toLocaleString()}</p>
+              <div className="bg-gray-50 dark:bg-slate-700/50 p-3 rounded-lg border border-gray-200 dark:border-slate-600">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-slate-400 mb-1">Current Average</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100">₹{rec.currentAverage.toLocaleString()}</p>
               </div>
-              <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                <p className="text-xs sm:text-sm text-blue-600 mb-1">Recommended Budget</p>
-                <p className="text-xl sm:text-2xl font-bold text-blue-600">₹{rec.recommendedAmount.toLocaleString()}</p>
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-700/50">
+                <p className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 mb-1">Recommended Budget</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400">₹{rec.recommendedAmount.toLocaleString()}</p>
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-4 mb-4 border border-gray-200">
+            <div className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-slate-700/50 dark:to-blue-900/20 rounded-lg p-4 mb-4 border border-gray-200 dark:border-slate-600">
               <div className="flex items-start gap-2">
-                <Lightbulb className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <Lightbulb className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-xs sm:text-sm font-medium text-gray-900 mb-1">Why this amount?</p>
-                  <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">{rec.reasoning}</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-slate-100 mb-1">Why this amount?</p>
+                  <p className="text-xs sm:text-sm text-gray-700 dark:text-slate-300 leading-relaxed">{rec.reasoning}</p>
                 </div>
               </div>
             </div>
 
             {rec.recommendedAmount > rec.currentAverage && (
-              <div className="flex items-center gap-2 text-xs sm:text-sm text-amber-600 mb-4 bg-amber-50 p-3 rounded-lg border border-amber-200">
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-amber-600 dark:text-amber-400 mb-4 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-700/50">
                 <TrendingUp className="w-4 h-4 flex-shrink-0" />
                 <span>Buffer added: ₹{(rec.recommendedAmount - rec.currentAverage).toLocaleString()} for spending variability</span>
               </div>
@@ -190,14 +190,14 @@ const BudgetRecommendations = () => {
       </div>
 
       {/* Usage Tips */}
-      <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4 sm:p-6">
-        <h3 className="text-base sm:text-lg font-semibold text-green-900 mb-3 flex items-center gap-2">
+      <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border border-green-200 dark:border-green-700/50 rounded-lg p-4 sm:p-6">
+        <h3 className="text-base sm:text-lg font-semibold text-green-900 dark:text-green-300 mb-3 flex items-center gap-2">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           How to Use These Recommendations
         </h3>
-        <ul className="space-y-2 text-xs sm:text-sm text-green-800">
+        <ul className="space-y-2 text-xs sm:text-sm text-green-800 dark:text-green-400">
           <li className="flex items-start gap-2">
             <span className="font-semibold min-w-[20px]">1.</span>
             <span>Review each category's recommended budget and the reasoning behind it</span>

@@ -494,7 +494,7 @@ const Settings = () => {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-4 mb-3">
-                    <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <div className="w-14 h-14 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
                       <Lock className="w-7 h-7 text-purple-600" />
                     </div>
                     <div>
@@ -529,7 +529,7 @@ const Settings = () => {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-4 mb-3">
-                    <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center">
+                    <div className="w-14 h-14 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
                       <Monitor className="w-7 h-7 text-green-600" />
                     </div>
                     <div>
@@ -679,11 +679,11 @@ const Settings = () => {
             sessions.map((session) => (
               <div
                 key={session.id}
-                className="p-4 border border-gray-200 rounded-lg hover:border-primary transition-colors"
+                className="p-4 border border-gray-200 dark:border-slate-700 rounded-lg hover:border-primary dark:hover:border-primary transition-colors dark:bg-slate-800/50"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                       {session.device.includes('Mobile') ? (
                         <Smartphone className="w-5 h-5 text-blue-600" />
                       ) : (

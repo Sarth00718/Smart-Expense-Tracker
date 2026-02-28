@@ -276,7 +276,7 @@ const Register = () => {
                       <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
                     )}
                     {focusedField === 'fullName' && !fieldErrors.fullName && (
-                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/5 to-secondary-purple/5 pointer-events-none"></div>
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/5 to-secondary/5 pointer-events-none"></div>
                     )}
                   </div>
                   {fieldErrors.fullName && (
@@ -311,7 +311,7 @@ const Register = () => {
                       <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
                     )}
                     {focusedField === 'email' && !fieldErrors.email && (
-                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/5 to-secondary-purple/5 pointer-events-none"></div>
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/5 to-secondary/5 pointer-events-none"></div>
                     )}
                   </div>
                   {fieldErrors.email && (
@@ -350,7 +350,7 @@ const Register = () => {
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                     {focusedField === 'password' && !fieldErrors.password && (
-                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/5 to-secondary-purple/5 pointer-events-none"></div>
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/5 to-secondary/5 pointer-events-none"></div>
                     )}
                   </div>
                   {fieldErrors.password && (
@@ -412,7 +412,7 @@ const Register = () => {
                       <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
                     )}
                     {focusedField === 'confirmPassword' && !fieldErrors.confirmPassword && (
-                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/5 to-secondary-purple/5 pointer-events-none"></div>
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/5 to-secondary/5 pointer-events-none"></div>
                     )}
                   </div>
                   {fieldErrors.confirmPassword && (
@@ -429,7 +429,7 @@ const Register = () => {
                   disabled={loading || Object.keys(fieldErrors).some(key => fieldErrors[key])}
                   className="group relative w-full py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold text-base rounded-xl tracking-tight focus:outline-none focus:ring-4 focus:ring-primary-500/50 transition-all duration-300 hover:scale-[1.02] hover:from-primary-600 hover:to-primary-700 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary-600 via-secondary-purple to-primary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary-600 via-secondary to-primary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="relative flex items-center justify-center gap-2">
                     {loading ? (
                       <ButtonSpinner size="md" />

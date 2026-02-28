@@ -64,6 +64,10 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Compound indexes for faster auth lookups
+userSchema.index({ email: 1, authProvider: 1 });
+userSchema.index({ firebaseUid: 1 }, { sparse: true });
+
 // Hash password before saving
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password') || !this.password) return next();

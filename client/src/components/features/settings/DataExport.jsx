@@ -48,14 +48,14 @@ const DataExport = () => {
     <Card title="Export Financial Data" icon={Download}>
       <div className="space-y-6">
         {/* Date Range Filter */}
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/50 rounded-lg">
+          <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-3 flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             Date Range (Optional)
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                 Start Date
               </label>
               <input
@@ -66,7 +66,7 @@ const DataExport = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                 End Date
               </label>
               <input
@@ -77,14 +77,14 @@ const DataExport = () => {
               />
             </div>
           </div>
-          <p className="text-xs text-blue-700 mt-2">
+          <p className="text-xs text-blue-700 dark:text-blue-400 mt-2">
             Leave empty to export all data
           </p>
         </div>
 
         {/* Export Expenses */}
         <div className="space-y-3">
-          <h4 className="font-semibold text-gray-900">Export Expenses</h4>
+          <h4 className="font-semibold text-gray-900 dark:text-slate-100">Export Expenses</h4>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <Button
               variant="outline"
@@ -118,7 +118,7 @@ const DataExport = () => {
 
         {/* Export Income */}
         <div className="space-y-3">
-          <h4 className="font-semibold text-gray-900">Export Income</h4>
+          <h4 className="font-semibold text-gray-900 dark:text-slate-100">Export Income</h4>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <Button
               variant="outline"
@@ -134,8 +134,8 @@ const DataExport = () => {
 
         {/* Export All Data */}
         <div className="space-y-3">
-          <h4 className="font-semibold text-gray-900">Export All Financial Data</h4>
-          <p className="text-sm text-gray-600">
+          <h4 className="font-semibold text-gray-900 dark:text-slate-100">Export All Financial Data</h4>
+          <p className="text-sm text-gray-600 dark:text-slate-400">
             Includes expenses, income, budgets, and goals in a comprehensive report
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -170,9 +170,9 @@ const DataExport = () => {
         </div>
 
         {/* Info */}
-        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <h4 className="font-semibold text-gray-900 mb-2">Export Formats</h4>
-          <ul className="text-sm text-gray-700 space-y-2">
+        <div className="p-4 bg-gray-50 dark:bg-slate-700/50 rounded-lg border border-gray-200 dark:border-slate-600">
+          <h4 className="font-semibold text-gray-900 dark:text-slate-100 mb-2">Export Formats</h4>
+          <ul className="text-sm text-gray-700 dark:text-slate-300 space-y-2">
             <li className="flex items-start gap-2">
               <FileBarChart className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
               <span><strong>PDF:</strong> Professional report with charts, insights, and visual analysis</span>

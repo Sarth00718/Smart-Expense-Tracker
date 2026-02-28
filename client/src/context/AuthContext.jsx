@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, useMemo, useCallback } from 'react'
+import React, { createContext, useState, useContext, useEffect, useMemo, useCallback, useRef } from 'react'
 import { authService } from '../services/authService'
 import { firebaseAuth } from '../config/firebase'
 
@@ -15,38 +15,31 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [initialCheckDone, setInitialCheckDone] = useState(false)
+  const unsubscribeRef = useRef(null)
 
   useEffect(() => {
-    let unsubscribe = null
-    
     const initializeAuth = async () => {
       try {
-        // Check localStorage first (fastest) - synchronous
+        // Check localStorage first (synchronous — fastest path)
         const storedUser = authService.getCurrentUser()
         const authMethod = authService.getAuthMethod()
         const storedToken = localStorage.getItem('token')
 
-        // If we have stored user and token, use them immediately
         if (storedUser && storedToken) {
           setUser(storedUser)
-          setLoading(false) // Set loading false immediately
-          setInitialCheckDone(true)
+          setLoading(false)
 
-          // Only set up Firebase listener if using Firebase auth (async, non-blocking)
+          // Only set up Firebase listener if this user actually uses Firebase
           if (authMethod === 'firebase') {
-            setTimeout(() => {
-              unsubscribe = setupFirebaseListener()
-            }, 0)
+            unsubscribeRef.current = setupFirebaseListener()
           }
           return
         }
 
-        // No stored user - set loading false immediately to show login
+        // No stored session — show login immediately
         setLoading(false)
-        setInitialCheckDone(true)
 
-        // Check for Firebase redirect result in background (only if no stored user)
+        // Only bother with Firebase redirect result if the auth method was Firebase
         if (authMethod === 'firebase') {
           firebaseAuth.handleRedirectResult()
             .then(result => {
@@ -55,30 +48,25 @@ export const AuthProvider = ({ children }) => {
                 localStorage.setItem('user', JSON.stringify(result.user))
                 localStorage.setItem('authMethod', 'firebase')
                 setUser(result.user)
-                unsubscribe = setupFirebaseListener()
-              } else {
-                unsubscribe = setupFirebaseListener()
               }
+              unsubscribeRef.current = setupFirebaseListener()
             })
-            .catch(error => {
-              console.error('Redirect result error:', error)
-              unsubscribe = setupFirebaseListener()
+            .catch(() => {
+              unsubscribeRef.current = setupFirebaseListener()
             })
         }
       } catch (error) {
         console.error('Auth initialization error:', error)
         setLoading(false)
-        setInitialCheckDone(true)
       }
     }
 
     const setupFirebaseListener = () => {
-      // Only set up listener once
-      if (unsubscribe) return unsubscribe
+      // Guard: don't set up duplicate listeners
+      if (unsubscribeRef.current) return unsubscribeRef.current
 
       return firebaseAuth.onAuthStateChanged(async (firebaseUser) => {
         if (firebaseUser) {
-          // User is signed in with Firebase
           try {
             const token = await firebaseUser.getIdToken()
             const userData = {
@@ -88,37 +76,39 @@ export const AuthProvider = ({ children }) => {
               picture: firebaseUser.photoURL,
               emailVerified: firebaseUser.emailVerified
             }
-            
             localStorage.setItem('token', token)
             localStorage.setItem('user', JSON.stringify(userData))
             localStorage.setItem('authMethod', 'firebase')
             setUser(userData)
           } catch (error) {
-            console.error('Firebase token error:', error)
+            console.error('Firebase token refresh error:', error)
           }
         } else {
-          // Only clear if we don't have a backend or biometric user
-          const authMethod = localStorage.getItem('authMethod')
-          if (authMethod === 'firebase') {
+          const currentMethod = localStorage.getItem('authMethod')
+          if (currentMethod === 'firebase') {
             localStorage.removeItem('token')
             localStorage.removeItem('user')
             localStorage.removeItem('authMethod')
             setUser(null)
           }
         }
-        
-        setLoading(false)
-        setInitialCheckDone(true)
       })
     }
 
     initializeAuth()
 
-    // Cleanup
+    // Listen for 401 unauthorized events dispatched by api.js interceptor
+    const handleUnauthorized = () => {
+      setUser(null)
+    }
+    window.addEventListener('auth:unauthorized', handleUnauthorized)
+
     return () => {
-      if (unsubscribe) {
-        unsubscribe()
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current()
+        unsubscribeRef.current = null
       }
+      window.removeEventListener('auth:unauthorized', handleUnauthorized)
     }
   }, [])
 
@@ -143,6 +133,11 @@ export const AuthProvider = ({ children }) => {
   }, [])
 
   const logout = useCallback(async () => {
+    // Clean up Firebase listener before logout
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current()
+      unsubscribeRef.current = null
+    }
     await authService.logout()
     setUser(null)
   }, [])

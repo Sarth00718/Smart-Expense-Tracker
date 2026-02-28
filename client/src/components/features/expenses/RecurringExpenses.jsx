@@ -95,19 +95,20 @@ const RecurringExpenses = ({ onClose }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-4 sm:p-6 flex items-center justify-between">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-slate-700">
+        {/* Header */}
+        <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 p-4 sm:p-6 flex items-center justify-between rounded-t-xl z-10">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-gray-900 dark:text-slate-100 tracking-tight">
               <Repeat className="w-6 h-6 text-primary" />
               Recurring Expenses
             </h2>
-            <p className="text-sm text-gray-600 mt-1">Save and quickly add frequent expenses</p>
+            <p className="text-sm text-gray-600 dark:text-slate-400 mt-1">Save and quickly add frequent expenses</p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-gray-500 dark:text-slate-400"
           >
             <X className="w-5 h-5" />
           </button>
@@ -116,13 +117,13 @@ const RecurringExpenses = ({ onClose }) => {
         <div className="p-4 sm:p-6 space-y-4">
           {/* Add/Edit Template Form */}
           {showForm ? (
-            <div className="card bg-blue-50 border-2 border-blue-200">
-              <h3 className="font-bold mb-4 text-blue-900">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-700 rounded-xl p-4">
+              <h3 className="font-bold mb-4 text-blue-900 dark:text-blue-300">
                 {editingTemplate ? 'Edit Template' : 'New Template'}
               </h3>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">
                     Template Name *
                   </label>
                   <input
@@ -135,7 +136,7 @@ const RecurringExpenses = ({ onClose }) => {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">
                       Category *
                     </label>
                     <select
@@ -156,7 +157,7 @@ const RecurringExpenses = ({ onClose }) => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">
                       Amount (₹) *
                     </label>
                     <input
@@ -171,7 +172,7 @@ const RecurringExpenses = ({ onClose }) => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">
                     Description
                   </label>
                   <input
@@ -183,11 +184,17 @@ const RecurringExpenses = ({ onClose }) => {
                   />
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={handleSaveTemplate} className="btn btn-primary flex-1">
+                  <button
+                    onClick={handleSaveTemplate}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-gradient-to-r from-primary to-primary-dark text-white rounded-xl font-semibold text-sm hover:opacity-90 transition-all"
+                  >
                     <Save className="w-4 h-4" />
                     {editingTemplate ? 'Update' : 'Save'} Template
                   </button>
-                  <button onClick={resetForm} className="btn btn-secondary">
+                  <button
+                    onClick={resetForm}
+                    className="px-4 py-2.5 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 rounded-xl font-semibold text-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-all"
+                  >
                     Cancel
                   </button>
                 </div>
@@ -196,7 +203,7 @@ const RecurringExpenses = ({ onClose }) => {
           ) : (
             <button
               onClick={() => setShowForm(true)}
-              className="w-full btn btn-primary"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-primary to-primary-dark text-white rounded-xl font-semibold hover:opacity-90 transition-all shadow-md"
             >
               <Plus className="w-5 h-5" />
               Create New Template
@@ -205,36 +212,36 @@ const RecurringExpenses = ({ onClose }) => {
 
           {/* Templates List */}
           {templates.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-lg">
-              <Repeat className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 mb-2">No recurring expenses yet</p>
-              <p className="text-sm text-gray-400">Create templates for expenses you add frequently</p>
+            <div className="text-center py-12 bg-gray-50 dark:bg-slate-700/50 rounded-xl border border-gray-200 dark:border-slate-600">
+              <Repeat className="w-16 h-16 text-gray-300 dark:text-slate-600 mx-auto mb-4" />
+              <p className="text-gray-500 dark:text-slate-400 mb-2">No recurring expenses yet</p>
+              <p className="text-sm text-gray-400 dark:text-slate-500">Create templates for expenses you add frequently</p>
             </div>
           ) : (
             <div className="space-y-3">
-              <h3 className="font-semibold text-gray-700">Your Templates</h3>
+              <h3 className="font-semibold text-gray-700 dark:text-slate-300">Your Templates</h3>
               {templates.map((template) => (
                 <div
                   key={template.id}
-                  className="card hover:shadow-md transition-shadow border-2 border-gray-200"
+                  className="bg-white dark:bg-slate-700/60 border-2 border-gray-200 dark:border-slate-600 rounded-xl p-4 hover:shadow-md hover:border-primary dark:hover:border-primary-400 transition-all"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-gray-900 mb-1">{template.name}</h4>
+                      <h4 className="font-bold text-gray-900 dark:text-slate-100 mb-1">{template.name}</h4>
                       <div className="flex flex-wrap items-center gap-2 text-sm">
-                        <span className={`badge badge-${template.category.toLowerCase()}`}>
+                        <span className="px-2 py-0.5 bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary-light rounded-full text-xs font-semibold">
                           {template.category}
                         </span>
-                        <span className="font-semibold text-gray-900">₹{template.amount}</span>
+                        <span className="font-semibold text-gray-900 dark:text-slate-100">₹{template.amount}</span>
                         {template.description && (
-                          <span className="text-gray-500">• {template.description}</span>
+                          <span className="text-gray-500 dark:text-slate-400">• {template.description}</span>
                         )}
                       </div>
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
                       <button
                         onClick={() => handleQuickAdd(template)}
-                        className="btn btn-primary text-sm py-2 px-3"
+                        className="flex items-center gap-1 py-2 px-3 bg-gradient-to-r from-primary to-primary-dark text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-all"
                         title="Quick Add"
                       >
                         <Plus className="w-4 h-4" />
@@ -242,14 +249,14 @@ const RecurringExpenses = ({ onClose }) => {
                       </button>
                       <button
                         onClick={() => handleEditTemplate(template)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                         title="Edit"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteTemplate(template.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                         title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -262,9 +269,9 @@ const RecurringExpenses = ({ onClose }) => {
           )}
 
           {/* Tips */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h4 className="font-semibold text-yellow-800 mb-2">💡 Tips</h4>
-            <ul className="text-sm text-yellow-700 space-y-1">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 rounded-xl p-4">
+            <h4 className="font-semibold text-yellow-800 dark:text-yellow-300 mb-2">💡 Tips</h4>
+            <ul className="text-sm text-yellow-700 dark:text-yellow-400 space-y-1">
               <li>• Create templates for expenses you add daily (like transport, meals)</li>
               <li>• Use the "Quick Add" button to add an expense with today's date</li>
               <li>• Edit templates anytime to update amounts or categories</li>
