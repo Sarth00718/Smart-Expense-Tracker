@@ -170,8 +170,8 @@ const Budgets = () => {
           <button
             onClick={() => setActiveTab('budgets')}
             className={`px-5 py-3 font-medium text-sm sm:text-base whitespace-nowrap transition-all ${activeTab === 'budgets'
-                ? 'border-b-2 border-primary text-primary'
-                : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100'
+              ? 'border-b-2 border-primary text-primary'
+              : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100'
               }`}
           >
             <span className="flex items-center gap-2">
@@ -182,8 +182,8 @@ const Budgets = () => {
           <button
             onClick={() => setActiveTab('history')}
             className={`px-5 py-3 font-medium text-sm sm:text-base whitespace-nowrap transition-all ${activeTab === 'history'
-                ? 'border-b-2 border-primary text-primary'
-                : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100'
+              ? 'border-b-2 border-primary text-primary'
+              : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100'
               }`}
           >
             <span className="flex items-center gap-2">
@@ -194,8 +194,8 @@ const Budgets = () => {
           <button
             onClick={() => setActiveTab('recommendations')}
             className={`px-5 py-3 font-medium text-sm sm:text-base whitespace-nowrap transition-all ${activeTab === 'recommendations'
-                ? 'border-b-2 border-primary text-primary'
-                : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100'
+              ? 'border-b-2 border-primary text-primary'
+              : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100'
               }`}
           >
             <span className="flex items-center gap-2">
@@ -209,12 +209,12 @@ const Budgets = () => {
       {/* Tab Content */}
       {activeTab === 'budgets' ? (
         <div className="space-y-4">
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-900 p-4 sm:p-6 border border-transparent dark:border-slate-700">
+          <div className="card">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6">
               <h3 className="text-lg sm:text-xl font-semibold tracking-tight text-gray-900 dark:text-slate-100">Your Budgets</h3>
               <button
                 onClick={() => setShowForm(!showForm)}
-                className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
+                className="btn btn-primary w-full sm:w-auto text-sm sm:text-base"
               >
                 <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                 {showForm ? 'Cancel' : 'Add Budget'}
@@ -223,7 +223,7 @@ const Budgets = () => {
 
             {/* Add Budget Form */}
             {showForm && (
-              <form onSubmit={handleSubmit} className="mb-6 p-4 bg-gray-50 dark:bg-slate-700/50 rounded-lg border border-gray-200 dark:border-slate-600">
+              <form onSubmit={handleSubmit} className="mb-6 p-4 bg-gray-50 dark:bg-slate-700/50 rounded-xl border border-gray-200 dark:border-slate-600 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
@@ -233,18 +233,18 @@ const Budgets = () => {
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      className="input"
                     >
                       <option value="">Select Category</option>
-                      <option value="Food">Food</option>
-                      <option value="Travel">Travel</option>
-                      <option value="Transport">Transport</option>
-                      <option value="Shopping">Shopping</option>
-                      <option value="Bills">Bills</option>
-                      <option value="Entertainment">Entertainment</option>
-                      <option value="Healthcare">Healthcare</option>
-                      <option value="Education">Education</option>
-                      <option value="Other">Other</option>
+                      <option value="Food">🍔 Food</option>
+                      <option value="Travel">✈️ Travel</option>
+                      <option value="Transport">🚗 Transport</option>
+                      <option value="Shopping">🛍️ Shopping</option>
+                      <option value="Bills">📄 Bills</option>
+                      <option value="Entertainment">🎬 Entertainment</option>
+                      <option value="Healthcare">🏥 Healthcare</option>
+                      <option value="Education">📚 Education</option>
+                      <option value="Other">📦 Other</option>
                     </select>
                   </div>
                   <div>
@@ -259,11 +259,11 @@ const Budgets = () => {
                       onChange={(e) => setFormData({ ...formData, monthlyBudget: e.target.value })}
                       required
                       placeholder="5000.00"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      className="input text-lg"
                     />
                   </div>
                 </div>
-                <button type="submit" className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors mt-4 text-sm sm:text-base">
+                <button type="submit" className="btn btn-primary">
                   Set Budget
                 </button>
               </form>
@@ -272,7 +272,7 @@ const Budgets = () => {
             {/* Budget List */}
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="spinner w-8 h-8" />
               </div>
             ) : budgets.length === 0 ? (
               <div className="text-center py-8 sm:py-12">
@@ -349,7 +349,7 @@ const Budgets = () => {
         </div>
       ) : activeTab === 'history' ? (
         <div className="space-y-4">
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-900 p-4 sm:p-6 border border-transparent dark:border-slate-700">
+          <div className="card">
             {/* Month Selector */}
             <div className="flex items-center justify-between mb-6">
               <button
@@ -373,7 +373,7 @@ const Budgets = () => {
             {/* History Content */}
             {loadingHistory ? (
               <div className="flex items-center justify-center py-8">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="spinner w-8 h-8" />
               </div>
             ) : historyData.length === 0 ? (
               <div className="text-center py-8 sm:py-12">

@@ -203,15 +203,15 @@ const DashboardHome = () => {
               <Plus className="w-5 h-5" /><span>Add Expense</span>
             </motion.button>
             <motion.button whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.98 }} onClick={() => setShowAddIncome(true)}
-              className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm transition-all bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-md hover:shadow-lg">
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm transition-all bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 shadow-md hover:shadow-lg">
               <DollarSign className="w-5 h-5" /><span>Add Income</span>
             </motion.button>
             <motion.button whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.98 }} onClick={() => setShowVoiceInput(true)}
-              className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm transition-all bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 shadow-md hover:shadow-lg">
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm transition-all bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:from-violet-600 hover:to-purple-700 shadow-md hover:shadow-lg shadow-violet-500/30">
               <Mic className="w-5 h-5" /><span>Voice</span>
             </motion.button>
             <motion.button whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.98 }} onClick={() => setShowReceiptScanner(true)}
-              className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm transition-all bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 shadow-md hover:shadow-lg">
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm transition-all bg-gradient-to-r from-pink-500 to-rose-600 text-white hover:from-pink-600 hover:to-rose-700 shadow-md hover:shadow-lg shadow-pink-500/30">
               <Camera className="w-5 h-5" /><span>Scan</span>
             </motion.button>
           </div>
@@ -223,11 +223,11 @@ const DashboardHome = () => {
         <Card title="Quick Links" subtitle="Explore more features">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {[
-              { label: 'Analytics', icon: TrendingUp, path: '/dashboard/analytics', bg: 'bg-blue-50/80   dark:bg-blue-900/20   hover:bg-blue-100/80   dark:hover:bg-blue-900/30', iconBg: 'bg-blue-500' },
-              { label: 'Budgets', icon: Wallet, path: '/dashboard/budgets', bg: 'bg-purple-50/80 dark:bg-purple-900/20 hover:bg-purple-100/80 dark:hover:bg-purple-900/30', iconBg: 'bg-purple-500' },
-              { label: 'Goals', icon: TrendingUp, path: '/dashboard/goals', bg: 'bg-green-50/80  dark:bg-green-900/20  hover:bg-green-100/80  dark:hover:bg-green-900/30', iconBg: 'bg-green-500' },
-              { label: 'Income', icon: DollarSign, path: '/dashboard/income', bg: 'bg-teal-50/80   dark:bg-teal-900/20   hover:bg-teal-100/80   dark:hover:bg-teal-900/30', iconBg: 'bg-teal-500' },
-              { label: 'Heatmap', icon: Calendar, path: '/dashboard/analytics?view=heatmap', bg: 'bg-rose-50/80   dark:bg-rose-900/20   hover:bg-rose-100/80   dark:hover:bg-rose-900/30', iconBg: 'bg-rose-500' },
+              { label: 'Analytics', icon: TrendingUp, path: '/dashboard/analytics', bg: 'bg-blue-50/80   dark:bg-blue-900/20   hover:bg-blue-100/80   dark:hover:bg-blue-900/30', iconBg: 'bg-gradient-to-br from-blue-500 to-blue-600' },
+              { label: 'Budgets', icon: Wallet, path: '/dashboard/budgets', bg: 'bg-purple-50/80 dark:bg-purple-900/20 hover:bg-purple-100/80 dark:hover:bg-purple-900/30', iconBg: 'bg-gradient-to-br from-purple-500 to-purple-600' },
+              { label: 'Goals', icon: TrendingUp, path: '/dashboard/goals', bg: 'bg-emerald-50/80  dark:bg-emerald-900/20  hover:bg-emerald-100/80  dark:hover:bg-emerald-900/30', iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
+              { label: 'Income', icon: DollarSign, path: '/dashboard/income', bg: 'bg-amber-50/80   dark:bg-amber-900/20   hover:bg-amber-100/80   dark:hover:bg-amber-900/30', iconBg: 'bg-gradient-to-br from-amber-500 to-orange-600' },
+              { label: 'Heatmap', icon: Calendar, path: '/dashboard/analytics?view=heatmap', bg: 'bg-rose-50/80   dark:bg-rose-900/20   hover:bg-rose-100/80   dark:hover:bg-rose-900/30', iconBg: 'bg-gradient-to-br from-rose-500 to-pink-600' },
             ].map(({ label, icon: Icon, path, bg, iconBg }) => (
               <motion.button key={label} whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.98 }}
                 onClick={() => navigate(path)}

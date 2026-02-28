@@ -226,65 +226,60 @@ const Expenses = () => {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto font-sans">
       {/* Header Section */}
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 dark:text-slate-100 mb-2 tracking-tight">
-              Expense Tracker
-            </h1>
-            <p className="text-gray-600 dark:text-slate-400 text-sm sm:text-base lg:text-lg leading-relaxed">Manage and track all your expenses</p>
-          </div>
-
-          {/* Secondary Actions */}
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              size="md"
-              icon={Repeat}
-              onClick={() => setShowRecurring(true)}
-            >
-              Recurring
-            </Button>
-            {expenses.length > 0 && (
-              <Button
-                variant="outline"
-                size="md"
-                icon={Trash}
-                onClick={handleClearAll}
-                className="text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400"
-              >
-                Clear All
-              </Button>
-            )}
-          </div>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        {/* Title */}
+        <div>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 dark:text-slate-100 mb-2 tracking-tight">
+            Expense Tracker
+          </h1>
+          <p className="text-gray-600 dark:text-slate-400 text-sm sm:text-base lg:text-lg leading-relaxed">Manage and track all your expenses</p>
         </div>
 
-        {/* Quick Action Buttons */}
-        <div className="flex flex-wrap gap-2">
+        {/* All Action Buttons grouped on the right */}
+        <div className="flex flex-wrap items-center gap-2 sm:flex-shrink-0">
           <Button
             variant="primary"
             size="md"
             icon={Plus}
             onClick={() => setShowAddExpense(true)}
+            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
           >
             Add Expense
           </Button>
-          <Button
-            variant="outline"
-            size="md"
-            icon={Mic}
+          <button
             onClick={() => setShowVoiceInput(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:from-violet-600 hover:to-purple-700 shadow-md hover:shadow-lg shadow-violet-500/20 hover:scale-[1.02] active:scale-95"
           >
+            <Mic className="w-4 h-4" />
             Voice
-          </Button>
+          </button>
+          <button
+            onClick={() => setShowReceiptScanner(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all bg-gradient-to-r from-pink-500 to-rose-600 text-white hover:from-pink-600 hover:to-rose-700 shadow-md hover:shadow-lg shadow-pink-500/20 hover:scale-[1.02] active:scale-95"
+          >
+            <Camera className="w-4 h-4" />
+            Scan
+          </button>
           <Button
             variant="outline"
             size="md"
-            icon={Camera}
-            onClick={() => setShowReceiptScanner(true)}
+            icon={Repeat}
+            onClick={() => setShowRecurring(true)}
+            className="border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400 dark:border-amber-600 dark:text-amber-400 dark:hover:bg-amber-900/20"
           >
-            Scan
+            Recurring
           </Button>
+          {expenses.length > 0 && (
+            <Button
+              variant="outline"
+              size="md"
+              icon={Trash}
+              onClick={handleClearAll}
+              className="text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20"
+            >
+              Clear All
+            </Button>
+          )}
         </div>
       </div>
 
@@ -322,14 +317,14 @@ const Expenses = () => {
 
         {/* Natural Language Search Panel */}
         {showNLSearch && (
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4">
+          <div className="bg-primary/5 dark:bg-primary/10 border-2 border-primary/20 dark:border-primary/30 rounded-xl p-4">
             <div className="flex items-start gap-3 mb-3">
-              <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center flex-shrink-0">
                 <Search className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-blue-900 mb-1 tracking-tight">🔍 AI-Powered Search</h3>
-                <p className="text-sm text-blue-700 leading-snug">
+                <h3 className="font-semibold text-gray-900 dark:text-slate-100 mb-1 tracking-tight">🔍 AI-Powered Search</h3>
+                <p className="text-sm text-gray-600 dark:text-slate-400 leading-snug">
                   Try: "food over 500 last week" or "shopping this month" or "travel expenses"
                 </p>
               </div>
@@ -361,8 +356,8 @@ const Expenses = () => {
               )}
             </div>
             {nlResults && (
-              <div className="mt-3 p-3 bg-white rounded-lg border border-blue-300">
-                <p className="text-sm font-semibold text-blue-900">
+              <div className="mt-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-primary/20">
+                <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">
                   ✓ Found {nlResults.count} expenses matching "{nlResults.query}"
                 </p>
               </div>
@@ -379,8 +374,8 @@ const Expenses = () => {
             <button
               onClick={() => setFilterPeriod('all')}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${filterPeriod === 'all'
-                  ? 'bg-white dark:bg-slate-600 text-primary shadow-sm'
-                  : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
+                ? 'bg-white dark:bg-slate-600 text-primary shadow-sm'
+                : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
                 }`}
             >
               All Time
@@ -388,8 +383,8 @@ const Expenses = () => {
             <button
               onClick={() => setFilterPeriod('month')}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${filterPeriod === 'month'
-                  ? 'bg-white dark:bg-slate-600 text-primary shadow-sm'
-                  : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
+                ? 'bg-white dark:bg-slate-600 text-primary shadow-sm'
+                : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
                 }`}
             >
               This Month
@@ -421,30 +416,30 @@ const Expenses = () => {
 
       {/* Advanced Search Results Banner */}
       {advancedSearchResults && (
-        <div className="card bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200">
+        <div className="card border-2 border-green-200 dark:border-green-700/50 bg-green-50 dark:bg-green-900/10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
                 <Filter className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-green-900 mb-1 tracking-tight">Advanced Search Results</h3>
+                <h3 className="font-semibold text-green-900 dark:text-green-300 mb-1 tracking-tight">Advanced Search Results</h3>
                 <div className="flex gap-6 text-sm">
                   <div>
-                    <span className="text-green-700">Total: </span>
-                    <span className="font-semibold text-green-900">
+                    <span className="text-green-700 dark:text-green-400">Total: </span>
+                    <span className="font-semibold text-green-900 dark:text-green-200">
                       ₹{advancedSearchResults.stats.total.toFixed(2)}
                     </span>
                   </div>
                   <div>
-                    <span className="text-green-700">Count: </span>
-                    <span className="font-semibold text-green-900">
+                    <span className="text-green-700 dark:text-green-400">Count: </span>
+                    <span className="font-semibold text-green-900 dark:text-green-200">
                       {advancedSearchResults.stats.count}
                     </span>
                   </div>
                   <div>
-                    <span className="text-green-700">Average: </span>
-                    <span className="font-semibold text-green-900">
+                    <span className="text-green-700 dark:text-green-400">Average: </span>
+                    <span className="font-semibold text-green-900 dark:text-green-200">
                       ₹{advancedSearchResults.stats.average.toFixed(2)}
                     </span>
                   </div>
@@ -633,7 +628,7 @@ const Expenses = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
                 Date
               </label>
               <input
@@ -645,7 +640,7 @@ const Expenses = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
                 Category
               </label>
               <select
@@ -669,7 +664,7 @@ const Expenses = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
               Amount (₹)
             </label>
             <input
@@ -685,7 +680,7 @@ const Expenses = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
               Description (Optional)
             </label>
             <input
@@ -708,8 +703,9 @@ const Expenses = () => {
         <Modal
           isOpen={showVoiceInput}
           onClose={() => setShowVoiceInput(false)}
-          size="md"
+          size="lg"
           showCloseButton={false}
+          noPadding
         >
           <VoiceExpenseInput
             onExpenseCreated={handleVoiceExpenseCreated}
@@ -718,13 +714,13 @@ const Expenses = () => {
         </Modal>
       )}
 
-      {/* Receipt Scanner Modal */}
       {showReceiptScanner && (
         <Modal
           isOpen={showReceiptScanner}
           onClose={() => setShowReceiptScanner(false)}
           size="xl"
-          title="Receipt Scanner"
+          showCloseButton={false}
+          noPadding
         >
           <ReceiptScanner onSuccess={handleReceiptScanned} />
         </Modal>
