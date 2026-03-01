@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Trophy, Award, Star, Zap, Target } from 'lucide-react'
 import { analyticsService } from '../../../services/analyticsService'
-import { Card, StatCard, EmptyState, LoadingSpinner } from '../../ui'
+import { Card, StatCard, EmptyState, LoadingSpinner, PageHeader } from '../../ui'
 import { format } from 'date-fns'
 
 const Achievements = () => {
@@ -68,13 +68,12 @@ const Achievements = () => {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto font-sans">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 dark:text-slate-100 mb-2 flex items-center gap-3 tracking-tight">
-          <Trophy className="w-8 h-8 text-yellow-600" />
-          Achievements
-        </h1>
-        <p className="text-gray-600 dark:text-slate-400 text-sm sm:text-base lg:text-lg leading-relaxed">Track your financial milestones and earn rewards</p>
-      </div>
+      <PageHeader
+        icon={Trophy}
+        gradient="from-yellow-400 to-orange-500"
+        title="Achievements"
+        subtitle="Track your financial milestones and earn rewards"
+      />
 
       {/* Financial Health Score */}
       {score && (

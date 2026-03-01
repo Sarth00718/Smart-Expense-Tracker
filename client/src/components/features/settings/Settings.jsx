@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { User, Lock, Edit2, Save, X, Camera, Eye, EyeOff, Monitor, Smartphone, Sun, Moon, Palette } from 'lucide-react'
+import { User, Lock, Edit2, Save, X, Camera, Eye, EyeOff, Monitor, Smartphone, Sun, Moon, Palette, Settings2 } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { useTheme } from '../../../context/ThemeContext'
-import { Card, Button, Modal } from '../../ui'
+import { Card, Button, Modal, PageHeader } from '../../ui'
 import BiometricSettings from './BiometricSettings'
 import api from '../../../services/api'
 import toast from 'react-hot-toast'
@@ -181,11 +181,12 @@ const Settings = () => {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1400px] mx-auto font-sans">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 dark:text-slate-100 mb-2 tracking-tight">Settings</h1>
-        <p className="text-gray-600 dark:text-slate-400 text-lg">Manage your account and preferences</p>
-      </div>
+      <PageHeader
+        icon={Settings2}
+        gradient="from-slate-500 to-gray-600"
+        title="Settings"
+        subtitle="Manage your account and preferences"
+      />
 
       {/* Tabs */}
       <div className="border-b border-gray-200 dark:border-slate-700 overflow-x-auto">

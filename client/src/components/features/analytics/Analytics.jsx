@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import {
-  TrendingUp, BarChart3, PieChart, Activity,
+  TrendingUp, BarChart3, BarChart2, PieChart, Activity,
   DollarSign, TrendingDown, Zap, Calendar, Target, Wallet
 } from 'lucide-react'
 import { useExpense } from '../../../context/ExpenseContext'
 import { useIncome } from '../../../context/IncomeContext'
 import { useTheme } from '../../../context/ThemeContext'
 import { analyticsService } from '../../../services/analyticsService'
-import { Card } from '../../ui'
+import { Card, PageHeader } from '../../ui'
 import SpendingHeatmap from './SpendingHeatmap'
 import {
   AreaChart, BarChart, PieChart as RechartsPie, ComposedChart,
@@ -290,36 +290,33 @@ const Analytics = () => {
   return (
     <div className="p-3 sm:p-4 md:p-6 lg:p-8 space-y-6 sm:space-y-8 max-w-[1600px] mx-auto font-sans">
 
-      {/* ── HEADER ─────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 dark:text-slate-100 mb-1 sm:mb-2 tracking-tight">
-            Analytics Dashboard
-          </h1>
-          <p className="text-gray-600 dark:text-slate-400 text-sm sm:text-base lg:text-lg leading-relaxed">
-            Comprehensive insights into your financial patterns
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {[
-            { value: 'thisMonth', label: 'This Month' },
-            { value: 'lastMonth', label: 'Last Month' },
-            { value: 'last3Months', label: '3 Months' },
-            { value: 'last6Months', label: '6 Months' }
-          ].map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => setTimeRange(opt.value)}
-              className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${timeRange === opt.value
-                ? 'bg-primary text-white shadow-md'
-                : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'
-                }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <PageHeader
+        icon={BarChart2}
+        gradient="from-cyan-500 to-blue-600"
+        title="Analytics Dashboard"
+        subtitle="Comprehensive insights into your financial patterns"
+        actions={
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: 'thisMonth', label: 'This Month' },
+              { value: 'lastMonth', label: 'Last Month' },
+              { value: 'last3Months', label: '3 Months' },
+              { value: 'last6Months', label: '6 Months' }
+            ].map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setTimeRange(opt.value)}
+                className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${timeRange === opt.value
+                  ? 'bg-primary text-white shadow-md'
+                  : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'
+                  }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        }
+      />
 
       {/* ── STATS OVERVIEW ─────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">

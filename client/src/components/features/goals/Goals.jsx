@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Target, Plus, Trash2, TrendingUp, Calendar, DollarSign } from 'lucide-react'
 import { goalService } from '../../../services/goalService'
-import { Card, Button, EmptyState, LoadingSpinner } from '../../ui'
+import { Card, Button, EmptyState, LoadingSpinner, PageHeader } from '../../ui'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 
@@ -95,24 +95,18 @@ const Goals = () => {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto font-sans">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 dark:text-slate-100 mb-2 flex items-center gap-3 tracking-tight">
-            <Target className="w-8 h-8 text-primary" />
-            Savings Goals
-          </h1>
-          <p className="text-gray-600 dark:text-slate-400 text-lg">Set and track your financial goals</p>
-        </div>
-
-        <Button
-          variant="primary"
-          size="md"
-          icon={Plus}
-          onClick={() => setShowForm(!showForm)}
-        >
-          {showForm ? 'Cancel' : 'Add Goal'}
-        </Button>
-      </div>
+      <PageHeader
+        icon={Target}
+        gradient="from-violet-500 to-indigo-600"
+        title="Savings Goals"
+        subtitle="Set and track your financial goals"
+        actions={
+          <Button variant="primary" size="md" icon={showForm ? undefined : Plus}
+            onClick={() => setShowForm(!showForm)}>
+            {showForm ? 'Cancel' : '+ Add Goal'}
+          </Button>
+        }
+      />
 
       {/* Add Goal Form */}
       {showForm && (
@@ -241,9 +235,9 @@ const Goals = () => {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className={`text-lg font-bold ${goal.percentage >= 100 ? 'text-green-600' :
-                        goal.percentage >= 75 ? 'text-blue-600' :
-                          goal.percentage >= 50 ? 'text-yellow-600' :
-                            'text-orange-600'
+                      goal.percentage >= 75 ? 'text-blue-600' :
+                        goal.percentage >= 50 ? 'text-yellow-600' :
+                          'text-orange-600'
                       }`}>
                       {goal.percentage.toFixed(1)}%
                     </span>

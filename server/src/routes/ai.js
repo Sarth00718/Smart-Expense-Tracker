@@ -7,7 +7,7 @@ import Goal from '../models/Goal.js';
 import ChatHistory from '../models/ChatHistory.js';
 import auth from '../middleware/auth.js';
 import { calculateSpendingScore } from '../utils/analytics.js';
-import { parseFinanceQuery } from '../utils/nlp.js';
+import { parseFinanceQuery, searchExpensesByDescription, extractDescriptionKeywords } from '../utils/nlp.js';
 import { callAIWithRetry } from '../utils/aiService.js';
 import crypto from 'crypto';
 
@@ -54,40 +54,42 @@ router.post('/chat', auth, async (req, res) => {
     const budgets = await Budget.find({ userId: req.userId });
     const goals = await Goal.find({ userId: req.userId });
 
-    // Parse the query using NLP
-    const queryData = parseFinanceQuery(message, expenses, budgets, goals);
+    // Parse the query using NLP (pass incomes correctly)
+    const queryData = parseFinanceQuery(message, expenses, incomes, budgets);
+    queryData._originalQuery = message; // Attach for context building
 
     // Check for specific query patterns
     const lowerMessage = message.toLowerCase();
     let responseText;
     let apiUsed = 'fallback';
 
-    // Handle affordability queries
+    // ── Handle affordability queries ──────────────────────────────────────
     if ((lowerMessage.includes('afford') || lowerMessage.includes('buy') || lowerMessage.includes('purchase')) &&
       /₹?\s*(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:rupees?|rs\.?|inr)?/i.test(message)) {
       const amountMatch = message.match(/₹?\s*(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:rupees?|rs\.?|inr)?/i);
       const amount = amountMatch ? parseFloat(amountMatch[1].replace(/,/g, '')) : null;
-
       if (amount) {
         responseText = analyzeAffordability(amount, expenses, incomes, message);
         apiUsed = 'rule-based';
       }
     }
-    // Handle "Where did I overspend" queries
+    // ── Handle "Where did I overspend" queries ─────────────────────────────
     else if (lowerMessage.includes('overspend') || lowerMessage.includes('over spend')) {
       responseText = analyzeOverspending(expenses, budgets);
+      apiUsed = 'rule-based';
     }
-    // Handle budget plan suggestions
+    // ── Handle budget plan suggestions ────────────────────────────────────
     else if ((lowerMessage.includes('suggest') || lowerMessage.includes('recommend') || lowerMessage.includes('create')) &&
       (lowerMessage.includes('budget') || lowerMessage.includes('plan'))) {
       const salaryMatch = message.match(/₹?\s*(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:rupees?|rs\.?|inr)?/i);
       const salary = salaryMatch ? parseFloat(salaryMatch[1].replace(/,/g, '')) : null;
-
       responseText = suggestBudgetPlan(salary, expenses, budgets);
+      apiUsed = 'rule-based';
     }
-    // Check if we can answer with rule-based logic
+    // ── Check if NLP can answer directly (includes description search) ─────
     else if (queryData.canAnswerDirectly) {
       responseText = queryData.directAnswer;
+      apiUsed = 'rule-based';
     }
     // Use AI for complex queries
     else {
@@ -521,36 +523,12 @@ function buildFinancialContext(expenses, incomes, budgets, goals, queryData) {
     return incYear === currentYear && incMonth === currentMonth;
   });
 
-  // Debug: Log income data for troubleshooting
-  console.log('🔍 AI Context Debug:');
-  console.log(`Total incomes in DB: ${incomes.length}`);
-  console.log(`Current month incomes: ${monthIncome.length}`);
-  if (incomes.length > 0) {
-    console.log('Sample income dates:', incomes.slice(0, 3).map(inc => ({
-      date: inc.date,
-      amount: inc.amount,
-      source: inc.source
-    })));
-  }
-
   const monthExpenseTotal = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
   const monthIncomeTotal = monthIncome.reduce((sum, inc) => sum + inc.amount, 0);
 
-  // Debug logging (development only)
+  // Development-only debug
   if (process.env.NODE_ENV === 'development') {
-    console.log(`📅 Current Month: ${currentMonthName} ${currentYear} (Month index: ${currentMonth})`);
-    console.log(`📊 Date Range: ${startOfMonth.toISOString()} to ${endOfMonth.toISOString()}`);
-    console.log(`💰 Total Income Records: ${incomes.length}, This Month: ${monthIncome.length}`);
-    if (monthIncome.length > 0) {
-      console.log(`💰 Income dates this month:`, monthIncome.map(inc => ({
-        date: new Date(inc.date).toISOString(),
-        amount: inc.amount,
-        source: inc.source
-      })));
-    }
-    console.log(`💸 Total Expense Records: ${expenses.length}, This Month: ${monthExpenses.length}`);
-    console.log(`💵 Month Income Total: ₹${monthIncomeTotal.toFixed(2)}`);
-    console.log(`💳 Month Expense Total: ₹${monthExpenseTotal.toFixed(2)}`);
+    console.log(`📅 AI Context: ${currentMonthName} ${currentYear} | Expenses: ${monthExpenses.length} (₹${monthExpenseTotal.toFixed(2)}) | Income: ${monthIncome.length} (₹${monthIncomeTotal.toFixed(2)})`);
   }
 
   context += `THIS MONTH (${currentMonthName} ${currentYear}):\n`;
@@ -659,9 +637,31 @@ function buildFinancialContext(expenses, incomes, budgets, goals, queryData) {
     });
   }
 
-  // Query-specific data
+  // Query-specific data & description search context
   if (queryData.relevantData) {
     context += `\n${queryData.relevantData}\n`;
+  }
+
+  // Add description keyword search results for Groq context
+  if (queryData._originalQuery) {
+    const descKeywords = extractDescriptionKeywords(queryData._originalQuery);
+    if (descKeywords.length > 0) {
+      const descResult = searchExpensesByDescription(queryData._originalQuery, expenses);
+      if (descResult && descResult.found) {
+        context += `\nDESCRIPTION SEARCH RESULTS for "${descKeywords.join(', ')}":\n`;
+        context += `Found ${descResult.count} matching expense(s) totaling ₹${descResult.total.toFixed(2)} in ${descResult.timePeriodLabel}\n`;
+        context += `Average: ₹${descResult.avg.toFixed(2)} per transaction\n`;
+        if (descResult.matched && descResult.matched.length > 0) {
+          context += `Matching expenses:\n`;
+          descResult.matched.slice(0, 10).forEach(exp => {
+            const d = new Date(exp.date);
+            context += `- ${d.toLocaleDateString()}: ${exp.category} ₹${exp.amount.toFixed(2)} (${exp.description || 'no desc'})\n`;
+          });
+        }
+      } else if (descResult && !descResult.found && descKeywords.length > 0) {
+        context += `\nNOTE: No expenses found with description matching "${descKeywords.join(', ')}" in ${descResult.timePeriodLabel}\n`;
+      }
+    }
   }
 
   return context;

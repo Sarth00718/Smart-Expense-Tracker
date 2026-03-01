@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react'
 import { useExpense } from '../../../context/ExpenseContext'
 import { expenseService } from '../../../services/expenseService'
-import { Trash2, Calendar, Edit2, X, Trash, Search, ArrowUpDown, Filter, Repeat, Plus, Mic, Camera } from 'lucide-react'
+import { Trash2, Calendar, Edit2, X, Trash, Search, ArrowUpDown, Filter, Repeat, Plus, Mic, Camera, Receipt } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
-import { Button, Modal, LoadingSpinner } from '../../ui'
+import { Button, Modal, LoadingSpinner, PageHeader } from '../../ui'
 import { useNavigate } from 'react-router-dom'
 import AdvancedSearch from './AdvancedSearch'
 import RecurringExpenses from './RecurringExpenses'
@@ -226,62 +226,41 @@ const Expenses = () => {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto font-sans">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        {/* Title */}
-        <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 dark:text-slate-100 mb-2 tracking-tight">
-            Expense Tracker
-          </h1>
-          <p className="text-gray-600 dark:text-slate-400 text-sm sm:text-base lg:text-lg leading-relaxed">Manage and track all your expenses</p>
-        </div>
-
-        {/* All Action Buttons grouped on the right */}
-        <div className="flex flex-wrap items-center gap-2 sm:flex-shrink-0">
-          <Button
-            variant="primary"
-            size="md"
-            icon={Plus}
-            onClick={() => setShowAddExpense(true)}
-            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
-          >
-            Add Expense
-          </Button>
-          <button
-            onClick={() => setShowVoiceInput(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:from-violet-600 hover:to-purple-700 shadow-md hover:shadow-lg shadow-violet-500/20 hover:scale-[1.02] active:scale-95"
-          >
-            <Mic className="w-4 h-4" />
-            Voice
-          </button>
-          <button
-            onClick={() => setShowReceiptScanner(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all bg-gradient-to-r from-pink-500 to-rose-600 text-white hover:from-pink-600 hover:to-rose-700 shadow-md hover:shadow-lg shadow-pink-500/20 hover:scale-[1.02] active:scale-95"
-          >
-            <Camera className="w-4 h-4" />
-            Scan
-          </button>
-          <Button
-            variant="outline"
-            size="md"
-            icon={Repeat}
-            onClick={() => setShowRecurring(true)}
-            className="border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400 dark:border-amber-600 dark:text-amber-400 dark:hover:bg-amber-900/20"
-          >
-            Recurring
-          </Button>
-          {expenses.length > 0 && (
-            <Button
-              variant="outline"
-              size="md"
-              icon={Trash}
-              onClick={handleClearAll}
-              className="text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20"
-            >
-              Clear All
+      <PageHeader
+        icon={Receipt}
+        gradient="from-blue-500 to-indigo-600"
+        title="Expense Tracker"
+        subtitle="Manage and track all your expenses"
+        actions={
+          <>
+            <Button variant="primary" size="md" icon={Plus} onClick={() => setShowAddExpense(true)}>
+              Add Expense
             </Button>
-          )}
-        </div>
-      </div>
+            <button
+              onClick={() => setShowVoiceInput(true)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:from-violet-600 hover:to-purple-700 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95"
+            >
+              <Mic className="w-4 h-4" /> Voice
+            </button>
+            <button
+              onClick={() => setShowReceiptScanner(true)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all bg-gradient-to-r from-pink-500 to-rose-600 text-white hover:from-pink-600 hover:to-rose-700 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95"
+            >
+              <Camera className="w-4 h-4" /> Scan
+            </button>
+            <Button variant="outline" size="md" icon={Repeat} onClick={() => setShowRecurring(true)}
+              className="border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-600 dark:text-amber-400">
+              Recurring
+            </Button>
+            {expenses.length > 0 && (
+              <Button variant="outline" size="md" icon={Trash} onClick={handleClearAll}
+                className="text-red-600 border-red-300 hover:bg-red-50 dark:border-red-600 dark:text-red-400">
+                Clear All
+              </Button>
+            )}
+          </>
+        }
+      />
 
       {/* Search & Filter Section */}
       <div className="card space-y-4">

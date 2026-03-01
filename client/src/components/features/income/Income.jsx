@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useIncome } from '../../../context/IncomeContext'
 import { incomeService } from '../../../services/incomeService'
 import { DollarSign, Plus, Edit2, Trash2, TrendingUp, Calendar, Repeat, X } from 'lucide-react'
-import { Card, Button, StatCard, EmptyState, LoadingSpinner } from '../../ui'
+import { Card, Button, StatCard, EmptyState, LoadingSpinner, PageHeader } from '../../ui'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 
@@ -11,7 +11,7 @@ const Income = () => {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [summary, setSummary] = useState(null)
-  
+
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     source: 'Salary',
@@ -37,7 +37,7 @@ const Income = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     try {
       if (editingId) {
         await updateIncome(editingId, formData)
@@ -46,7 +46,7 @@ const Income = () => {
         await addIncome(formData)
         toast.success('Income added successfully')
       }
-      
+
       setShowForm(false)
       setEditingId(null)
       resetForm()
@@ -71,7 +71,7 @@ const Income = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this income entry?')) return
-    
+
     try {
       await deleteIncome(id)
       toast.success('Income deleted successfully')
@@ -117,24 +117,22 @@ const Income = () => {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto font-sans">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 dark:text-slate-100 mb-2 flex items-center gap-3 tracking-tight">
-            <DollarSign className="w-8 h-8 text-green-600 dark:text-green-400" />
-            Income Tracker
-          </h1>
-          <p className="text-gray-600 dark:text-slate-400 text-lg">Track and manage your income sources</p>
-        </div>
-        
-        <Button 
-          variant="primary" 
-          size="md"
-          icon={Plus}
-          onClick={() => { setShowForm(!showForm); setEditingId(null); resetForm(); }}
-        >
-          {showForm ? 'Cancel' : 'Add Income'}
-        </Button>
-      </div>
+      <PageHeader
+        icon={DollarSign}
+        gradient="from-emerald-500 to-teal-600"
+        title="Income Tracker"
+        subtitle="Track and manage your income sources"
+        actions={
+          <Button
+            variant="primary"
+            size="md"
+            icon={showForm ? X : Plus}
+            onClick={() => { setShowForm(!showForm); setEditingId(null); resetForm(); }}
+          >
+            {showForm ? 'Cancel' : 'Add Income'}
+          </Button>
+        }
+      />
 
       {/* Summary Cards */}
       {summary && (
@@ -162,7 +160,7 @@ const Income = () => {
 
       {/* Add/Edit Income Form */}
       {showForm && (
-        <Card 
+        <Card
           title={editingId ? 'Edit Income' : 'Add New Income'}
           icon={Plus}
           subtitle="Enter your income details"
@@ -310,15 +308,15 @@ const Income = () => {
                     </td>
                     <td className="py-4 px-6 text-center">
                       <div className="flex items-center justify-center gap-2">
-                        <button 
-                          onClick={() => handleEdit(incomeItem)} 
+                        <button
+                          onClick={() => handleEdit(incomeItem)}
                           className="p-2.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all hover:scale-110"
                           title="Edit income"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
-                        <button 
-                          onClick={() => handleDelete(incomeItem._id)} 
+                        <button
+                          onClick={() => handleDelete(incomeItem._id)}
                           className="p-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all hover:scale-110"
                           title="Delete income"
                         >

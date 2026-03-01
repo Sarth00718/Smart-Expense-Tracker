@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import { PieChart, Plus, Trash2, TrendingDown, TrendingUp, AlertCircle, Lightbulb, Target, Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
+import { PieChart, Plus, Trash2, TrendingDown, TrendingUp, AlertCircle, Lightbulb, Target, Calendar, ChevronLeft, ChevronRight, BarChart2 } from 'lucide-react'
 import { budgetService } from '../../../services/budgetService'
 import { expenseService } from '../../../services/expenseService'
 import BudgetRecommendations from './BudgetRecommendations'
 import toast from 'react-hot-toast'
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns'
-import { LiquidProgress } from '../../ui'
+import { LiquidProgress, PageHeader } from '../../ui'
 
 const Budgets = () => {
   const [activeTab, setActiveTab] = useState('budgets')
@@ -154,56 +154,51 @@ const Budgets = () => {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto font-sans">
       {/* Header with Tabs */}
-      <div>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 dark:text-slate-100 mb-2 flex items-center gap-3 tracking-tight">
-              <PieChart className="w-8 h-8 text-primary" />
-              Budget Management
-            </h1>
-            <p className="text-gray-600 dark:text-slate-400 text-lg">Set budgets and track your spending</p>
-          </div>
-        </div>
+      <PageHeader
+        icon={Target}
+        gradient="from-orange-500 to-amber-600"
+        title="Budget Management"
+        subtitle="Set budgets and track your spending"
+      />
 
-        {/* Tabs */}
-        <div className="flex gap-2 border-b border-gray-200 dark:border-slate-700 overflow-x-auto">
-          <button
-            onClick={() => setActiveTab('budgets')}
-            className={`px-5 py-3 font-medium text-sm sm:text-base whitespace-nowrap transition-all ${activeTab === 'budgets'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100'
-              }`}
-          >
-            <span className="flex items-center gap-2">
-              <Target className="w-5 h-5" />
-              My Budgets
-            </span>
-          </button>
-          <button
-            onClick={() => setActiveTab('history')}
-            className={`px-5 py-3 font-medium text-sm sm:text-base whitespace-nowrap transition-all ${activeTab === 'history'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100'
-              }`}
-          >
-            <span className="flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
-              History
-            </span>
-          </button>
-          <button
-            onClick={() => setActiveTab('recommendations')}
-            className={`px-5 py-3 font-medium text-sm sm:text-base whitespace-nowrap transition-all ${activeTab === 'recommendations'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100'
-              }`}
-          >
-            <span className="flex items-center gap-2">
-              <Lightbulb className="w-5 h-5" />
-              Smart Recommendations
-            </span>
-          </button>
-        </div>
+      {/* Tabs */}
+      <div className="flex gap-2 border-b border-gray-200 dark:border-slate-700 overflow-x-auto">
+        <button
+          onClick={() => setActiveTab('budgets')}
+          className={`px-5 py-3 font-medium text-sm sm:text-base whitespace-nowrap transition-all ${activeTab === 'budgets'
+            ? 'border-b-2 border-primary text-primary'
+            : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100'
+            }`}
+        >
+          <span className="flex items-center gap-2">
+            <Target className="w-5 h-5" />
+            My Budgets
+          </span>
+        </button>
+        <button
+          onClick={() => setActiveTab('history')}
+          className={`px-5 py-3 font-medium text-sm sm:text-base whitespace-nowrap transition-all ${activeTab === 'history'
+            ? 'border-b-2 border-primary text-primary'
+            : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100'
+            }`}
+        >
+          <span className="flex items-center gap-2">
+            <Calendar className="w-5 h-5" />
+            History
+          </span>
+        </button>
+        <button
+          onClick={() => setActiveTab('recommendations')}
+          className={`px-5 py-3 font-medium text-sm sm:text-base whitespace-nowrap transition-all ${activeTab === 'recommendations'
+            ? 'border-b-2 border-primary text-primary'
+            : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100'
+            }`}
+        >
+          <span className="flex items-center gap-2">
+            <Lightbulb className="w-5 h-5" />
+            Smart Recommendations
+          </span>
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -486,8 +481,9 @@ const Budgets = () => {
         </div>
       ) : activeTab === 'recommendations' ? (
         <BudgetRecommendations />
-      ) : null}
-    </div>
+      ) : null
+      }
+    </div >
   )
 }
 

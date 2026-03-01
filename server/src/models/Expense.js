@@ -53,4 +53,7 @@ expenseSchema.index({ userId: 1, date: -1 });
 expenseSchema.index({ userId: 1, category: 1 });
 expenseSchema.index({ userId: 1, amount: 1 }); // For amount-based filtering
 
+// Text index for flexible description/tag search (case-insensitive, partial match via $regex)
+expenseSchema.index({ description: 'text', tags: 'text' }, { weights: { description: 10, tags: 5 }, name: 'expense_text_search' });
+
 export default mongoose.model('Expense', expenseSchema);

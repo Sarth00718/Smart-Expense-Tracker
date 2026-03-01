@@ -5,6 +5,7 @@ export { default as Modal } from './Modal'
 export { default as EmptyState } from './EmptyState'
 export { default as StatCard } from './StatCard'
 export { default as ProfileModal } from './ProfileModal'
+export { default as PageHeader } from './PageHeader'
 
 // Animated Components
 export { default as AnimatedCard } from './AnimatedCard'
