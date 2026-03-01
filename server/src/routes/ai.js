@@ -17,7 +17,7 @@ import crypto from 'crypto';
 router.post('/chat', auth, async (req, res) => {
   try {
     const { message, conversationId } = req.body;
-    
+
     if (!message || !message.trim()) {
       return res.status(400).json({ error: 'Message is required' });
     }
@@ -25,12 +25,12 @@ router.post('/chat', auth, async (req, res) => {
     // Get or create conversation
     let conversation;
     if (conversationId) {
-      conversation = await ChatHistory.findOne({ 
-        userId: req.userId, 
-        conversationId 
+      conversation = await ChatHistory.findOne({
+        userId: req.userId,
+        conversationId
       });
     }
-    
+
     if (!conversation) {
       // Create new conversation with crypto-based UUID
       conversation = new ChatHistory({
@@ -61,13 +61,13 @@ router.post('/chat', auth, async (req, res) => {
     const lowerMessage = message.toLowerCase();
     let responseText;
     let apiUsed = 'fallback';
-    
+
     // Handle affordability queries
-    if ((lowerMessage.includes('afford') || lowerMessage.includes('buy') || lowerMessage.includes('purchase')) && 
-        /₹?\s*(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:rupees?|rs\.?|inr)?/i.test(message)) {
+    if ((lowerMessage.includes('afford') || lowerMessage.includes('buy') || lowerMessage.includes('purchase')) &&
+      /₹?\s*(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:rupees?|rs\.?|inr)?/i.test(message)) {
       const amountMatch = message.match(/₹?\s*(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:rupees?|rs\.?|inr)?/i);
       const amount = amountMatch ? parseFloat(amountMatch[1].replace(/,/g, '')) : null;
-      
+
       if (amount) {
         responseText = analyzeAffordability(amount, expenses, incomes, message);
         apiUsed = 'rule-based';
@@ -78,11 +78,11 @@ router.post('/chat', auth, async (req, res) => {
       responseText = analyzeOverspending(expenses, budgets);
     }
     // Handle budget plan suggestions
-    else if ((lowerMessage.includes('suggest') || lowerMessage.includes('recommend') || lowerMessage.includes('create')) && 
-        (lowerMessage.includes('budget') || lowerMessage.includes('plan'))) {
+    else if ((lowerMessage.includes('suggest') || lowerMessage.includes('recommend') || lowerMessage.includes('create')) &&
+      (lowerMessage.includes('budget') || lowerMessage.includes('plan'))) {
       const salaryMatch = message.match(/₹?\s*(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:rupees?|rs\.?|inr)?/i);
       const salary = salaryMatch ? parseFloat(salaryMatch[1].replace(/,/g, '')) : null;
-      
+
       responseText = suggestBudgetPlan(salary, expenses, budgets);
     }
     // Check if we can answer with rule-based logic
@@ -96,22 +96,22 @@ router.post('/chat', auth, async (req, res) => {
         if (!process.env.GROQ_API_KEY || process.env.GROQ_API_KEY === 'your_groq_api_key_here') {
           throw new Error('AI_NOT_CONFIGURED: Groq API key is not configured. Please add GROQ_API_KEY to your .env file.');
         }
-        
+
         const now = new Date();
         const currentYear = now.getFullYear();
-        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                            'July', 'August', 'September', 'October', 'November', 'December'];
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+          'July', 'August', 'September', 'October', 'November', 'December'];
         const currentMonthName = monthNames[now.getMonth()];
-        
+
         const context = buildFinancialContext(expenses, incomes, budgets, goals, queryData);
-        
+
         const recentMessages = conversation.messages.slice(-6, -1);
-        const conversationContext = recentMessages.length > 0 
-          ? '\n\nRECENT CONVERSATION:\n' + recentMessages.map(msg => 
-              `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
-            ).join('\n')
+        const conversationContext = recentMessages.length > 0
+          ? '\n\nRECENT CONVERSATION:\n' + recentMessages.map(msg =>
+            `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
+          ).join('\n')
           : '';
-        
+
         const prompt = `You are a helpful personal finance assistant. Answer the user's question based on their financial data and conversation history.
 
 USER QUESTION: "${message}"
@@ -145,15 +145,15 @@ IMPORTANT INSTRUCTIONS:
         responseText = aiResult.text;
         apiUsed = aiResult.api;
       } catch (llmError) {
-        
+
         // Provide a more helpful error message
-        responseText = queryData.fallbackAnswer || 
+        responseText = queryData.fallbackAnswer ||
           `I'm having trouble processing your request right now. Here's what I can tell you:\n\n` +
           `📊 You have ${expenses.length} expenses totaling ₹${expenses.reduce((sum, exp) => sum + exp.amount, 0).toFixed(2)}\n` +
           `💰 You have ${incomes.length} income records totaling ₹${incomes.reduce((sum, inc) => sum + inc.amount, 0).toFixed(2)}\n\n` +
           `Try asking:\n• "Where did I overspend this month?"\n• "What are my top spending categories?"\n• "How much did I spend on food?"\n\n` +
           `Error: ${llmError.message}`;
-        
+
         apiUsed = 'fallback';
       }
     }
@@ -169,7 +169,7 @@ IMPORTANT INSTRUCTIONS:
     // Save conversation
     await conversation.save();
 
-    res.json({ 
+    res.json({
       response: responseText,
       conversationId: conversation.conversationId,
       apiUsed
@@ -177,7 +177,7 @@ IMPORTANT INSTRUCTIONS:
 
   } catch (error) {
     console.error('AI chat error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Sorry, I encountered an error processing your request. Please try again or rephrase your question.',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
@@ -189,13 +189,13 @@ IMPORTANT INSTRUCTIONS:
 // @access  Private
 router.get('/conversations', auth, async (req, res) => {
   try {
-    const conversations = await ChatHistory.find({ 
+    const conversations = await ChatHistory.find({
       userId: req.userId,
       isActive: true
     })
-    .select('conversationId title lastMessageAt messages')
-    .sort({ lastMessageAt: -1 })
-    .limit(50);
+      .select('conversationId title lastMessageAt messages')
+      .sort({ lastMessageAt: -1 })
+      .limit(50);
 
     res.json({ conversations });
   } catch (error) {
@@ -265,45 +265,45 @@ function analyzeAffordability(amount, expenses, incomes, originalQuery) {
   const currentYear = now.getFullYear();
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const daysRemaining = daysInMonth - now.getDate();
-  
+
   // Calculate current month data
   const monthExpenses = expenses.filter(exp => {
     const expDate = new Date(exp.date);
     return expDate.getMonth() === currentMonth && expDate.getFullYear() === currentYear;
   });
-  
+
   const monthIncome = incomes.filter(inc => {
     const incDate = new Date(inc.date);
     return incDate.getMonth() === currentMonth && incDate.getFullYear() === currentYear;
   });
-  
+
   const monthExpenseTotal = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
   const monthIncomeTotal = monthIncome.reduce((sum, inc) => sum + inc.amount, 0);
   const currentBalance = monthIncomeTotal - monthExpenseTotal;
-  
+
   let response = `🔍 **Affordability Analysis for ₹${amount.toFixed(2)}:**\n\n`;
   response += `📊 **Current Month Status:**\n`;
   response += `• Income: ₹${monthIncomeTotal.toFixed(2)}\n`;
   response += `• Expenses: ₹${monthExpenseTotal.toFixed(2)}\n`;
   response += `• Current Balance: ₹${currentBalance.toFixed(2)}\n`;
   response += `• Days Remaining: ${daysRemaining}\n\n`;
-  
+
   // Determine affordability
   const canAfford = currentBalance >= amount;
   const balanceAfterPurchase = currentBalance - amount;
   const dailyBudgetRemaining = daysRemaining > 0 ? balanceAfterPurchase / daysRemaining : 0;
-  
+
   if (canAfford) {
     if (balanceAfterPurchase >= 0) {
       response += `✅ **RECOMMENDED**\n\n`;
       response += `⚠️ This purchase would ${balanceAfterPurchase < currentBalance * 0.2 ? 'significantly reduce' : 'reduce'} your balance by ₹${amount.toFixed(2)}.\n\n`;
       response += `💡 **After Purchase:**\n`;
       response += `• Remaining Balance: ₹${balanceAfterPurchase.toFixed(2)}\n`;
-      
+
       if (daysRemaining > 0) {
         response += `• Daily Budget for Rest of Month: ₹${dailyBudgetRemaining.toFixed(2)}\n`;
       }
-      
+
       if (balanceAfterPurchase < 1000) {
         response += `\n⚠️ **Warning:** Your remaining balance will be very low. Consider:\n`;
         response += `• Postponing non-essential purchases\n`;
@@ -322,12 +322,12 @@ function analyzeAffordability(amount, expenses, incomes, originalQuery) {
     response += `• Wait until next month when you receive more income\n`;
     response += `• Consider a smaller purchase amount\n`;
     response += `• Review your expenses to find areas to cut back\n`;
-    
+
     if (monthIncomeTotal === 0) {
       response += `\n📝 **Note:** No income recorded for this month yet. Add your income to get accurate affordability analysis.\n`;
     }
   }
-  
+
   return response;
 }
 
@@ -341,7 +341,7 @@ function analyzeOverspending(expenses, budgets) {
   const now = new Date();
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
-  
+
   const monthlyExpenses = expenses.filter(exp => {
     const expDate = new Date(exp.date);
     return expDate.getMonth() === currentMonth && expDate.getFullYear() === currentYear;
@@ -379,13 +379,12 @@ function analyzeOverspending(expenses, budgets) {
 
   if (overspendingCategories.length === 0) {
     const totalSpent = Object.values(categoryTotals).reduce((sum, amt) => sum + amt, 0);
-    return `✅ Great news! You're staying within your budgets this month!\n\n📊 Total spent: ₹${totalSpent.toFixed(2)}\n\nTop categories:\n${
-      Object.entries(categoryTotals)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 3)
-        .map(([cat, amt]) => `• ${cat}: ₹${amt.toFixed(2)}`)
-        .join('\n')
-    }`;
+    return `✅ Great news! You're staying within your budgets this month!\n\n📊 Total spent: ₹${totalSpent.toFixed(2)}\n\nTop categories:\n${Object.entries(categoryTotals)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([cat, amt]) => `• ${cat}: ₹${amt.toFixed(2)}`)
+      .join('\n')
+      }`;
   }
 
   // Sort by overspending amount
@@ -420,7 +419,7 @@ function suggestBudgetPlan(salary, expenses, budgets) {
   if (expenses.length > 0) {
     const categoryTotals = {};
     const categoryCounts = {};
-    
+
     expenses.forEach(exp => {
       categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
       categoryCounts[exp.category] = (categoryCounts[exp.category] || 0) + 1;
@@ -472,7 +471,7 @@ function suggestBudgetPlan(salary, expenses, budgets) {
   if (expenses.length > 0) {
     const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
     const avgMonthlySpending = totalSpent / Math.max(1, expenses.length / 30);
-    
+
     if (avgMonthlySpending > salary) {
       response += `\n\n⚠️ **Warning:** Your current spending (₹${avgMonthlySpending.toFixed(0)}/month) exceeds your income. Focus on reducing expenses!`;
     }
@@ -490,8 +489,8 @@ function buildFinancialContext(expenses, incomes, budgets, goals, queryData) {
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth();
   const currentDay = now.getDate();
-  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                      'July', 'August', 'September', 'October', 'November', 'December'];
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
   const currentMonthName = monthNames[currentMonth];
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const daysRemaining = daysInMonth - currentDay;
@@ -507,21 +506,21 @@ function buildFinancialContext(expenses, incomes, budgets, goals, queryData) {
   startOfMonth.setHours(0, 0, 0, 0);
   const endOfMonth = new Date(currentYear, currentMonth + 1, 0);
   endOfMonth.setHours(23, 59, 59, 999);
-  
+
   const monthExpenses = expenses.filter(exp => {
     const expDate = new Date(exp.date);
     const expYear = expDate.getFullYear();
     const expMonth = expDate.getMonth();
     return expYear === currentYear && expMonth === currentMonth;
   });
-  
+
   const monthIncome = incomes.filter(inc => {
     const incDate = new Date(inc.date);
     const incYear = incDate.getFullYear();
     const incMonth = incDate.getMonth();
     return incYear === currentYear && incMonth === currentMonth;
   });
-  
+
   // Debug: Log income data for troubleshooting
   console.log('🔍 AI Context Debug:');
   console.log(`Total incomes in DB: ${incomes.length}`);
@@ -533,10 +532,10 @@ function buildFinancialContext(expenses, incomes, budgets, goals, queryData) {
       source: inc.source
     })));
   }
-  
+
   const monthExpenseTotal = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
   const monthIncomeTotal = monthIncome.reduce((sum, inc) => sum + inc.amount, 0);
-  
+
   // Debug logging (development only)
   if (process.env.NODE_ENV === 'development') {
     console.log(`📅 Current Month: ${currentMonthName} ${currentYear} (Month index: ${currentMonth})`);
@@ -559,7 +558,7 @@ function buildFinancialContext(expenses, incomes, budgets, goals, queryData) {
   context += `Expenses: ₹${monthExpenseTotal.toFixed(2)} (${monthExpenses.length} transaction${monthExpenses.length !== 1 ? 's' : ''})\n`;
   context += `Current Balance: ₹${(monthIncomeTotal - monthExpenseTotal).toFixed(2)}\n`;
   context += `Days Remaining: ${daysRemaining}\n`;
-  
+
   // Add income details for this month if available
   if (monthIncome.length > 0) {
     context += `\nTHIS MONTH'S INCOME DETAILS:\n`;
@@ -588,7 +587,7 @@ function buildFinancialContext(expenses, incomes, budgets, goals, queryData) {
     incomes.forEach(inc => {
       sourceTotals[inc.source] = (sourceTotals[inc.source] || 0) + inc.amount;
     });
-    
+
     context += 'INCOME SOURCES:\n';
     Object.entries(sourceTotals)
       .sort((a, b) => b[1] - a[1])
@@ -603,7 +602,7 @@ function buildFinancialContext(expenses, incomes, budgets, goals, queryData) {
   monthExpenses.forEach(exp => {
     monthCategoryTotals[exp.category] = (monthCategoryTotals[exp.category] || 0) + exp.amount;
   });
-  
+
   if (Object.keys(monthCategoryTotals).length > 0) {
     context += `THIS MONTH'S EXPENSE CATEGORIES:\n`;
     Object.entries(monthCategoryTotals)
@@ -620,7 +619,7 @@ function buildFinancialContext(expenses, incomes, budgets, goals, queryData) {
   expenses.forEach(exp => {
     categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
   });
-  
+
   context += 'ALL TIME EXPENSE CATEGORIES:\n';
   Object.entries(categoryTotals)
     .sort((a, b) => b[1] - a[1])
@@ -645,8 +644,8 @@ function buildFinancialContext(expenses, incomes, budgets, goals, queryData) {
       const spent = monthCategoryTotals[budget.category] || 0;
       const remaining = budget.monthlyBudget - spent;
       const percentUsed = ((spent / budget.monthlyBudget) * 100).toFixed(1);
-      const status = spent > budget.monthlyBudget ? '⚠️ OVER BUDGET' : 
-                     spent > budget.monthlyBudget * 0.8 ? '⚠️ WARNING' : '✅ ON TRACK';
+      const status = spent > budget.monthlyBudget ? '⚠️ OVER BUDGET' :
+        spent > budget.monthlyBudget * 0.8 ? '⚠️ WARNING' : '✅ ON TRACK';
       context += `- ${budget.category}: Budget ₹${budget.monthlyBudget}, Spent ₹${spent.toFixed(2)} (${percentUsed}%), Remaining ₹${remaining.toFixed(2)} ${status}\n`;
     });
   }
@@ -674,7 +673,7 @@ function buildFinancialContext(expenses, incomes, budgets, goals, queryData) {
 router.get('/suggestions', auth, async (req, res) => {
   try {
     const { type = 'general' } = req.query;
-    
+
     const expenses = await Expense.find({ userId: req.userId })
       .sort({ date: -1 })
       .limit(50);
@@ -696,12 +695,12 @@ router.get('/suggestions', auth, async (req, res) => {
     // Prepare expense data
     const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
     const categoryTotals = {};
-    
+
     expenses.forEach(exp => {
       categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
     });
 
-    const expenseList = expenses.slice(0, 10).map(exp => 
+    const expenseList = expenses.slice(0, 10).map(exp =>
       `• ${exp.date.toISOString().split('T')[0]}: ${exp.category} - ₹${exp.amount.toFixed(2)} (${exp.description})`
     ).join('\n');
 
@@ -769,7 +768,7 @@ Provide specific, actionable advice. Keep response under 150 words, practical, a
     // Call AI with retry logic (using Groq)
     try {
       console.log(`🤖 Generating ${type} suggestions...`);
-      
+
       const aiResult = await callAIWithRetry(
         prompt,
         systemMessage,
@@ -787,7 +786,7 @@ Provide specific, actionable advice. Keep response under 150 words, practical, a
     } catch (llmError) {
       console.error('❌ AI suggestions error:', llmError.message);
       console.error('Stack:', llmError.stack);
-      
+
       // Fallback to mock suggestions
       console.log('⚠️ Falling back to mock suggestions');
       res.json({
@@ -797,7 +796,7 @@ Provide specific, actionable advice. Keep response under 150 words, practical, a
 
   } catch (error) {
     console.error('AI suggestions error:', error.message);
-    
+
     // Fallback to mock suggestions
     const expenses = await Expense.find({ userId: req.userId }).limit(50);
     res.json({
@@ -814,14 +813,14 @@ function getMockSuggestions(expenses, type = 'general') {
 
   const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
   const categoryTotals = {};
-  
+
   expenses.forEach(exp => {
     categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
   });
 
   const sortedCategories = Object.entries(categoryTotals)
     .sort((a, b) => b[1] - a[1]);
-  
+
   const highestCategory = sortedCategories[0];
   const score = calculateSpendingScore(expenses);
   const scoreText = score !== null ? `📊 **Financial Health Score: ${score}/100**` : '📊 **Financial Health Score: Not enough data yet**';
@@ -849,7 +848,7 @@ ${scoreText}`;
   } else if (type === 'forecast') {
     const avgDaily = total / Math.max(1, expenses.length / 30);
     const projectedMonthly = avgDaily * 30;
-    
+
     return `🤖 **AI Financial Advisor**:
 
 Here's your spending forecast based on current patterns:
@@ -858,9 +857,9 @@ Here's your spending forecast based on current patterns:
 
 * **${highestCategory[0]} Trend**: This is your highest category at ₹${highestCategory[1].toFixed(2)}. If this continues, expect ₹${(highestCategory[1] * 1.1).toFixed(2)} next month (10% increase typical).
 
-${sortedCategories.slice(1, 3).map(([cat, amt]) => 
-  `* **${cat} Forecast**: Current spending ₹${amt.toFixed(2)}. Projected: ₹${(amt * 1.05).toFixed(2)} (5% increase).`
-).join('\n\n')}
+${sortedCategories.slice(1, 3).map(([cat, amt]) =>
+      `* **${cat} Forecast**: Current spending ₹${amt.toFixed(2)}. Projected: ₹${(amt * 1.05).toFixed(2)} (5% increase).`
+    ).join('\n\n')}
 
 * **Overspending Risk**: ${projectedMonthly > total * 1.2 ? '⚠️ HIGH - Your spending is accelerating. Take action now!' : projectedMonthly > total ? '⚠️ MODERATE - Spending is increasing slightly.' : '✅ LOW - Spending is stable or decreasing.'}
 
@@ -877,22 +876,20 @@ ${scoreText}`;
 
 Here are 7 actionable saving tips based on the expense data:
 
-* **Cut down on ${highestCategory[0]}**: You've spent ₹${highestCategory[1].toFixed(2)} in ${expenses.length} transactions. Consider ${
-  highestCategory[0] === 'Food' ? 'walking, using public transport, or carpooling instead' :
-  highestCategory[0] === 'Travel' ? 'booking in advance or exploring cheaper travel options for your next trip' :
-  highestCategory[0] === 'Shopping' ? 'setting a budget and prioritizing essential purchases' :
-  highestCategory[0] === 'Entertainment' ? 'finding free or low-cost entertainment alternatives' :
-  'reviewing and reducing unnecessary expenses'
-}.
+* **Cut down on ${highestCategory[0]}**: You've spent ₹${highestCategory[1].toFixed(2)} in ${expenses.length} transactions. Consider ${highestCategory[0] === 'Food' ? 'walking, using public transport, or carpooling instead' :
+        highestCategory[0] === 'Travel' ? 'booking in advance or exploring cheaper travel options for your next trip' :
+          highestCategory[0] === 'Shopping' ? 'setting a budget and prioritizing essential purchases' :
+            highestCategory[0] === 'Entertainment' ? 'finding free or low-cost entertainment alternatives' :
+              'reviewing and reducing unnecessary expenses'
+      }.
 
-${sortedCategories.slice(1, 3).map(([cat, amt]) => 
-  `* **Opt for cheaper ${cat.toLowerCase()} options**: Your ${cat.toLowerCase()} expenses are ₹${amt.toFixed(2)}. Try ${
-    cat === 'Food' ? 'making your own meals or opting for local street food options' :
-    cat === 'Shopping' ? 'waiting for sales or using cashback apps' :
-    cat === 'Bills' ? 'reviewing subscriptions and canceling unused services' :
-    'finding more cost-effective alternatives'
-  }.`
-).join('\n\n')}
+${sortedCategories.slice(1, 3).map(([cat, amt]) =>
+        `* **Opt for cheaper ${cat.toLowerCase()} options**: Your ${cat.toLowerCase()} expenses are ₹${amt.toFixed(2)}. Try ${cat === 'Food' ? 'making your own meals or opting for local street food options' :
+          cat === 'Shopping' ? 'waiting for sales or using cashback apps' :
+            cat === 'Bills' ? 'reviewing subscriptions and canceling unused services' :
+              'finding more cost-effective alternatives'
+        }.`
+      ).join('\n\n')}
 
 * **Avoid impulse buys**: You've spent a lot on ${sortedCategories.map(([cat]) => cat.toLowerCase()).slice(0, 2).join(' and ')}. Try to make a shopping list before heading out.
 

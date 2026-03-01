@@ -6,7 +6,7 @@ export function calculateSpendingScore(expenses) {
 
   try {
     const validExpenses = expenses.filter(exp => exp && typeof exp.amount === 'number' && !isNaN(exp.amount));
-    
+
     // Return null if no valid expenses
     if (validExpenses.length === 0) {
       return null;
@@ -108,7 +108,7 @@ export function detectBehavioralPatterns(expenses) {
     // Category spikes
     const now = new Date();
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    
+
     const categoryMonthly = {};
     expenses.forEach(exp => {
       const expMonth = exp.date.toISOString().substring(0, 7);
@@ -119,7 +119,7 @@ export function detectBehavioralPatterns(expenses) {
 
     if (Object.keys(categoryMonthly).length > 0) {
       const avgMonthly = Object.values(categoryMonthly).reduce((a, b) => a + b, 0) / Object.keys(categoryMonthly).length;
-      
+
       Object.entries(categoryMonthly).forEach(([category, amount]) => {
         if (amount > avgMonthly * 2) {
           patterns.push({
@@ -167,7 +167,7 @@ export function predictFutureExpenses(expenses, months = 3) {
       // Weighted average (more weight to recent months)
       const weights = [0.1, 0.2, 0.3, 0.4].slice(-amounts.length);
       const normalizedWeights = weights.map(w => w / weights.reduce((a, b) => a + b, 0));
-      
+
       let predicted = 0;
       for (let j = 0; j < Math.min(amounts.length, weights.length); j++) {
         predicted += amounts[amounts.length - 1 - j] * normalizedWeights[normalizedWeights.length - 1 - j];
@@ -246,8 +246,8 @@ export function getHeatmapData(expenses, year, month) {
     }
 
     const maxAmount = Math.max(...Object.values(dailyData), 0);
-    const monthNames = ['', 'January', 'February', 'March', 'April', 'May', 'June', 
-                        'July', 'August', 'September', 'October', 'November', 'December'];
+    const monthNames = ['', 'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'];
 
     return {
       year,
