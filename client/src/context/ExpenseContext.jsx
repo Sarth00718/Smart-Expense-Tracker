@@ -28,10 +28,13 @@ export const ExpenseProvider = ({ children }) => {
     try {
       setLoading(true)
       
-      // Load only recent 50 expenses for faster initial load
+      // For dashboard calculations, fetch ALL expenses without pagination
+      // For list views, use pagination
+      const shouldFetchAll = options.fetchAll === true
+      
       const response = await expenseService.getExpenses({ 
-        page: options.page || 1, 
-        limit: options.limit || 50,
+        page: shouldFetchAll ? 1 : (options.page || 1), 
+        limit: shouldFetchAll ? 10000 : (options.limit || 100), // Fetch all for calculations
         ...options 
       })
 
@@ -68,8 +71,9 @@ export const ExpenseProvider = ({ children }) => {
 
     if (user) {
       // Defer expense loading to not block initial render
+      // Fetch ALL expenses for accurate dashboard calculations
       const timer = setTimeout(() => {
-        loadExpenses(abortController.signal)
+        loadExpenses(abortController.signal, { fetchAll: true })
       }, 100)
       
       return () => {
@@ -85,19 +89,19 @@ export const ExpenseProvider = ({ children }) => {
 
   const addExpense = async (expense) => {
     const response = await expenseService.add(expense)
-    await loadExpenses()
+    await loadExpenses(null, { fetchAll: true }) // Refresh with all data
     return response.data
   }
 
   const updateExpense = async (id, expense) => {
     const response = await expenseService.update(id, expense)
-    await loadExpenses()
+    await loadExpenses(null, { fetchAll: true }) // Refresh with all data
     return response.data
   }
 
   const deleteExpense = async (id) => {
     await expenseService.delete(id)
-    await loadExpenses()
+    await loadExpenses(null, { fetchAll: true }) // Refresh with all data
   }
 
   const value = useMemo(() => ({

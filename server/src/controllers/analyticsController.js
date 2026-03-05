@@ -14,37 +14,97 @@ import {
 // @access  Private
 export const getDashboard = async (req, res) => {
   try {
+    console.log(`📊 Dashboard request for user: ${req.userId}`);
+    
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    startOfMonth.setHours(0, 0, 0, 0); // Ensure start of day
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    endOfMonth.setHours(23, 59, 59, 999); // Ensure end of day
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
+    // Log date ranges for debugging
+    console.log(`📅 Current month range: ${startOfMonth.toISOString()} to ${endOfMonth.toISOString()}`);
+
+    // Total Expenses (All Time) - Using aggregation to ensure number type
     const totalExpensesResult = await Expense.aggregate([
       { $match: { userId: req.userId } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
+      { 
+        $group: { 
+          _id: null, 
+          total: { $sum: { $toDouble: '$amount' } }, // Ensure number conversion
+          count: { $sum: 1 }
+        } 
+      }
     ]);
     const totalExpenses = totalExpensesResult[0]?.total || 0;
+    const totalExpenseCount = totalExpensesResult[0]?.count || 0;
 
+    // Total Income (All Time) - Using aggregation to ensure number type
     const totalIncomeResult = await Income.aggregate([
       { $match: { userId: req.userId } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
+      { 
+        $group: { 
+          _id: null, 
+          total: { $sum: { $toDouble: '$amount' } }, // Ensure number conversion
+          count: { $sum: 1 }
+        } 
+      }
     ]);
     const totalIncome = totalIncomeResult[0]?.total || 0;
+    const totalIncomeCount = totalIncomeResult[0]?.count || 0;
 
+    // This Month Expenses - Using aggregation with proper date filtering
     const monthExpensesResult = await Expense.aggregate([
-      { $match: { userId: req.userId, date: { $gte: startOfMonth } } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
+      { 
+        $match: { 
+          userId: req.userId, 
+          date: { $gte: startOfMonth, $lte: endOfMonth }
+        } 
+      },
+      { 
+        $group: { 
+          _id: null, 
+          total: { $sum: { $toDouble: '$amount' } },
+          count: { $sum: 1 }
+        } 
+      }
     ]);
     const monthExpenses = monthExpensesResult[0]?.total || 0;
+    const monthExpenseCount = monthExpensesResult[0]?.count || 0;
 
+    // This Month Income - Using aggregation with proper date filtering
     const monthIncomeResult = await Income.aggregate([
-      { $match: { userId: req.userId, date: { $gte: startOfMonth } } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
+      { 
+        $match: { 
+          userId: req.userId, 
+          date: { $gte: startOfMonth, $lte: endOfMonth }
+        } 
+      },
+      { 
+        $group: { 
+          _id: null, 
+          total: { $sum: { $toDouble: '$amount' } },
+          count: { $sum: 1 }
+        } 
+      }
     ]);
     const monthIncome = monthIncomeResult[0]?.total || 0;
+    const monthIncomeCount = monthIncomeResult[0]?.count || 0;
 
+    // Calculate balances
     const netBalance = totalIncome - totalExpenses;
     const monthNetBalance = monthIncome - monthExpenses;
 
+    // Log calculations for debugging
+    console.log(`💰 Total Income: ₹${totalIncome.toFixed(2)} (${totalIncomeCount} records)`);
+    console.log(`💸 Total Expenses: ₹${totalExpenses.toFixed(2)} (${totalExpenseCount} records)`);
+    console.log(`💵 Net Balance: ₹${netBalance.toFixed(2)}`);
+    console.log(`📅 Month Income: ₹${monthIncome.toFixed(2)} (${monthIncomeCount} records)`);
+    console.log(`📅 Month Expenses: ₹${monthExpenses.toFixed(2)} (${monthExpenseCount} records)`);
+    console.log(`📅 Month Net Balance: ₹${monthNetBalance.toFixed(2)}`);
+
+    // Get additional stats
     const categories = await Expense.distinct('category', { userId: req.userId });
 
     const recentExpenseCount = await Expense.countDocuments({
@@ -61,7 +121,8 @@ export const getDashboard = async (req, res) => {
     const goalsCount = await Goal.countDocuments({ userId: req.userId });
     const achievementsCount = await Achievement.countDocuments({ userId: req.userId });
 
-    res.json({
+    // Validate all numbers before sending
+    const response = {
       totalExpenses: Math.round(totalExpenses * 100) / 100,
       totalIncome: Math.round(totalIncome * 100) / 100,
       netBalance: Math.round(netBalance * 100) / 100,
@@ -73,11 +134,24 @@ export const getDashboard = async (req, res) => {
       recentIncomeCount,
       budgetCount,
       goalsCount,
-      achievementsCount
-    });
+      achievementsCount,
+      // Additional metadata for debugging
+      totalExpenseCount,
+      totalIncomeCount,
+      monthExpenseCount,
+      monthIncomeCount,
+      calculatedAt: new Date().toISOString()
+    };
+
+    console.log(`✅ Dashboard response prepared successfully`);
+    res.json(response);
   } catch (error) {
-    console.error('Dashboard stats error:', error);
-    res.status(500).json({ error: 'Failed to fetch dashboard stats' });
+    console.error('❌ Dashboard stats error:', error);
+    console.error('Stack trace:', error.stack);
+    res.status(500).json({ 
+      error: 'Failed to fetch dashboard stats',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 

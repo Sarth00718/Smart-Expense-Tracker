@@ -15,17 +15,17 @@ export default function PageHeader({ icon: Icon, gradient, title, subtitle, acti
             <div className="flex items-center gap-4">
                 {Icon && (
                     <div
-                        className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${gradient || 'from-indigo-500 to-violet-600'} flex items-center justify-center shadow-lg shrink-0`}
+                        className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${gradient || 'from-indigo-500 to-violet-600'} flex items-center justify-center shadow-md shrink-0`}
                     >
-                        <Icon className="w-6 h-6 text-white" />
+                        <Icon className="w-5 h-5 text-white" />
                     </div>
                 )}
                 <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-slate-100 tracking-tight leading-tight">
+                    <h1 className="type-page-title">
                         {title}
                     </h1>
                     {subtitle && (
-                        <p className="text-sm sm:text-base text-gray-500 dark:text-slate-400 mt-0.5 leading-snug">
+                        <p className="type-page-subtitle mt-0.5">
                             {subtitle}
                         </p>
                     )}

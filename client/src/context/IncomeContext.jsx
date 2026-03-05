@@ -27,7 +27,16 @@ export const IncomeProvider = ({ children }) => {
     
     try {
       setLoading(true)
-      const response = await incomeService.getAll(params)
+      
+      // For dashboard calculations, fetch ALL income without pagination
+      const shouldFetchAll = params.fetchAll === true
+      const queryParams = {
+        ...params,
+        page: shouldFetchAll ? 1 : (params.page || 1),
+        limit: shouldFetchAll ? 10000 : (params.limit || 50) // Fetch all for calculations
+      }
+      
+      const response = await incomeService.getAll(queryParams)
       
       // Check if request was aborted
       if (signal?.aborted) return
@@ -56,8 +65,9 @@ export const IncomeProvider = ({ children }) => {
 
     if (user) {
       // Defer income loading to not block initial render
+      // Fetch ALL income for accurate dashboard calculations
       const timer = setTimeout(() => {
-        loadIncome(abortController.signal)
+        loadIncome(abortController.signal, { fetchAll: true })
       }, 300)
       
       return () => {
@@ -73,19 +83,19 @@ export const IncomeProvider = ({ children }) => {
 
   const addIncome = async (incomeData) => {
     const response = await incomeService.add(incomeData)
-    await loadIncome()
+    await loadIncome(null, { fetchAll: true }) // Refresh with all data
     return response.data
   }
 
   const updateIncome = async (id, incomeData) => {
     const response = await incomeService.update(id, incomeData)
-    await loadIncome()
+    await loadIncome(null, { fetchAll: true }) // Refresh with all data
     return response.data
   }
 
   const deleteIncome = async (id) => {
     await incomeService.delete(id)
-    await loadIncome()
+    await loadIncome(null, { fetchAll: true }) // Refresh with all data
   }
 
   const value = useMemo(() => ({

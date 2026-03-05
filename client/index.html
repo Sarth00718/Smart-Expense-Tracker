@@ -1,56 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    
-    <!-- Viewport -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
-    
-    <!-- Theme Color -->
-    <meta name="theme-color" content="#5B5FED" />
-    
-    <!-- Description -->
-    <meta name="description" content="Smart Expense Tracker - Track and analyze your expenses with AI-powered insights. Works offline!" />
-    
-    <!-- PWA Meta Tags -->
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Expense Tracker" />
-    
-    <!-- iOS Splash Screens -->
-    <link rel="apple-touch-startup-image" href="/apple-touch-icon.png" />
-    
-    <!-- Microsoft Tiles -->
-    <meta name="msapplication-TileColor" content="#5B5FED" />
-    <meta name="msapplication-TileImage" content="/pwa-192x192.png" />
-    
-    <title>Smart Expense Tracker</title>
-    
-    <!-- Inter Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
-    <!-- Dark mode FOUC prevention: apply theme BEFORE React mounts -->
-    <script>
-      (function () {
-        try {
-          var theme = localStorage.getItem('theme') || 'light';
-          if (theme === 'dark') {
-            document.documentElement.classList.add('dark');
-          } else {
-            document.documentElement.classList.remove('dark');
-          }
-        } catch (e) {}
-      })();
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+
+  <!-- Viewport -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#5B5FED" />
+
+  <!-- Description -->
+  <meta name="description"
+    content="Smart Expense Tracker - Track and analyze your expenses with AI-powered insights. Works offline!" />
+
+  <!-- PWA Meta Tags -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Expense Tracker" />
+
+  <!-- iOS Splash Screens -->
+  <link rel="apple-touch-startup-image" href="/apple-touch-icon.png" />
+
+  <!-- Microsoft Tiles -->
+  <meta name="msapplication-TileColor" content="#5B5FED" />
+  <meta name="msapplication-TileImage" content="/pwa-192x192.png" />
+
+  <title>Smart Expense Tracker</title>
+
+  <!-- Inter Variable Font (300–800) for consistent rendering everywhere -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..800;1,14..32,300..800&display=swap"
+    rel="stylesheet" />
+
+  <!-- Dark mode FOUC prevention: apply theme BEFORE React mounts -->
+  <script>
+    (function () {
+      try {
+        var theme = localStorage.getItem('theme') || 'light';
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) { }
+    })();
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
 </html>
