@@ -1,11 +1,8 @@
 /**
- * Async Handler Middleware
- * Wraps async route handlers to catch errors and pass them to error middleware
+ * Wraps async route handlers to automatically forward errors to Express error middleware.
  */
-export const asyncHandler = (fn) => {
-  return (req, res, next) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
+const asyncHandler = (fn) => (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
 };
 
 export default asyncHandler;

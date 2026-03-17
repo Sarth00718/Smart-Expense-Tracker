@@ -1,9 +1,9 @@
 {
-  "name": "smart-expense-tracker-frontend",
+  "name": "smart-expense-tracker-client",
   "version": "1.0.0",
+  "description": "Smart Expense Tracker - React Frontend",
   "private": true,
   "type": "module",
-  "description": "Smart Expense Tracker Frontend - Modern React PWA",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -12,33 +12,29 @@
   },
   "dependencies": {
     "axios": "^1.6.2",
-    "date-fns": "^2.30.0",
-    "firebase": "^12.8.0",
-    "framer-motion": "^12.33.0",
-    "lucide-react": "^0.294.0",
+    "date-fns": "^3.6.0",
+    "firebase": "^10.7.1",
+    "framer-motion": "^10.18.0",
+    "lucide-react": "^0.329.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.1",
-    "react-router-dom": "^6.20.1",
-    "recharts": "^3.7.0",
+    "react-router-dom": "^6.22.1",
+    "recharts": "^2.10.3",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@types/react": "^18.2.43",
-    "@types/react-dom": "^18.2.17",
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
     "@vitejs/plugin-react": "^4.2.1",
-    "autoprefixer": "^10.4.16",
-    "eslint": "^8.55.0",
+    "autoprefixer": "^10.4.17",
+    "eslint": "^8.56.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
-    "postcss": "^8.4.32",
-    "tailwindcss": "^3.3.6",
-    "vite": "^5.0.8",
-    "vite-plugin-pwa": "^1.2.0"
-  },
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=8.0.0"
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "vite": "^5.1.0",
+    "vite-plugin-pwa": "^0.17.5"
   }
 }

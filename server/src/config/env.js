@@ -10,15 +10,13 @@ dotenv.config({ path: join(__dirname, '../../.env') });
 const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET'];
 
 export function validateEnv() {
-  const missing = requiredEnvVars.filter(varName => !process.env[varName]);
-
+  const missing = requiredEnvVars.filter((v) => !process.env[v]);
   if (missing.length > 0) {
-    console.error(`Missing required environment variables: ${missing.join(', ')}`);
+    console.error(`Missing required env vars: ${missing.join(', ')}`);
     process.exit(1);
   }
-
   if (process.env.JWT_SECRET.length < 32) {
-    console.error('JWT_SECRET must be at least 32 characters long');
+    console.error('JWT_SECRET must be at least 32 characters');
     process.exit(1);
   }
 }
@@ -35,6 +33,6 @@ export const config = {
   firebase: {
     projectId: process.env.FIREBASE_PROJECT_ID,
     privateKey: process.env.FIREBASE_PRIVATE_KEY,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL
-  }
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+  },
 };

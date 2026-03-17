@@ -7,7 +7,7 @@ import { securityHeaders, sanitizeInput } from './middleware/security.js';
 import { authLimiter, aiLimiter, apiLimiter } from './middleware/rateLimiter.js';
 import errorHandler from './middleware/errorHandler.js';
 
-// Import routes
+// Routes
 import authRoutes from './routes/auth.js';
 import expenseRoutes from './routes/expenses.js';
 import incomeRoutes from './routes/income.js';
@@ -26,54 +26,45 @@ import usersRoutes from './routes/users.js';
 import exportRoutes from './routes/export.js';
 import biometricRoutes from './routes/biometric.js';
 
-// Validate environment variables
+// Validate required environment variables
 validateEnv();
 
 const app = express();
 
-// Security headers
+// ── Security ─────────────────────────────────────────────────────────────────
 app.use(securityHeaders);
 
-// Compression
+// ── Compression ───────────────────────────────────────────────────────────────
 app.use(compression());
 
-// CORS configuration
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
+// ── CORS ──────────────────────────────────────────────────────────────────────
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (config.allowedOrigins.includes(origin)) return callback(null, true);
+      if (origin.startsWith('http://localhost') || origin.endsWith('.vercel.app')) return callback(null, true);
+      return callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
-    if (config.allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
+// ── Body Parsing ──────────────────────────────────────────────────────────────
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
-    // Allow localhost during development
-    if (
-      origin.startsWith('http://localhost') ||
-      origin.endsWith('.vercel.app')
-    ) {
-      return callback(null, true);
-    }
-
-    return callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
-
-// Body parsing middleware
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: true, limit: '1mb' }));
-
-// Input sanitization
+// ── Input Sanitization ────────────────────────────────────────────────────────
 app.use(sanitizeInput);
 
-// Connect to database
+// ── Database Connection ───────────────────────────────────────────────────────
 await database.connect();
 
-// API Routes with smart rate limiting
+// ── API Routes ────────────────────────────────────────────────────────────────
 app.use('/api/auth', authLimiter, authRoutes);
-app.use('/api/health', healthRoutes); // No rate limit for health checks
+app.use('/api/health', healthRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/income', incomeRoutes);
 app.use('/api/budgets', budgetRoutes);
@@ -90,56 +81,48 @@ app.use('/api/users', usersRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/biometric', authLimiter, biometricRoutes);
 
-// Root endpoint
+// ── Root ──────────────────────────────────────────────────────────────────────
 app.get('/', (_req, res) => {
   res.json({
-    message: 'Smart Expense Tracker API - Production Ready MERN Stack',
+    message: 'Smart Expense Tracker API',
     version: '2.0.0',
     status: 'running',
-    endpoints: {
-      health: '/health',
-      api: '/api',
-      docs: 'See README.md for API documentation'
-    }
+    docs: 'See README.md for API documentation',
   });
 });
 
-// Health check
+// ── Health Check ──────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    mongodb: database.getConnection() ? 'connected' : 'disconnected'
+    mongodb: database.isConnected() ? 'connected' : 'disconnected',
   });
 });
 
-// 404 handler - must be before error handler
+// ── 404 Handler ───────────────────────────────────────────────────────────────
 app.use((_req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Centralized error handling middleware
+// ── Error Handler ─────────────────────────────────────────────────────────────
 app.use(errorHandler);
 
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, closing server gracefully...');
+// ── Graceful Shutdown ─────────────────────────────────────────────────────────
+const shutdown = async (signal) => {
+  console.log(`${signal} received, shutting down gracefully...`);
   await database.disconnect();
   process.exit(0);
-});
+};
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
-process.on('SIGINT', async () => {
-  console.log('SIGINT received, closing server gracefully...');
-  await database.disconnect();
-  process.exit(0);
-});
-
-// Start server
+// ── Start Server ──────────────────────────────────────────────────────────────
 const PORT = config.port;
 const server = app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Environment: ${config.nodeEnv}`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🌍 Environment: ${config.nodeEnv}`);
 });
 
 server.on('error', (error) => {
