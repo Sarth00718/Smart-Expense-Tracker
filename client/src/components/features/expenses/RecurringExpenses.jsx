@@ -268,14 +268,13 @@ const RecurringExpenses = ({ onClose }) => {
             </div>
           )}
 
-          {/* Tips */}
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 rounded-xl p-4">
-            <h4 className="font-semibold text-yellow-800 dark:text-yellow-300 mb-2">💡 Tips</h4>
-            <ul className="text-sm text-yellow-700 dark:text-yellow-400 space-y-1">
-              <li>• Create templates for expenses you add daily (like transport, meals)</li>
-              <li>• Use the "Quick Add" button to add an expense with today's date</li>
-              <li>• Edit templates anytime to update amounts or categories</li>
+          {/* Info */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/50 rounded-xl p-4">
+            <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">ℹ️ About Templates</h4>
+            <ul className="text-sm text-blue-700 dark:text-blue-400 space-y-1">
               <li>• Templates are saved locally in your browser</li>
+              <li>• Use "Quick Add" to add an expense with today's date</li>
+              <li>• Edit templates anytime to update amounts or categories</li>
             </ul>
           </div>
         </div>

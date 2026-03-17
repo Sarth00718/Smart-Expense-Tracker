@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react'
-import { PieChart, Plus, Trash2, TrendingDown, TrendingUp, AlertCircle, Lightbulb, Target, Calendar, ChevronLeft, ChevronRight, BarChart2 } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { PieChart, Plus, Trash2, TrendingDown, TrendingUp, AlertCircle, Lightbulb, Target, Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
 import { budgetService } from '../../../services/budgetService'
 import { expenseService } from '../../../services/expenseService'
 import BudgetRecommendations from './BudgetRecommendations'
 import toast from 'react-hot-toast'
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns'
 import { LiquidProgress, PageHeader } from '../../ui'
+import { EXPENSE_CATEGORIES } from '../../../constants/categories'
 
 const Budgets = () => {
   const [activeTab, setActiveTab] = useState('budgets')
@@ -31,7 +32,7 @@ const Budgets = () => {
     }
   }, [activeTab, selectedMonth])
 
-  const loadBudgets = async () => {
+  const loadBudgets = useCallback(async () => {
     try {
       setLoading(true)
       const response = await budgetService.getBudgets()
@@ -42,9 +43,9 @@ const Budgets = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const loadHistoryData = async () => {
+  const loadHistoryData = useCallback(async () => {
     try {
       setLoadingHistory(true)
       const budgetsResponse = await budgetService.getBudgets()
@@ -93,7 +94,7 @@ const Budgets = () => {
     } finally {
       setLoadingHistory(false)
     }
-  }
+  }, [selectedMonth])
 
   const previousMonth = () => {
     setSelectedMonth(subMonths(selectedMonth, 1))
@@ -231,15 +232,9 @@ const Budgets = () => {
                       className="input"
                     >
                       <option value="">Select Category</option>
-                      <option value="Food">🍔 Food</option>
-                      <option value="Travel">✈️ Travel</option>
-                      <option value="Transport">🚗 Transport</option>
-                      <option value="Shopping">🛍️ Shopping</option>
-                      <option value="Bills">📄 Bills</option>
-                      <option value="Entertainment">🎬 Entertainment</option>
-                      <option value="Healthcare">🏥 Healthcare</option>
-                      <option value="Education">📚 Education</option>
-                      <option value="Other">📦 Other</option>
+                      {EXPENSE_CATEGORIES.map(cat => (
+                        <option key={cat.value} value={cat.value}>{cat.label}</option>
+                      ))}
                     </select>
                   </div>
                   <div>

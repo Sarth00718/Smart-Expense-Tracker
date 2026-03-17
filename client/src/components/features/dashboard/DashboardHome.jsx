@@ -1,40 +1,43 @@
-import { useState, useEffect, lazy, Suspense, useRef } from 'react'
+import { useState, lazy, Suspense, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useExpense } from '../../../context/ExpenseContext'
 import { useIncome } from '../../../context/IncomeContext'
-import { useTheme } from '../../../context/ThemeContext'
-import { analyticsService } from '../../../services/analyticsService'
-import { TrendingUp, TrendingDown, Wallet, Plus, Receipt, Camera, Mic, ArrowUpRight, Calendar, DollarSign, Zap, Repeat } from 'lucide-react'
+import { TrendingUp, TrendingDown, Wallet, Plus, Receipt, Camera, Mic, ArrowUpRight, Calendar, DollarSign, Zap } from 'lucide-react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend as RechartsLegend, Tooltip as RechartsTooltip } from 'recharts'
 import toast from 'react-hot-toast'
 import { StatCard, Card, Button, EmptyState, Modal, SkeletonCard, SkeletonList, MoneyRain, Card3DTilt } from '../../ui'
 import { format } from 'date-fns'
 import { useNavigate } from 'react-router-dom'
 import { staggerContainer, staggerItem, fadeInUp } from '../../../utils/animations'
+import { useFormState } from '../../../hooks/useFormState'
+import { useChartTheme } from '../../../hooks/useChartTheme'
+import { CHART_COLORS, CATEGORY_COLORS } from '../../../constants/categories'
+import ExpenseForm from '../../forms/ExpenseForm'
+import IncomeForm from '../../forms/IncomeForm'
 
-// Lazy load only modals (not recharts - causes issues)
 const VoiceExpenseInput = lazy(() => import('../voice/VoiceExpenseInput'))
 const ReceiptScanner = lazy(() => import('../receipts/ReceiptScanner'))
-
-const COLORS = ['#4361ee', '#7209b7', '#f72585', '#4cc9f0', '#f8961e', '#38b000', '#ff006e', '#8338ec']
 
 const DashboardHome = () => {
   const { expenses, addExpense, fetchExpenses } = useExpense()
   const { income, addIncome: addIncomeToContext } = useIncome()
-  const { isDark } = useTheme()
+  const { tooltipStyle } = useChartTheme()
   const navigate = useNavigate()
+  
   const [showVoiceInput, setShowVoiceInput] = useState(false)
   const [showReceiptScanner, setShowReceiptScanner] = useState(false)
   const [showAddExpense, setShowAddExpense] = useState(false)
   const [showAddIncome, setShowAddIncome] = useState(false)
   const [moneyRain, setMoneyRain] = useState(false)
-  const [formData, setFormData] = useState({
+
+  const { formData: expenseFormData, setFormData: setExpenseFormData, resetForm: resetExpenseForm } = useFormState({
     date: new Date().toISOString().split('T')[0],
     category: '',
     amount: '',
     description: ''
   })
-  const [incomeFormData, setIncomeFormData] = useState({
+
+  const { formData: incomeFormData, setFormData: setIncomeFormData, resetForm: resetIncomeForm } = useFormState({
     date: new Date().toISOString().split('T')[0],
     source: 'Salary',
     amount: '',
@@ -42,52 +45,44 @@ const DashboardHome = () => {
     isRecurring: false
   })
 
-  // Calculate stats locally instead of API call - much faster!
-  const stats = {
-    totalIncome: Array.isArray(income) ? income.reduce((sum, item) => sum + (item.amount || 0), 0) : 0,
-    totalExpenses: Array.isArray(expenses) ? expenses.reduce((sum, item) => sum + (item.amount || 0), 0) : 0,
-    netBalance: 0,
-    monthNetBalance: 0
-  }
-  stats.netBalance = stats.totalIncome - stats.totalExpenses
+  // Calculate stats locally - memoized for performance
+  const stats = useMemo(() => {
+    const totalIncome = Array.isArray(income) ? income.reduce((sum, item) => sum + (item.amount || 0), 0) : 0
+    const totalExpenses = Array.isArray(expenses) ? expenses.reduce((sum, item) => sum + (item.amount || 0), 0) : 0
+    const netBalance = totalIncome - totalExpenses
 
-  // Calculate this month's balance
-  const now = new Date()
-  const thisMonthExpenses = Array.isArray(expenses)
-    ? expenses.filter(e => {
-      const expDate = new Date(e.date)
-      return expDate.getMonth() === now.getMonth() && expDate.getFullYear() === now.getFullYear()
-    }).reduce((sum, e) => sum + (e.amount || 0), 0)
-    : 0
-  const thisMonthIncome = Array.isArray(income)
-    ? income.filter(i => {
-      const incDate = new Date(i.date)
-      return incDate.getMonth() === now.getMonth() && incDate.getFullYear() === now.getFullYear()
-    }).reduce((sum, i) => sum + (i.amount || 0), 0)
-    : 0
-  stats.monthNetBalance = thisMonthIncome - thisMonthExpenses
+    const now = new Date()
+    const thisMonthExpenses = Array.isArray(expenses)
+      ? expenses.filter(e => {
+        const expDate = new Date(e.date)
+        return expDate.getMonth() === now.getMonth() && expDate.getFullYear() === now.getFullYear()
+      }).reduce((sum, e) => sum + (e.amount || 0), 0)
+      : 0
+    const thisMonthIncome = Array.isArray(income)
+      ? income.filter(i => {
+        const incDate = new Date(i.date)
+        return incDate.getMonth() === now.getMonth() && incDate.getFullYear() === now.getFullYear()
+      }).reduce((sum, i) => sum + (i.amount || 0), 0)
+      : 0
+    const monthNetBalance = thisMonthIncome - thisMonthExpenses
 
-  const loading = false // No loading needed since we calculate locally
+    return { totalIncome, totalExpenses, netBalance, monthNetBalance }
+  }, [expenses, income])
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault()
     try {
-      await addExpense(formData)
+      await addExpense(expenseFormData)
       toast.success('Expense added successfully!')
-      setFormData({
-        date: new Date().toISOString().split('T')[0],
-        category: '',
-        amount: '',
-        description: ''
-      })
+      resetExpenseForm()
       setShowAddExpense(false)
       await fetchExpenses()
     } catch (error) {
       toast.error('Failed to add expense')
     }
-  }
+  }, [expenseFormData, addExpense, resetExpenseForm, fetchExpenses])
 
-  const handleIncomeSubmit = async (e) => {
+  const handleIncomeSubmit = useCallback(async (e) => {
     e.preventDefault()
     try {
       await addIncomeToContext(incomeFormData)
@@ -96,69 +91,44 @@ const DashboardHome = () => {
         setMoneyRain(true)
         setTimeout(() => setMoneyRain(false), 3000)
       }
-      setIncomeFormData({
-        date: new Date().toISOString().split('T')[0],
-        source: 'Salary',
-        amount: '',
-        description: '',
-        isRecurring: false
-      })
+      resetIncomeForm()
       setShowAddIncome(false)
     } catch (error) {
       toast.error('Failed to add income')
     }
-  }
+  }, [incomeFormData, addIncomeToContext, resetIncomeForm])
 
-  const handleVoiceExpenseCreated = async () => {
+  const handleVoiceExpenseCreated = useCallback(async () => {
     await fetchExpenses()
     setShowVoiceInput(false)
     toast.success('Expense created from voice input!')
-  }
+  }, [fetchExpenses])
 
-  const handleReceiptScanned = async () => {
+  const handleReceiptScanned = useCallback(async () => {
     await fetchExpenses()
     setShowReceiptScanner(false)
-  }
+  }, [fetchExpenses])
 
-  const categoryData = Array.isArray(expenses) ? expenses.reduce((acc, exp) => {
-    acc[exp.category] = (acc[exp.category] || 0) + exp.amount
-    return acc
-  }, {}) : {}
+  const categoryData = useMemo(() => {
+    if (!Array.isArray(expenses)) return {}
+    return expenses.reduce((acc, exp) => {
+      acc[exp.category] = (acc[exp.category] || 0) + exp.amount
+      return acc
+    }, {})
+  }, [expenses])
 
-  const chartData = Object.keys(categoryData).map((category, index) => ({
-    name: category,
-    value: categoryData[category],
-    color: COLORS[index % COLORS.length]
-  }))
+  const chartData = useMemo(() => {
+    return Object.keys(categoryData).map((category, index) => ({
+      name: category,
+      value: categoryData[category],
+      color: CHART_COLORS[index % CHART_COLORS.length]
+    }))
+  }, [categoryData])
 
-  const recentExpenses = Array.isArray(expenses)
-    ? [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5)
-    : []
-
-  // Chart tooltip style (theme-aware)
-  const tooltipStyle = {
-    backgroundColor: isDark ? '#1e293b' : '#fff',
-    border: `1px solid ${isDark ? '#334155' : '#e5e7eb'}`,
-    borderRadius: '8px',
-    color: isDark ? '#f1f5f9' : '#111827'
-  }
-
-  if (loading) {
-    return (
-      <div className="p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6 lg:space-y-8 max-w-[1600px] mx-auto">
-        <div className="space-y-4">
-          <div className="h-20 bg-gray-200 dark:bg-slate-700 rounded-lg animate-pulse"></div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-            {[1, 2, 3, 4].map(i => (<SkeletonCard key={i} />))}
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-            <div className="lg:col-span-2"><SkeletonList count={3} /></div>
-            <div><SkeletonCard /></div>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const recentExpenses = useMemo(() => {
+    if (!Array.isArray(expenses)) return []
+    return [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5)
+  }, [expenses])
 
   return (
     <motion.div
@@ -315,7 +285,7 @@ const DashboardHome = () => {
                         formatter={(value) => `₹${value.toFixed(2)}`}
                         contentStyle={tooltipStyle}
                       />
-                      <RechartsLegend verticalAlign="bottom" height={36} iconSize={10} wrapperStyle={{ fontSize: '11px', color: isDark ? '#94a3b8' : '#6b7280' }} />
+                      <RechartsLegend verticalAlign="bottom" height={36} iconSize={10} wrapperStyle={{ fontSize: '11px' }} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -329,99 +299,34 @@ const DashboardHome = () => {
 
       {/* Add Expense Modal */}
       <Modal isOpen={showAddExpense} onClose={() => setShowAddExpense(false)} title="Add New Expense" size="md">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">Date</label>
-              <input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} required className="input w-full" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">Category</label>
-              <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} required className="input w-full">
-                <option value="">Select Category</option>
-                <option value="Food">🍔 Food</option>
-                <option value="Travel">✈️ Travel</option>
-                <option value="Transport">🚗 Transport</option>
-                <option value="Shopping">🛍️ Shopping</option>
-                <option value="Bills">📄 Bills</option>
-                <option value="Entertainment">🎬 Entertainment</option>
-                <option value="Healthcare">🏥 Healthcare</option>
-                <option value="Education">📚 Education</option>
-                <option value="Other">📦 Other</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">Amount (₹)</label>
-            <input type="number" step="0.01" min="0.01" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} required placeholder="0.00" className="input w-full text-lg" />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">Description (Optional)</label>
-            <input type="text" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="What was this expense for?" className="input w-full" />
-          </div>
-          <Button type="submit" variant="primary" fullWidth icon={Plus} size="lg">Add Expense</Button>
-        </form>
+        <ExpenseForm
+          formData={expenseFormData}
+          onChange={setExpenseFormData}
+          onSubmit={handleSubmit}
+        />
       </Modal>
 
       {/* Voice Input Modal */}
-      {showVoiceInput && (
-        <Modal isOpen={showVoiceInput} onClose={() => setShowVoiceInput(false)} size="lg" showCloseButton={false} noPadding>
-          <Suspense fallback={<div className="flex items-center justify-center p-8"><div className="spinner border-4 w-8 h-8"></div></div>}>
-            <VoiceExpenseInput onExpenseCreated={handleVoiceExpenseCreated} onClose={() => setShowVoiceInput(false)} />
-          </Suspense>
-        </Modal>
-      )}
+      <Modal isOpen={showVoiceInput} onClose={() => setShowVoiceInput(false)} size="lg" showCloseButton={false} noPadding>
+        <Suspense fallback={<div className="flex items-center justify-center p-8"><div className="spinner border-4 w-8 h-8"></div></div>}>
+          <VoiceExpenseInput onExpenseCreated={handleVoiceExpenseCreated} onClose={() => setShowVoiceInput(false)} />
+        </Suspense>
+      </Modal>
 
       {/* Receipt Scanner Modal */}
-      {showReceiptScanner && (
-        <Modal isOpen={showReceiptScanner} onClose={() => setShowReceiptScanner(false)} size="xl" showCloseButton={false} noPadding>
-          <Suspense fallback={<div className="flex items-center justify-center p-8"><div className="spinner border-4 w-8 h-8"></div></div>}>
-            <ReceiptScanner onSuccess={handleReceiptScanned} />
-          </Suspense>
-        </Modal>
-      )}
+      <Modal isOpen={showReceiptScanner} onClose={() => setShowReceiptScanner(false)} size="xl" showCloseButton={false} noPadding>
+        <Suspense fallback={<div className="flex items-center justify-center p-8"><div className="spinner border-4 w-8 h-8"></div></div>}>
+          <ReceiptScanner onSuccess={handleReceiptScanned} />
+        </Suspense>
+      </Modal>
 
       {/* Add Income Modal */}
       <Modal isOpen={showAddIncome} onClose={() => setShowAddIncome(false)} title="Add New Income" size="md">
-        <form onSubmit={handleIncomeSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">Date</label>
-              <input type="date" value={incomeFormData.date} onChange={(e) => setIncomeFormData({ ...incomeFormData, date: e.target.value })} required className="input w-full" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">Source</label>
-              <select value={incomeFormData.source} onChange={(e) => setIncomeFormData({ ...incomeFormData, source: e.target.value })} required className="input w-full">
-                <option value="Salary">💼 Salary</option>
-                <option value="Freelance">💻 Freelance</option>
-                <option value="Investment">📈 Investment</option>
-                <option value="Business">🏢 Business</option>
-                <option value="Gift">🎁 Gift</option>
-                <option value="Bonus">🎉 Bonus</option>
-                <option value="Rental">🏠 Rental</option>
-                <option value="Other">📦 Other</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">Amount (₹)</label>
-            <input type="number" step="0.01" min="0.01" value={incomeFormData.amount} onChange={(e) => setIncomeFormData({ ...incomeFormData, amount: e.target.value })} required placeholder="0.00" className="input w-full text-lg" />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">Description (Optional)</label>
-            <input type="text" value={incomeFormData.description} onChange={(e) => setIncomeFormData({ ...incomeFormData, description: e.target.value })} placeholder="Add a note about this income" className="input w-full" />
-          </div>
-          <div className="flex items-center">
-            <label className="flex items-center cursor-pointer">
-              <input type="checkbox" checked={incomeFormData.isRecurring} onChange={(e) => setIncomeFormData({ ...incomeFormData, isRecurring: e.target.checked })} className="w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary mr-3" />
-              <div className="flex items-center gap-2">
-                <Repeat className="w-5 h-5 text-gray-600 dark:text-slate-400" />
-                <span className="text-sm font-medium text-gray-700 dark:text-slate-300">Recurring Income</span>
-              </div>
-            </label>
-          </div>
-          <Button type="submit" variant="primary" fullWidth icon={Plus} size="lg">Add Income</Button>
-        </form>
+        <IncomeForm
+          formData={incomeFormData}
+          onChange={setIncomeFormData}
+          onSubmit={handleIncomeSubmit}
+        />
       </Modal>
 
       {/* Money Rain Effect */}

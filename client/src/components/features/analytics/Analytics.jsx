@@ -1,176 +1,46 @@
-import { useState, useEffect, useMemo, useCallback, memo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useLocation } from 'react-router-dom'
 import {
   TrendingUp, BarChart3, BarChart2, PieChart, Activity,
   DollarSign, TrendingDown, Zap, Calendar, Target, Wallet
 } from 'lucide-react'
 import { useExpense } from '../../../context/ExpenseContext'
 import { useIncome } from '../../../context/IncomeContext'
-import { useTheme } from '../../../context/ThemeContext'
+import { useChartTheme } from '../../../hooks/useChartTheme'
 import { analyticsService } from '../../../services/analyticsService'
 import { Card, PageHeader } from '../../ui'
 import SpendingHeatmap from './SpendingHeatmap'
+import { SpendingTrendChart, CategoryPieChart, MonthlyComparisonChart, WeeklySpendingChart, CategoryRadarChart } from './charts'
 import {
-  AreaChart, BarChart, PieChart as RechartsPie, ComposedChart,
-  Area, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Cell, Pie, Bar, Legend, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
+  BarChart, PieChart as RechartsPie,
+  XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Cell, Bar
 } from 'recharts'
 import { format, startOfMonth, endOfMonth, subMonths, eachDayOfInterval } from 'date-fns'
-
-// ---------- Memoized chart sub-components ----------
-
-const SpendingTrendChart = memo(({ data, isDark }) => {
-  const gridColor = isDark ? '#334155' : '#e5e7eb'
-  const axisColor = isDark ? '#94a3b8' : '#6b7280'
-  const tooltipStyle = { backgroundColor: isDark ? '#1e293b' : '#fff', border: `1px solid ${isDark ? '#334155' : '#e5e7eb'}`, borderRadius: '8px', color: isDark ? '#f1f5f9' : '#111827' }
-  return (
-    <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
-      <AreaChart data={data}>
-        <defs>
-          <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#4361ee" stopOpacity={0.8} />
-            <stop offset="95%" stopColor="#4361ee" stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
-        <XAxis dataKey="date" tick={{ fontSize: 11, fill: axisColor }} stroke={axisColor} />
-        <YAxis tick={{ fontSize: 11, fill: axisColor }} stroke={axisColor} />
-        <Tooltip contentStyle={tooltipStyle} />
-        <Area type="monotone" dataKey="amount" stroke="#4361ee" strokeWidth={2} fillOpacity={1} fill="url(#colorAmount)" />
-      </AreaChart>
-    </ResponsiveContainer>
-  )
-})
-
-const CategoryPieChart = memo(({ data, colors, isDark }) => {
-  const tooltipStyle = { backgroundColor: isDark ? '#1e293b' : '#fff', border: `1px solid ${isDark ? '#334155' : '#e5e7eb'}`, borderRadius: '8px', color: isDark ? '#f1f5f9' : '#111827' }
-  return (
-    <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
-      <RechartsPie>
-        <Pie data={data} cx="50%" cy="50%" labelLine={false} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} outerRadius={window.innerWidth < 640 ? 60 : 90} fill="#8884d8" dataKey="value">
-          {data.map((entry, index) => (<Cell key={`cell-${index}`} fill={colors[index % colors.length]} />))}
-        </Pie>
-        <Tooltip contentStyle={tooltipStyle} />
-      </RechartsPie>
-    </ResponsiveContainer>
-  )
-})
-
-const MonthlyComparisonChart = memo(({ data, isDark }) => {
-  const gridColor = isDark ? '#334155' : '#e5e7eb'
-  const axisColor = isDark ? '#94a3b8' : '#6b7280'
-  const tooltipStyle = { backgroundColor: isDark ? '#1e293b' : '#fff', border: `1px solid ${isDark ? '#334155' : '#e5e7eb'}`, borderRadius: '8px', color: isDark ? '#f1f5f9' : '#111827' }
-  return (
-    <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
-      <ComposedChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
-        <XAxis dataKey="month" tick={{ fontSize: 11, fill: axisColor }} stroke={axisColor} />
-        <YAxis tick={{ fontSize: 11, fill: axisColor }} stroke={axisColor} />
-        <Tooltip contentStyle={tooltipStyle} />
-        <Legend />
-        <Bar dataKey="income" fill="#38b000" name="Income" radius={[8, 8, 0, 0]} />
-        <Bar dataKey="expenses" fill="#f72585" name="Expenses" radius={[8, 8, 0, 0]} />
-        <Line type="monotone" dataKey="savings" stroke="#4361ee" strokeWidth={3} name="Savings" />
-      </ComposedChart>
-    </ResponsiveContainer>
-  )
-})
-
-const WeeklySpendingChart = memo(({ data, isDark }) => {
-  const gridColor = isDark ? '#334155' : '#e5e7eb'
-  const axisColor = isDark ? '#94a3b8' : '#6b7280'
-  const tooltipStyle = { backgroundColor: isDark ? '#1e293b' : '#fff', border: `1px solid ${isDark ? '#334155' : '#e5e7eb'}`, borderRadius: '8px', color: isDark ? '#f1f5f9' : '#111827' }
-  return (
-    <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
-      <BarChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
-        <XAxis dataKey="day" tick={{ fontSize: 11, fill: axisColor }} stroke={axisColor} />
-        <YAxis tick={{ fontSize: 11, fill: axisColor }} stroke={axisColor} />
-        <Tooltip contentStyle={tooltipStyle} />
-        <Bar dataKey="amount" fill="#7209b7" radius={[8, 8, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
-  )
-})
-
-const CategoryRadarChart = memo(({ data, isDark }) => {
-  const gridColor = isDark ? '#334155' : '#e5e7eb'
-  const axisColor = isDark ? '#94a3b8' : '#6b7280'
-  const tooltipStyle = { backgroundColor: isDark ? '#1e293b' : '#fff', border: `1px solid ${isDark ? '#334155' : '#e5e7eb'}`, borderRadius: '8px', color: isDark ? '#f1f5f9' : '#111827' }
-  return (
-    <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
-      <RadarChart data={data}>
-        <PolarGrid stroke={gridColor} />
-        <PolarAngleAxis dataKey="category" tick={{ fontSize: 11, fill: axisColor }} />
-        <PolarRadiusAxis tick={{ fontSize: 11, fill: axisColor }} />
-        <Radar name="Spending" dataKey="value" stroke="#4361ee" fill="#4361ee" fillOpacity={0.6} />
-        <Tooltip contentStyle={tooltipStyle} />
-      </RadarChart>
-    </ResponsiveContainer>
-  )
-})
-
-const IncomeSourcesChart = memo(({ data, colors, isDark }) => {
-  const tooltipStyle = { backgroundColor: isDark ? '#1e293b' : '#fff', border: `1px solid ${isDark ? '#334155' : '#e5e7eb'}`, borderRadius: '8px', color: isDark ? '#f1f5f9' : '#111827' }
-  return (
-    <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
-      <RechartsPie>
-        <Pie data={data} cx="50%" cy="50%" labelLine={false} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} outerRadius={window.innerWidth < 640 ? 60 : 90} fill="#8884d8" dataKey="value">
-          {data.map((entry, index) => (<Cell key={`cell-${index}`} fill={colors[index % colors.length]} />))}
-        </Pie>
-        <Tooltip contentStyle={tooltipStyle} />
-      </RechartsPie>
-    </ResponsiveContainer>
-  )
-})
-
-const CumulativeChart = memo(({ data, isDark }) => {
-  const gridColor = isDark ? '#334155' : '#e5e7eb'
-  const axisColor = isDark ? '#94a3b8' : '#6b7280'
-  const tooltipStyle = { backgroundColor: isDark ? '#1e293b' : '#fff', border: `1px solid ${isDark ? '#334155' : '#e5e7eb'}`, borderRadius: '8px', color: isDark ? '#f1f5f9' : '#111827' }
-  return (
-    <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
-      <AreaChart data={data}>
-        <defs>
-          <linearGradient id="colorCumulative" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#f8961e" stopOpacity={0.8} />
-            <stop offset="95%" stopColor="#f8961e" stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
-        <XAxis dataKey="date" tick={{ fontSize: 11, fill: axisColor }} stroke={axisColor} />
-        <YAxis tick={{ fontSize: 11, fill: axisColor }} stroke={axisColor} />
-        <Tooltip contentStyle={tooltipStyle} />
-        <Area type="monotone" dataKey="cumulative" stroke="#f8961e" strokeWidth={2} fillOpacity={1} fill="url(#colorCumulative)" />
-      </AreaChart>
-    </ResponsiveContainer>
-  )
-})
-
-// ---------- Main Analytics component ----------
+import { CHART_COLORS } from '../../../constants/categories'
 
 const Analytics = () => {
   const { expenses } = useExpense()
   const { income } = useIncome()
-  const { isDark } = useTheme()
+  const { gridColor, axisColor, tooltipStyle } = useChartTheme()
+  const location = useLocation()
   const [patterns, setPatterns] = useState([])
   const [predictions, setPredictions] = useState([])
   const [timeRange, setTimeRange] = useState('thisMonth')
   const [analyticsLoading, setAnalyticsLoading] = useState(false)
 
-  const COLORS = useMemo(() =>
-    ['#4361ee', '#7209b7', '#f72585', '#4cc9f0', '#f8961e', '#38b000', '#ff006e', '#8338ec'],
-    []
-  )
-
-  // Computed theme-aware colors used inline
-  const gridColor = isDark ? '#334155' : '#e5e7eb'
-  const axisColor = isDark ? '#94a3b8' : '#6b7280'
-  const tooltipStyle = {
-    backgroundColor: isDark ? '#1e293b' : '#fff',
-    border: `1px solid ${isDark ? '#334155' : '#e5e7eb'}`,
-    borderRadius: '8px',
-    color: isDark ? '#f1f5f9' : '#111827'
-  }
+  // Scroll to heatmap if view=heatmap query parameter is present
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    if (params.get('view') === 'heatmap') {
+      setTimeout(() => {
+        const heatmapSection = document.getElementById('spending-heatmap')
+        if (heatmapSection) {
+          heatmapSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 500) // Delay to ensure content is rendered
+    }
+  }, [location])
 
   const loadAnalytics = useCallback(async () => {
     if (analyticsLoading) return
@@ -245,22 +115,6 @@ const Analytics = () => {
   }, [filteredData])
 
   const categoryRadarData = useMemo(() => categoryData.slice(0, 6).map(c => ({ category: c.name, value: c.value })), [categoryData])
-
-  const incomeSourcesData = useMemo(() => {
-    const map = {}
-    filteredData.income.forEach(inc => { map[inc.source] = (map[inc.source] || 0) + inc.amount })
-    return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value)
-  }, [filteredData])
-
-  const cumulativeData = useMemo(() => {
-    const { expenses, startDate, endDate } = filteredData
-    let cum = 0
-    return eachDayOfInterval({ start: startDate, end: endDate }).map(day => {
-      const dt = expenses.filter(exp => format(new Date(exp.date), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd')).reduce((s, e) => s + e.amount, 0)
-      cum += dt
-      return { date: format(day, 'MMM dd'), cumulative: cum }
-    })
-  }, [filteredData])
 
   const incomeVsExpenseData = useMemo(() => {
     const te = filteredData.expenses.reduce((s, e) => s + e.amount, 0)
@@ -342,19 +196,19 @@ const Analytics = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           <Card title="Daily Spending Trend" subtitle="Track your daily expenses" icon={TrendingUp}>
             <div className="w-full" style={{ minHeight: '256px', height: '320px' }}>
-              {filteredData.expenses.length > 0 ? <SpendingTrendChart data={spendingTrendData} isDark={isDark} /> : emptyMsg('No expense data available')}
+              {filteredData.expenses.length > 0 ? <SpendingTrendChart data={spendingTrendData} /> : emptyMsg('No expense data available')}
             </div>
           </Card>
           <Card title="Category Distribution" subtitle="Where your money goes" icon={PieChart}>
             <div className="w-full" style={{ minHeight: '256px', height: '320px' }}>
-              {categoryData.length > 0 ? <CategoryPieChart data={categoryData} colors={COLORS} isDark={isDark} /> : emptyMsg('No category data available')}
+              {categoryData.length > 0 ? <CategoryPieChart data={categoryData} /> : emptyMsg('No category data available')}
             </div>
           </Card>
         </div>
       </div>
 
       {/* ── SPENDING HEATMAP ───────────────────── */}
-      <div>
+      <div id="spending-heatmap">
         <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-slate-100 mb-4 tracking-tight">Spending Calendar</h2>
         <SpendingHeatmap />
       </div>
@@ -362,16 +216,9 @@ const Analytics = () => {
       {/* ── FINANCIAL TRENDS ───────────────────── */}
       <div>
         <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-slate-100 mb-4 tracking-tight">Financial Trends</h2>
-        <div className="mb-6">
-          <Card title="Monthly Comparison" subtitle="Income vs Expenses over 6 months" icon={BarChart3}>
-            <div className="w-full" style={{ minHeight: '256px', height: '320px' }}>
-              {monthlyComparisonData.length > 0 ? <MonthlyComparisonChart data={monthlyComparisonData} isDark={isDark} /> : emptyMsg('No data available')}
-            </div>
-          </Card>
-        </div>
-        <Card title="Cumulative Spending" subtitle="Running total over selected period" icon={TrendingUp}>
+        <Card title="Monthly Comparison" subtitle="Income vs Expenses over 6 months" icon={BarChart3}>
           <div className="w-full" style={{ minHeight: '256px', height: '320px' }}>
-            {cumulativeData.length > 0 ? <CumulativeChart data={cumulativeData} isDark={isDark} /> : emptyMsg('No data available')}
+            {monthlyComparisonData.length > 0 ? <MonthlyComparisonChart data={monthlyComparisonData} /> : emptyMsg('No data available')}
           </div>
         </Card>
       </div>
@@ -379,20 +226,15 @@ const Analytics = () => {
       {/* ── DETAILED ANALYSIS ──────────────────── */}
       <div>
         <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-slate-100 mb-4 tracking-tight">Detailed Analysis</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           <Card title="Weekly Pattern" subtitle="Spending by day of week" icon={Calendar}>
             <div className="w-full" style={{ minHeight: '256px', height: '280px' }}>
-              {weeklySpendingData.length > 0 ? <WeeklySpendingChart data={weeklySpendingData} isDark={isDark} /> : emptyMsg('No data')}
+              {weeklySpendingData.length > 0 ? <WeeklySpendingChart data={weeklySpendingData} /> : emptyMsg('No data')}
             </div>
           </Card>
           <Card title="Category Radar" subtitle="Multi-dimensional view" icon={Target}>
             <div className="w-full" style={{ minHeight: '256px', height: '280px' }}>
-              {categoryRadarData.length > 0 ? <CategoryRadarChart data={categoryRadarData} isDark={isDark} /> : emptyMsg('No data')}
-            </div>
-          </Card>
-          <Card title="Income Sources" subtitle="Revenue breakdown" icon={Wallet}>
-            <div className="w-full" style={{ minHeight: '256px', height: '280px' }}>
-              {incomeSourcesData.length > 0 ? <IncomeSourcesChart data={incomeSourcesData} colors={COLORS} isDark={isDark} /> : emptyMsg('No income data')}
+              {categoryRadarData.length > 0 ? <CategoryRadarChart data={categoryRadarData} /> : emptyMsg('No data')}
             </div>
           </Card>
         </div>
@@ -429,7 +271,7 @@ const Analytics = () => {
                   <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
                     <div
                       className="h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${categoryData.length > 0 ? (cat.value / categoryData[0].value) * 100 : 0}%`, backgroundColor: COLORS[index % COLORS.length] }}
+                      style={{ width: `${categoryData.length > 0 ? (cat.value / categoryData[0].value) * 100 : 0}%`, backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
                     />
                   </div>
                 </div>
@@ -451,19 +293,19 @@ const Analytics = () => {
               <div className="p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                 <p className="text-xs sm:text-sm font-semibold text-blue-900 dark:text-blue-300 mb-1">Spending Pattern</p>
                 <p className="text-xs sm:text-sm text-blue-700 dark:text-blue-400">
-                  {statistics.avgDaily > 500 ? "You're spending above average daily. Consider reviewing your expenses." : "You're maintaining good spending habits. Keep it up!"}
+                  Average daily spending: ₹{statistics.avgDaily.toFixed(0)}
                 </p>
               </div>
               <div className="p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
                 <p className="text-xs sm:text-sm font-semibold text-green-900 dark:text-green-300 mb-1">Savings Rate</p>
                 <p className="text-xs sm:text-sm text-green-700 dark:text-green-400">
-                  {statistics.totalIncome > 0 ? `You're saving ${((statistics.netSavings / statistics.totalIncome) * 100).toFixed(1)}% of your income` : "Add income data to track your savings rate"}
+                  {statistics.totalIncome > 0 ? `${((statistics.netSavings / statistics.totalIncome) * 100).toFixed(1)}% of your income` : "Add income data to track your savings rate"}
                 </p>
               </div>
               <div className="p-3 sm:p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
                 <p className="text-xs sm:text-sm font-semibold text-purple-900 dark:text-purple-300 mb-1">Top Category</p>
                 <p className="text-xs sm:text-sm text-purple-700 dark:text-purple-400">
-                  {categoryData.length > 0 ? `Most spending in ${categoryData[0].name} (₹${categoryData[0].value.toFixed(0)})` : "No category data available yet"}
+                  {categoryData.length > 0 ? `${categoryData[0].name}: ₹${categoryData[0].value.toFixed(0)}` : "No category data available yet"}
                 </p>
               </div>
             </div>
@@ -490,7 +332,7 @@ const Analytics = () => {
             ) : (
               <div className="text-center py-8 text-gray-400 dark:text-slate-500">
                 <Zap className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">Add more expenses to see behavioral patterns</p>
+                <p className="text-sm">No behavioral patterns detected yet</p>
               </div>
             )}
           </Card>

@@ -72,7 +72,7 @@ const BudgetRecommendations = () => {
             <div className="flex-1 min-w-0">
               <h3 className="text-base sm:text-lg font-medium text-yellow-800 dark:text-yellow-300">No Expense Data</h3>
               <p className="mt-2 text-sm sm:text-base text-yellow-700 dark:text-yellow-400">
-                {recommendations?.message || 'Start tracking your expenses to get personalized budget recommendations.'}
+                {recommendations?.message || 'No expense data available for budget recommendations.'}
               </p>
               <p className="mt-2 text-xs sm:text-sm text-yellow-600 dark:text-yellow-500">
                 Add expenses in different categories, and we'll analyze your spending patterns to suggest optimal budgets!
@@ -96,7 +96,7 @@ const BudgetRecommendations = () => {
             </h3>
             <p className="text-sm text-blue-700 dark:text-blue-400">
               Based on {recommendations.monthsAnalyzed} month{recommendations.monthsAnalyzed > 1 ? 's' : ''} of your spending history
-              {recommendations.monthsAnalyzed === 1 && ' (Track more months for better accuracy)'}
+              {recommendations.monthsAnalyzed === 1 && ' (Limited data available)'}
             </p>
           </div>
         </div>

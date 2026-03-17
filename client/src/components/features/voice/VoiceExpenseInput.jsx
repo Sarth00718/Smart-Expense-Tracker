@@ -463,16 +463,16 @@ const VoiceExpenseInput = ({ onExpenseCreated, onClose }) => {
         </div>
       )}
 
-      {/* Tips footer */}
+      {/* Info footer */}
       {phase === 'idle' && (
         <div className="mt-8 pt-5 border-t border-gray-100 dark:border-slate-700">
-          <p className="text-xs text-gray-400 dark:text-slate-500 text-center font-medium tracking-wide uppercase mb-3">Tips for best results</p>
+          <p className="text-xs text-gray-400 dark:text-slate-500 text-center font-medium tracking-wide uppercase mb-3">Voice Input Guide</p>
           <div className="grid grid-cols-2 gap-2">
             {[
-              ['🔇', 'Speak in a quiet room'],
-              ['🗣️', 'Mention amount clearly'],
+              ['🔇', 'Quiet environment'],
+              ['🗣️', 'Clear pronunciation'],
               ['📝', 'Include merchant name'],
-              ['🏷️', 'State the category']
+              ['🏷️', 'Mention category']
             ].map(([icon, tip]) => (
               <div key={tip} className="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-500">
                 <span>{icon}</span>

@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useExpense } from '../../../context/ExpenseContext'
 import { expenseService } from '../../../services/expenseService'
-import { Trash2, Calendar, Edit2, X, Trash, Search, ArrowUpDown, Filter, Repeat, Plus, Mic, Camera, Receipt } from 'lucide-react'
+import { Trash2, Edit2, X, Search, ArrowUpDown, Filter, Repeat, Plus, Mic, Camera, Receipt, Trash, Calendar } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 import { Button, Modal, LoadingSpinner, PageHeader } from '../../ui'
@@ -10,6 +10,9 @@ import AdvancedSearch from './AdvancedSearch'
 import RecurringExpenses from './RecurringExpenses'
 import VoiceExpenseInput from '../voice/VoiceExpenseInput'
 import ReceiptScanner from '../receipts/ReceiptScanner'
+import { useFormState } from '../../../hooks/useFormState'
+import { EXPENSE_CATEGORIES, CATEGORY_BADGE_CLASSES } from '../../../constants/categories'
+import ExpenseForm from '../../forms/ExpenseForm'
 
 const Expenses = () => {
   const { expenses, deleteExpense, updateExpense, addExpense, loading, fetchExpenses } = useExpense()
@@ -34,14 +37,14 @@ const Expenses = () => {
   const [showAddExpense, setShowAddExpense] = useState(false)
   const [showVoiceInput, setShowVoiceInput] = useState(false)
   const [showReceiptScanner, setShowReceiptScanner] = useState(false)
-  const [formData, setFormData] = useState({
+  const { formData, setFormData, resetForm } = useFormState({
     date: new Date().toISOString().split('T')[0],
     category: '',
     amount: '',
     description: ''
   })
 
-  const handleDelete = async (id) => {
+  const handleDelete = useCallback(async (id) => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
       try {
         await deleteExpense(id)
@@ -50,36 +53,31 @@ const Expenses = () => {
         toast.error('Failed to delete expense')
       }
     }
-  }
+  }, [deleteExpense])
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault()
     try {
       await addExpense(formData)
       toast.success('Expense added successfully!')
-      setFormData({
-        date: new Date().toISOString().split('T')[0],
-        category: '',
-        amount: '',
-        description: ''
-      })
+      resetForm()
       setShowAddExpense(false)
       await fetchExpenses()
     } catch (error) {
       toast.error('Failed to add expense')
     }
-  }
+  }, [formData, addExpense, resetForm, fetchExpenses])
 
-  const handleVoiceExpenseCreated = async () => {
+  const handleVoiceExpenseCreated = useCallback(async () => {
     await fetchExpenses()
     setShowVoiceInput(false)
     toast.success('Expense created from voice input!')
-  }
+  }, [fetchExpenses])
 
-  const handleReceiptScanned = async () => {
+  const handleReceiptScanned = useCallback(async () => {
     await fetchExpenses()
     setShowReceiptScanner(false)
-  }
+  }, [fetchExpenses])
 
   const handleClearAll = async () => {
     if (window.confirm('⚠️ Are you sure you want to delete ALL expenses? This action cannot be undone!')) {
@@ -152,20 +150,9 @@ const Expenses = () => {
     }
   }
 
-  const getCategoryBadgeClass = (category) => {
-    const classes = {
-      Food: 'badge-food',
-      Travel: 'badge-travel',
-      Transport: 'badge-travel',
-      Shopping: 'badge-shopping',
-      Bills: 'badge-bills',
-      Entertainment: 'badge-entertainment',
-      Healthcare: 'badge-healthcare',
-      Education: 'badge-education',
-      Other: 'badge-other'
-    }
-    return classes[category] || 'badge-other'
-  }
+  const getCategoryBadgeClass = useCallback((category) => {
+    return CATEGORY_BADGE_CLASSES[category] || 'badge-other'
+  }, [])
 
   // Filter and sort expenses
   const filteredAndSortedExpenses = useMemo(() => {
@@ -489,15 +476,9 @@ const Expenses = () => {
                               required
                               className="input"
                             >
-                              <option value="Food">🍔 Food</option>
-                              <option value="Travel">✈️ Travel</option>
-                              <option value="Transport">🚗 Transport</option>
-                              <option value="Shopping">🛍️ Shopping</option>
-                              <option value="Bills">📄 Bills</option>
-                              <option value="Entertainment">🎬 Entertainment</option>
-                              <option value="Healthcare">🏥 Healthcare</option>
-                              <option value="Education">📚 Education</option>
-                              <option value="Other">📦 Other</option>
+                              {EXPENSE_CATEGORIES.map(cat => (
+                                <option key={cat.value} value={cat.value}>{cat.label}</option>
+                              ))}
                             </select>
                           </div>
                           <div>
@@ -604,77 +585,11 @@ const Expenses = () => {
         title="Add New Expense"
         size="md"
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
-                Date
-              </label>
-              <input
-                type="date"
-                value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                required
-                className="input w-full"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
-                Category
-              </label>
-              <select
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                required
-                className="input w-full"
-              >
-                <option value="">Select Category</option>
-                <option value="Food">🍔 Food</option>
-                <option value="Travel">✈️ Travel</option>
-                <option value="Transport">🚗 Transport</option>
-                <option value="Shopping">🛍️ Shopping</option>
-                <option value="Bills">📄 Bills</option>
-                <option value="Entertainment">🎬 Entertainment</option>
-                <option value="Healthcare">🏥 Healthcare</option>
-                <option value="Education">📚 Education</option>
-                <option value="Other">📦 Other</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
-              Amount (₹)
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              min="0.01"
-              value={formData.amount}
-              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-              required
-              placeholder="0.00"
-              className="input w-full text-lg"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
-              Description (Optional)
-            </label>
-            <input
-              type="text"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="What was this expense for?"
-              className="input w-full"
-            />
-          </div>
-
-          <Button type="submit" variant="primary" fullWidth icon={Plus} size="lg">
-            Add Expense
-          </Button>
-        </form>
+        <ExpenseForm
+          formData={formData}
+          onChange={setFormData}
+          onSubmit={handleSubmit}
+        />
       </Modal>
 
       {/* Voice Input Modal */}
