@@ -14,6 +14,7 @@ import Dashboard from './pages/Dashboard'
 import OfflineIndicator from './components/ui/OfflineIndicator'
 import ErrorBoundary from './components/ui/ErrorBoundary'
 import LoadingSpinner from './components/ui/LoadingSpinner'
+import PWAUpdatePrompt from './components/ui/PWAUpdatePrompt'
 import { pageTransition } from './utils/animations'
 import api from './services/api'
 
@@ -192,6 +193,7 @@ const AppContent = () => {
                 }}
               />
               <OfflineIndicator />
+              <PWAUpdatePrompt />
               <AnimatedRoutes />
             </IncomeProvider>
           </ExpenseProvider>

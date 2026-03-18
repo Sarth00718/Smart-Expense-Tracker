@@ -6,6 +6,7 @@ export { default as EmptyState } from './EmptyState'
 export { default as StatCard } from './StatCard'
 export { default as ProfileModal } from './ProfileModal'
 export { default as PageHeader } from './PageHeader'
+export { default as PWAUpdatePrompt } from './PWAUpdatePrompt'
 
 // Animated Components
 export { default as AnimatedCard } from './AnimatedCard'
