@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Trophy, Award, Star, Zap, Target } from 'lucide-react'
 import { analyticsService } from '../../../services/analyticsService'
 import { Card, StatCard, EmptyState, LoadingSpinner, PageHeader } from '../../ui'

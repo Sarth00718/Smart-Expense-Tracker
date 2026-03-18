@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react'
+import { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react'
 import { expenseService } from '../services/expenseService'
 import { useAuth } from './AuthContext'
 
@@ -54,11 +54,6 @@ export const ExpenseProvider = ({ children }) => {
       if (error.name === 'AbortError' || signal?.aborted) return
 
       console.error('Error loading expenses:', error)
-      
-      // Don't clear expenses on error - keep stale data
-      if (expenses.length === 0) {
-        setExpenses([])
-      }
     } finally {
       if (!signal?.aborted) {
         setLoading(false)
@@ -109,7 +104,6 @@ export const ExpenseProvider = ({ children }) => {
     loading,
     pagination,
     loadExpenses,
-    fetchExpenses: loadExpenses, // Alias for compatibility
     addExpense,
     updateExpense,
     deleteExpense

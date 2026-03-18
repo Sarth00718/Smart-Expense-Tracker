@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useIncome } from '../../../context/IncomeContext'
 import { incomeService } from '../../../services/incomeService'
 import { DollarSign, Plus, Edit2, Trash2, TrendingUp, Calendar, Repeat, X } from 'lucide-react'
-import { Card, Button, StatCard, EmptyState, LoadingSpinner, PageHeader } from '../../ui'
+import { Card, Button, StatCard, EmptyState, LoadingSpinner, PageHeader, Modal } from '../../ui'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 
@@ -11,6 +11,8 @@ const Income = () => {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [summary, setSummary] = useState(null)
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
 
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -37,7 +39,7 @@ const Income = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
+    setSubmitting(true)
     try {
       if (editingId) {
         await updateIncome(editingId, formData)
@@ -46,7 +48,6 @@ const Income = () => {
         await addIncome(formData)
         toast.success('Income added successfully')
       }
-
       setShowForm(false)
       setEditingId(null)
       resetForm()
@@ -54,6 +55,8 @@ const Income = () => {
     } catch (error) {
       console.error('Failed to save income:', error)
       toast.error(error.response?.data?.error || 'Failed to save income')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -69,16 +72,17 @@ const Income = () => {
     setShowForm(true)
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this income entry?')) return
-
+  const handleDelete = async () => {
+    if (!deleteTarget) return
     try {
-      await deleteIncome(id)
+      await deleteIncome(deleteTarget)
       toast.success('Income deleted successfully')
       fetchSummary()
     } catch (error) {
       console.error('Failed to delete income:', error)
       toast.error('Failed to delete income')
+    } finally {
+      setDeleteTarget(null)
     }
   }
 
@@ -242,7 +246,7 @@ const Income = () => {
             </div>
 
             <div className="flex gap-3 pt-2">
-              <Button type="submit" variant="primary" fullWidth size="lg">
+              <Button type="submit" variant="primary" fullWidth size="lg" loading={submitting}>
                 {editingId ? 'Update Income' : 'Add Income'}
               </Button>
               <Button
@@ -316,7 +320,7 @@ const Income = () => {
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(incomeItem._id)}
+                          onClick={() => setDeleteTarget(incomeItem._id)}
                           className="p-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all hover:scale-110"
                           title="Delete income"
                         >
@@ -356,6 +360,15 @@ const Income = () => {
           </div>
         )}
       </Card>
+
+      {/* Delete Confirm Modal */}
+      <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Delete Income" size="sm">
+        <p className="text-gray-600 dark:text-slate-400 mb-6">Are you sure you want to delete this income entry?</p>
+        <div className="flex gap-3">
+          <Button variant="outline" fullWidth onClick={() => setDeleteTarget(null)}>Cancel</Button>
+          <Button variant="danger" fullWidth onClick={handleDelete}>Delete</Button>
+        </div>
+      </Modal>
     </div>
   )
 }

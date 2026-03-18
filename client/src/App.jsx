@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast'
 import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, lazy, Suspense } from 'react'
+
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ThemeProvider, useTheme } from './context/ThemeContext'
 import { ExpenseProvider } from './context/ExpenseContext'
@@ -10,7 +11,6 @@ import { IncomeProvider } from './context/IncomeContext'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
-import PWAInstallPrompt from './components/ui/PWAInstallPrompt'
 import OfflineIndicator from './components/ui/OfflineIndicator'
 import ErrorBoundary from './components/ui/ErrorBoundary'
 import LoadingSpinner from './components/ui/LoadingSpinner'
@@ -192,7 +192,6 @@ const AppContent = () => {
                 }}
               />
               <OfflineIndicator />
-              <PWAInstallPrompt />
               <AnimatedRoutes />
             </IncomeProvider>
           </ExpenseProvider>

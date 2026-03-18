@@ -15,15 +15,10 @@ import { EXPENSE_CATEGORIES, CATEGORY_BADGE_CLASSES } from '../../../constants/c
 import ExpenseForm from '../../forms/ExpenseForm'
 
 const Expenses = () => {
-  const { expenses, deleteExpense, updateExpense, addExpense, loading, fetchExpenses } = useExpense()
+  const { expenses, deleteExpense, updateExpense, addExpense, loading, loadExpenses } = useExpense()
   const navigate = useNavigate()
   const [editingExpense, setEditingExpense] = useState(null)
-  const [editForm, setEditForm] = useState({
-    date: '',
-    category: '',
-    amount: '',
-    description: ''
-  })
+  const [editForm, setEditForm] = useState({ date: '', category: '', amount: '', description: '' })
   const [sortBy, setSortBy] = useState('date')
   const [sortOrder, setSortOrder] = useState('desc')
   const [filterPeriod, setFilterPeriod] = useState('all')
@@ -37,6 +32,9 @@ const Expenses = () => {
   const [showAddExpense, setShowAddExpense] = useState(false)
   const [showVoiceInput, setShowVoiceInput] = useState(false)
   const [showReceiptScanner, setShowReceiptScanner] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const { formData, setFormData, resetForm } = useFormState({
     date: new Date().toISOString().split('T')[0],
     category: '',
@@ -44,52 +42,53 @@ const Expenses = () => {
     description: ''
   })
 
-  const handleDelete = useCallback(async (id) => {
-    if (window.confirm('Are you sure you want to delete this expense?')) {
-      try {
-        await deleteExpense(id)
-        toast.success('Expense deleted successfully')
-      } catch (error) {
-        toast.error('Failed to delete expense')
-      }
+  const handleDelete = useCallback(async () => {
+    if (!deleteTarget) return
+    try {
+      await deleteExpense(deleteTarget)
+      toast.success('Expense deleted successfully')
+    } catch (error) {
+      toast.error('Failed to delete expense')
+    } finally {
+      setDeleteTarget(null)
     }
-  }, [deleteExpense])
+  }, [deleteExpense, deleteTarget])
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault()
+    setSubmitting(true)
     try {
       await addExpense(formData)
       toast.success('Expense added successfully!')
       resetForm()
       setShowAddExpense(false)
-      await fetchExpenses()
     } catch (error) {
       toast.error('Failed to add expense')
+    } finally {
+      setSubmitting(false)
     }
-  }, [formData, addExpense, resetForm, fetchExpenses])
+  }, [formData, addExpense, resetForm])
 
   const handleVoiceExpenseCreated = useCallback(async () => {
-    await fetchExpenses()
+    await loadExpenses(null, { fetchAll: true })
     setShowVoiceInput(false)
     toast.success('Expense created from voice input!')
-  }, [fetchExpenses])
+  }, [loadExpenses])
 
   const handleReceiptScanned = useCallback(async () => {
-    await fetchExpenses()
+    await loadExpenses(null, { fetchAll: true })
     setShowReceiptScanner(false)
-  }, [fetchExpenses])
+  }, [loadExpenses])
 
   const handleClearAll = async () => {
-    if (window.confirm('⚠️ Are you sure you want to delete ALL expenses? This action cannot be undone!')) {
-      if (window.confirm('This will permanently delete all your expense data. Are you absolutely sure?')) {
-        try {
-          await expenseService.deleteAll()
-          await fetchExpenses()
-          toast.success('All expenses cleared successfully')
-        } catch (error) {
-          toast.error('Failed to clear expenses')
-        }
-      }
+    try {
+      await expenseService.deleteAll()
+      await loadExpenses(null, { fetchAll: true })
+      toast.success('All expenses cleared successfully')
+    } catch (error) {
+      toast.error('Failed to clear expenses')
+    } finally {
+      setShowClearConfirm(false)
     }
   }
 
@@ -141,12 +140,15 @@ const Expenses = () => {
 
   const handleUpdate = async (e) => {
     e.preventDefault()
+    setSubmitting(true)
     try {
       await updateExpense(editingExpense, editForm)
       toast.success('Expense updated successfully')
       cancelEdit()
     } catch (error) {
       toast.error('Failed to update expense')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -240,7 +242,7 @@ const Expenses = () => {
               Recurring
             </Button>
             {expenses.length > 0 && (
-              <Button variant="outline" size="md" icon={Trash} onClick={handleClearAll}
+              <Button variant="outline" size="md" icon={Trash} onClick={() => setShowClearConfirm(true)}
                 className="text-red-600 border-red-300 hover:bg-red-50 dark:border-red-600 dark:text-red-400">
                 Clear All
               </Button>
@@ -504,7 +506,7 @@ const Expenses = () => {
                             />
                           </div>
                           <div className="flex gap-2 items-end">
-                            <Button type="submit" variant="primary" className="flex-1">
+                            <Button type="submit" variant="primary" className="flex-1" loading={submitting}>
                               Save
                             </Button>
                             <button
@@ -544,13 +546,12 @@ const Expenses = () => {
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleDelete(expense._id)}
+                            onClick={() => setDeleteTarget(expense._id)}
                             className="p-2.5 text-red-600 hover:bg-red-50 rounded-lg transition-all hover:scale-110"
                             title="Delete expense"
                           >
                             <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                          </button>                        </div>
                       </td>
                     </tr>
                   )
@@ -619,6 +620,25 @@ const Expenses = () => {
           <ReceiptScanner onSuccess={handleReceiptScanned} />
         </Modal>
       )}
+
+      {/* Delete Expense Confirm */}
+      <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Delete Expense" size="sm">
+        <p className="text-gray-600 dark:text-slate-400 mb-6">Are you sure you want to delete this expense?</p>
+        <div className="flex gap-3">
+          <Button variant="outline" fullWidth onClick={() => setDeleteTarget(null)}>Cancel</Button>
+          <Button variant="danger" fullWidth onClick={handleDelete}>Delete</Button>
+        </div>
+      </Modal>
+
+      {/* Clear All Confirm */}
+      <Modal isOpen={showClearConfirm} onClose={() => setShowClearConfirm(false)} title="Clear All Expenses" size="sm">
+        <p className="text-gray-600 dark:text-slate-400 mb-2">This will permanently delete <span className="font-semibold text-red-600">all your expense data</span>. This cannot be undone.</p>
+        <p className="text-sm text-gray-500 dark:text-slate-500 mb-6">Are you absolutely sure?</p>
+        <div className="flex gap-3">
+          <Button variant="outline" fullWidth onClick={() => setShowClearConfirm(false)}>Cancel</Button>
+          <Button variant="danger" fullWidth onClick={handleClearAll}>Yes, Clear All</Button>
+        </div>
+      </Modal>
     </div>
   )
 }

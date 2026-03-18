@@ -154,9 +154,7 @@ class OfflineQueue {
           // Show browser notification if permitted
           if ('Notification' in window && Notification.permission === 'granted') {
             new Notification('Synced!', {
-              body: `${results.processed} offline ${results.processed === 1 ? 'change' : 'changes'} synced successfully`,
-              icon: '/pwa-192x192.png',
-              badge: '/pwa-192x192.png'
+              body: `${results.processed} offline ${results.processed === 1 ? 'change' : 'changes'} synced successfully`
             });
           }
         }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { PieChart, Plus, Trash2, TrendingDown, TrendingUp, AlertCircle, Lightbulb, Target, Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
+import { PieChart, Plus, Trash2, TrendingDown, TrendingUp, AlertCircle, Lightbulb, Target, Calendar, ChevronLeft, ChevronRight, Edit2, X } from 'lucide-react'
 import { budgetService } from '../../../services/budgetService'
 import { expenseService } from '../../../services/expenseService'
 import BudgetRecommendations from './BudgetRecommendations'
@@ -13,6 +13,9 @@ const Budgets = () => {
   const [budgets, setBudgets] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [editingBudget, setEditingBudget] = useState(null)
+  const [editAmount, setEditAmount] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     category: '',
     monthlyBudget: ''
@@ -115,6 +118,7 @@ const Budgets = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setSubmitting(true)
     try {
       await budgetService.setBudget(formData)
       toast.success('Budget set successfully!')
@@ -123,6 +127,37 @@ const Budgets = () => {
       loadBudgets()
     } catch (error) {
       toast.error('Failed to set budget')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleEditOpen = (budget) => {
+    setEditingBudget(budget)
+    setEditAmount(budget.budget.toString())
+  }
+
+  const handleEditClose = () => {
+    setEditingBudget(null)
+    setEditAmount('')
+  }
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault()
+    if (!editAmount || parseFloat(editAmount) <= 0) {
+      toast.error('Please enter a valid budget amount')
+      return
+    }
+    setSubmitting(true)
+    try {
+      await budgetService.updateBudget(editingBudget.category, parseFloat(editAmount))
+      toast.success('Budget updated successfully!')
+      handleEditClose()
+      loadBudgets()
+    } catch (error) {
+      toast.error('Failed to update budget')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -253,8 +288,8 @@ const Budgets = () => {
                     />
                   </div>
                 </div>
-                <button type="submit" className="btn btn-primary">
-                  Set Budget
+                <button type="submit" className="btn btn-primary" disabled={submitting}>
+                  {submitting ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block" /> : 'Set Budget'}
                 </button>
               </form>
             )}
@@ -285,6 +320,13 @@ const Budgets = () => {
                           )}
                         </div>
                       </div>
+                      <button
+                        onClick={() => handleEditOpen(budget)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors flex-shrink-0"
+                        title="Edit Budget"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
                       <button
                         onClick={() => handleDelete(budget.category)}
                         className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors flex-shrink-0"
@@ -478,7 +520,55 @@ const Budgets = () => {
         <BudgetRecommendations />
       ) : null
       }
-    </div >
+
+      {/* Edit Budget Modal */}
+      {editingBudget && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
+                Edit Budget — {editingBudget.category}
+              </h3>
+              <button
+                onClick={handleEditClose}
+                className="p-1 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
+                  Monthly Budget (₹)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={editAmount}
+                  onChange={(e) => setEditAmount(e.target.value)}
+                  required
+                  autoFocus
+                  className="input text-lg w-full"
+                  placeholder="5000.00"
+                />
+                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                  Current: ₹{editingBudget.budget.toFixed(2)} · Spent: ₹{editingBudget.spent.toFixed(2)}
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button type="button" onClick={handleEditClose} className="btn btn-secondary flex-1">
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary flex-1" disabled={submitting}>
+                  {submitting ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block" /> : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 

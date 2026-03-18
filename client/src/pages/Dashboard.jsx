@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import AppLayout from '../components/layout/AppLayout'
+import LoadingSpinner from '../components/ui/LoadingSpinner'
 
 // Lazy load components for better performance
 const DashboardHome = lazy(() => import('../components/features/dashboard/DashboardHome'))
@@ -17,9 +18,7 @@ const Settings = lazy(() => import('../components/features/settings/Settings'))
 
 // Loading fallback component
 const LoadingFallback = () => (
-  <div className="flex items-center justify-center min-h-[400px]">
-    <div className="spinner border-4 w-12 h-12"></div>
-  </div>
+  <LoadingSpinner size="lg" text="" />
 )
 
 const Dashboard = () => {

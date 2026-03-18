@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react'
+import { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react'
 import { incomeService } from '../services/incomeService'
 import { useAuth } from './AuthContext'
 
@@ -48,11 +48,6 @@ export const IncomeProvider = ({ children }) => {
       if (error.name === 'AbortError' || signal?.aborted) return
       
       console.error('Error loading income:', error)
-      
-      // Don't clear income on error - keep stale data
-      if (income.length === 0) {
-        setIncome([])
-      }
     } finally {
       if (!signal?.aborted) {
         setLoading(false)

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { buttonPress, hoverScale } from '../../utils/animations';
+import { buttonPress } from '../../utils/animations';
 
 const AnimatedButton = ({ 
   children, 

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { fadeInUp, hoverScale, getAnimation } from '../../utils/animations';
+import { fadeInUp, getAnimation } from '../../utils/animations';
 
 const AnimatedCard = ({ 
   children, 

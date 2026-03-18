@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { badgeUnlockVariants } from '../../utils/animations';
-import { Trophy, Star, Award, Target } from 'lucide-react';
+import { Trophy, Star } from 'lucide-react';
 
 const AchievementBadge = ({ 
   icon: Icon = Trophy, 

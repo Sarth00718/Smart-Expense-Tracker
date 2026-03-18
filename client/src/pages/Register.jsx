@@ -3,10 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 import { Wallet, Mail, Lock, User, UserPlus, AlertCircle, Eye, EyeOff, Shield, Zap, Target, CheckCircle, Sparkles, ArrowRight } from 'lucide-react'
-
-const ButtonSpinner = () => (
-  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-)
+import { ButtonSpinner } from '../components/ui/LoadingSpinner'
 
 const Register = () => {
   const [formData, setFormData] = useState({ fullName: '', email: '', password: '', confirmPassword: '' })
@@ -15,14 +12,11 @@ const Register = () => {
   const [googleLoading, setGoogleLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [mounted, setMounted] = useState(false)
   const [passwordStrength, setPasswordStrength] = useState(0)
   const [fieldErrors, setFieldErrors] = useState({})
   const [focusedField, setFocusedField] = useState(null)
   const { register, loginWithGoogle } = useAuth()
   const navigate = useNavigate()
-
-  useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
     const p = formData.password
@@ -50,10 +44,6 @@ const Register = () => {
       case 'password':
         if (!value) return 'Password is required'
         if (value.length < 8) return 'Password must be at least 8 characters'
-        if (!/[A-Z]/.test(value)) return 'Password must contain an uppercase letter'
-        if (!/[a-z]/.test(value)) return 'Password must contain a lowercase letter'
-        if (!/\d/.test(value)) return 'Password must contain a number'
-        if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return 'Password must contain a special character'
         return ''
       case 'confirmPassword': return !value ? 'Please confirm your password' : value !== formData.password ? 'Passwords do not match' : ''
       default: return ''
@@ -107,172 +97,170 @@ const Register = () => {
   const strengthText = passwordStrength === 0 ? '' : passwordStrength <= 2 ? 'Weak' : passwordStrength === 3 ? 'Good' : 'Strong'
   const strengthTextColor = passwordStrength <= 2 ? 'text-red-400' : passwordStrength === 3 ? 'text-yellow-400' : 'text-green-400'
 
-  const inputClass = (field) => `w-full pl-11 pr-4 py-3 bg-slate-900/60 border rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 transition-all ${fieldErrors[field] ? 'border-red-500/60 focus:ring-red-500/30' : 'border-slate-600/60 focus:border-primary/60 focus:ring-primary/20'}`
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0f172a] p-4 relative overflow-hidden font-sans antialiased">
-      {/* Ambient orbs */}
+    <div className="min-h-screen flex bg-[#0f172a] relative overflow-hidden font-sans antialiased">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/20 rounded-full blur-[120px]" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-secondary/15 rounded-full blur-[120px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[160px]" />
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-br from-primary/10 via-transparent to-transparent rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-secondary/10 via-transparent to-transparent rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(99,102,241,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,0.03)_1px,transparent_1px)] bg-[size:64px_64px]" />
       </div>
 
-      <div className={`w-full max-w-5xl mx-auto grid lg:grid-cols-2 gap-10 items-center relative z-10 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+      <div className="w-full flex items-center justify-center relative z-10">
+        <div className="w-full max-w-[1400px] mx-auto grid lg:grid-cols-[1fr,1.2fr] gap-0 min-h-screen">
 
-        {/* ── Left: Register Form ────────────────────────────────────────────── */}
-        <div className="w-full order-2 lg:order-1">
-          {/* Mobile header */}
-          <div className="lg:hidden text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl shadow-2xl shadow-primary/30 mb-4">
-              <Wallet className="w-8 h-8 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-slate-100 mb-1 tracking-tight">Join Us Today</h2>
-            <p className="text-sm text-slate-400">Start your financial journey</p>
-          </div>
-
-          {/* Dark glass card */}
-          <div className="relative bg-slate-800/70 backdrop-blur-2xl rounded-2xl shadow-2xl shadow-black/40 p-6 lg:p-8 border border-slate-700/60 overflow-hidden">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
-
-            <div className="relative z-10">
-              {/* Header */}
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-slate-100 mb-1 flex items-center gap-2 tracking-tight">
-                  Create Account <span>🚀</span>
-                </h2>
-                <p className="text-sm text-slate-400">Start tracking your expenses today</p>
+          <div className="hidden lg:flex flex-col justify-center px-16 xl:px-24 py-12 bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-sm border-r border-slate-700/50">
+            <div className="max-w-xl">
+              <div className="flex items-center gap-4 mb-12">
+                <div className="w-14 h-14 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+                  <Wallet className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-white tracking-tight">Smart Expense Tracker</h1>
+                  <p className="text-sm text-slate-400">Financial Intelligence Platform</p>
+                </div>
               </div>
 
-              {/* Error */}
+              <div className="mb-12">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-full mb-6">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  <span className="text-xs font-semibold text-primary uppercase tracking-wider">Start Your Journey</span>
+                </div>
+                <h2 className="text-4xl xl:text-5xl font-bold text-white leading-tight mb-4">
+                  Master Your Money
+                  <span className="block bg-gradient-to-r from-primary via-violet-400 to-secondary bg-clip-text text-transparent mt-2">
+                    Build Wealth Smarter
+                  </span>
+                </h2>
+                <p className="text-lg text-slate-400 leading-relaxed">
+                  Join thousands of users who are taking control of their finances with AI-powered insights and automation.
+                </p>
+              </div>
+
+              <div className="space-y-4 mb-12">
+                {[
+                  { icon: Shield, title: 'Smart Budgeting', desc: 'AI-powered budget recommendations and alerts' },
+                  { icon: Zap, title: 'Quick Entry', desc: 'Voice commands and receipt scanning' },
+                  { icon: Target, title: 'Goal Tracking', desc: 'Set and achieve your financial milestones' },
+                ].map((feature, i) => (
+                  <div key={i} className="flex items-start gap-4 group">
+                    <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                      <feature.icon className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold mb-1">{feature.title}</h3>
+                      <p className="text-sm text-slate-400">{feature.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Additional Features */}
+              <div className="grid grid-cols-2 gap-4 pt-8 border-t border-slate-700/50">
+                {[
+                  { icon: '🤖', label: 'AI Assistant' },
+                  { icon: '🎤', label: 'Voice Input' },
+                  { icon: '📄', label: 'PDF Reports' },
+                  { icon: '🏆', label: 'Achievements' },
+                ].map((feature, i) => (
+                  <div key={i} className="text-center p-3 bg-slate-800/40 rounded-xl border border-slate-700/40">
+                    <div className="text-2xl mb-1">{feature.icon}</div>
+                    <div className="text-xs text-slate-400 font-medium">{feature.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col justify-center px-6 sm:px-12 lg:px-16 py-12">
+            <div className="w-full max-w-md mx-auto">
+              <div className="lg:hidden text-center mb-10">
+                <div className="inline-flex w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl items-center justify-center shadow-lg shadow-primary/20 mb-4">
+                  <Wallet className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">Join Us Today</h2>
+                <p className="text-slate-400">Create your account</p>
+              </div>
+
+              <div className="mb-8">
+                <h3 className="text-3xl font-bold text-white mb-2">Create Account</h3>
+                <p className="text-slate-400">Start your financial journey today</p>
+              </div>
+
               {error && (
-                <div className="mb-5 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start gap-3">
+                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start gap-3">
                   <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-red-400 font-medium">{error}</p>
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Full Name */}
+              <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label htmlFor="fullName" className="block text-sm font-semibold text-slate-300 mb-2 tracking-tight">Full Name</label>
+                  <label htmlFor="fullName" className="block text-sm font-medium text-slate-300 mb-2">Full Name</label>
                   <div className="relative">
-                    <User className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${fieldErrors.fullName ? 'text-red-400' : focusedField === 'fullName' ? 'text-primary' : 'text-slate-500'}`} />
-                    <input
-                      type="text" id="fullName" name="fullName" value={formData.fullName}
-                      onChange={handleChange} onFocus={() => setFocusedField('fullName')} onBlur={handleBlur}
-                      required placeholder="John Doe" className={inputClass('fullName')}
-                    />
-                    {formData.fullName && !fieldErrors.fullName && (
-                      <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-green-400" />
-                    )}
+                    <User className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${fieldErrors.fullName ? 'text-red-400' : focusedField === 'fullName' ? 'text-primary' : 'text-slate-500'}`} />
+                    <input type="text" id="fullName" name="fullName" value={formData.fullName} onChange={handleChange} onFocus={() => setFocusedField('fullName')} onBlur={handleBlur} required placeholder="John Doe" className={`w-full pl-12 pr-12 py-3.5 bg-slate-900/60 border rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 transition-all ${fieldErrors.fullName ? 'border-red-500/60 focus:ring-red-500/30' : 'border-slate-700 focus:border-primary focus:ring-primary/20'}`} />
+                    {formData.fullName && !fieldErrors.fullName && <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-400" />}
                   </div>
-                  {fieldErrors.fullName && <p className="mt-1.5 text-xs text-red-400 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{fieldErrors.fullName}</p>}
+                  {fieldErrors.fullName && <p className="mt-2 text-xs text-red-400 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{fieldErrors.fullName}</p>}
                 </div>
 
-                {/* Email */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-slate-300 mb-2 tracking-tight">Email Address</label>
+                  <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
                   <div className="relative">
-                    <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${fieldErrors.email ? 'text-red-400' : focusedField === 'email' ? 'text-primary' : 'text-slate-500'}`} />
-                    <input
-                      type="email" id="email" name="email" value={formData.email}
-                      onChange={handleChange} onFocus={() => setFocusedField('email')} onBlur={handleBlur}
-                      required placeholder="you@example.com" className={inputClass('email')}
-                    />
-                    {formData.email && !fieldErrors.email && validateEmail(formData.email) && (
-                      <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-green-400" />
-                    )}
+                    <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${fieldErrors.email ? 'text-red-400' : focusedField === 'email' ? 'text-primary' : 'text-slate-500'}`} />
+                    <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} onFocus={() => setFocusedField('email')} onBlur={handleBlur} required placeholder="you@example.com" className={`w-full pl-12 pr-12 py-3.5 bg-slate-900/60 border rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 transition-all ${fieldErrors.email ? 'border-red-500/60 focus:ring-red-500/30' : 'border-slate-700 focus:border-primary focus:ring-primary/20'}`} />
+                    {formData.email && !fieldErrors.email && validateEmail(formData.email) && <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-400" />}
                   </div>
-                  {fieldErrors.email && <p className="mt-1.5 text-xs text-red-400 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{fieldErrors.email}</p>}
+                  {fieldErrors.email && <p className="mt-2 text-xs text-red-400 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{fieldErrors.email}</p>}
                 </div>
 
-                {/* Password */}
                 <div>
-                  <label htmlFor="password" className="block text-sm font-semibold text-slate-300 mb-2 tracking-tight">Password</label>
+                  <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-2">Password</label>
                   <div className="relative">
-                    <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${fieldErrors.password ? 'text-red-400' : focusedField === 'password' ? 'text-primary' : 'text-slate-500'}`} />
-                    <input
-                      type={showPassword ? 'text' : 'password'} id="password" name="password" value={formData.password}
-                      onChange={handleChange} onFocus={() => setFocusedField('password')} onBlur={handleBlur}
-                      required placeholder="Min. 8 characters" className={`${inputClass('password')} pr-12`}
-                    />
+                    <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${fieldErrors.password ? 'text-red-400' : focusedField === 'password' ? 'text-primary' : 'text-slate-500'}`} />
+                    <input type={showPassword ? 'text' : 'password'} id="password" name="password" value={formData.password} onChange={handleChange} onFocus={() => setFocusedField('password')} onBlur={handleBlur} required placeholder="Min. 8 characters" className={`w-full pl-12 pr-12 py-3.5 bg-slate-900/60 border rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 transition-all ${fieldErrors.password ? 'border-red-500/60 focus:ring-red-500/30' : 'border-slate-700 focus:border-primary focus:ring-primary/20'}`} />
                     <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
-                  {fieldErrors.password && <p className="mt-1.5 text-xs text-red-400 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{fieldErrors.password}</p>}
+                  {fieldErrors.password && <p className="mt-2 text-xs text-red-400 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{fieldErrors.password}</p>}
                   {formData.password && !fieldErrors.password && (
-                    <div className="mt-2">
-                      <div className="flex gap-1.5 mb-1">
-                        {[1, 2, 3, 4].map(l => (
-                          <div key={l} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${l <= passwordStrength ? strengthColor : 'bg-slate-700'}`} />
-                        ))}
+                    <div className="mt-3">
+                      <div className="flex gap-1.5 mb-2">
+                        {[1, 2, 3, 4].map(l => <div key={l} className={`h-2 flex-1 rounded-full transition-all duration-300 ${l <= passwordStrength ? strengthColor : 'bg-slate-700'}`} />)}
                       </div>
-                      {strengthText && (
-                        <p className="text-xs text-slate-500">Strength: <span className={`font-semibold ${strengthTextColor}`}>{strengthText}</span></p>
-                      )}
+                      {strengthText && <p className="text-xs text-slate-400">Password strength: <span className={`font-semibold ${strengthTextColor}`}>{strengthText}</span></p>}
                     </div>
                   )}
                 </div>
 
-                {/* Confirm Password */}
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-semibold text-slate-300 mb-2 tracking-tight">Confirm Password</label>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-300 mb-2">Confirm Password</label>
                   <div className="relative">
-                    <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${fieldErrors.confirmPassword ? 'text-red-400' : focusedField === 'confirmPassword' ? 'text-primary' : 'text-slate-500'}`} />
-                    <input
-                      type={showConfirmPassword ? 'text' : 'password'} id="confirmPassword" name="confirmPassword" value={formData.confirmPassword}
-                      onChange={handleChange} onFocus={() => setFocusedField('confirmPassword')} onBlur={handleBlur}
-                      required placeholder="Confirm your password" className={`${inputClass('confirmPassword')} pr-20`}
-                    />
-                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-10 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
-                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${fieldErrors.confirmPassword ? 'text-red-400' : focusedField === 'confirmPassword' ? 'text-primary' : 'text-slate-500'}`} />
+                    <input type={showConfirmPassword ? 'text' : 'password'} id="confirmPassword" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} onFocus={() => setFocusedField('confirmPassword')} onBlur={handleBlur} required placeholder="Confirm your password" className={`w-full pl-12 pr-20 py-3.5 bg-slate-900/60 border rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 transition-all ${fieldErrors.confirmPassword ? 'border-red-500/60 focus:ring-red-500/30' : 'border-slate-700 focus:border-primary focus:ring-primary/20'}`} />
+                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-12 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
+                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
-                    {formData.confirmPassword && formData.confirmPassword === formData.password && !fieldErrors.confirmPassword && (
-                      <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-green-400" />
-                    )}
+                    {formData.confirmPassword && formData.confirmPassword === formData.password && !fieldErrors.confirmPassword && <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-400" />}
                   </div>
-                  {fieldErrors.confirmPassword && <p className="mt-1.5 text-xs text-red-400 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{fieldErrors.confirmPassword}</p>}
+                  {fieldErrors.confirmPassword && <p className="mt-2 text-xs text-red-400 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{fieldErrors.confirmPassword}</p>}
                 </div>
 
-                {/* Create Account Button */}
-                <button
-                  type="submit"
-                  disabled={loading || Object.values(fieldErrors).some(Boolean)}
-                  className="group relative w-full py-3.5 bg-gradient-to-r from-primary to-secondary text-white font-semibold text-sm rounded-xl tracking-tight focus:outline-none focus:ring-4 focus:ring-primary/40 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
-                >
+                <button type="submit" disabled={loading || Object.values(fieldErrors).some(Boolean)} className="group relative w-full py-4 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-xl focus:outline-none focus:ring-4 focus:ring-primary/40 transition-all duration-300 hover:shadow-xl hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/80 via-violet-600 to-secondary/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="relative flex items-center justify-center gap-2">
-                    {loading ? <ButtonSpinner /> : (
-                      <>
-                        <UserPlus className="w-4 h-4" />
-                        <span>Create Account</span>
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </>
-                    )}
+                    {loading ? <ButtonSpinner /> : (<><UserPlus className="w-5 h-5" /><span>Create Account</span><ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>)}
                   </div>
                 </button>
               </form>
 
-              {/* Divider */}
-              <div className="relative my-5">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-700" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-slate-800/70 text-slate-500 font-medium text-xs tracking-wide">Or continue with</span>
-                </div>
+              <div className="relative my-8">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-700" /></div>
+                <div className="relative flex justify-center"><span className="px-4 bg-[#0f172a] text-slate-500 text-sm">Or continue with</span></div>
               </div>
 
-              {/* Google */}
-              <button
-                type="button"
-                onClick={handleGoogleLogin}
-                disabled={googleLoading}
-                className="group w-full py-3.5 bg-slate-900/60 border border-slate-600/60 text-slate-200 font-semibold text-sm rounded-xl tracking-tight hover:bg-slate-700/60 hover:border-primary/40 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
-              >
+              <button type="button" onClick={handleGoogleLogin} disabled={googleLoading} className="w-full py-3.5 bg-slate-900/60 border border-slate-700 text-white font-medium rounded-xl hover:bg-slate-800/60 hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3">
                 {googleLoading ? <ButtonSpinner /> : (
                   <>
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -286,88 +274,16 @@ const Register = () => {
                 )}
               </button>
 
-              {/* Login Link */}
-              <div className="mt-6 text-center">
-                <p className="text-sm text-slate-500 mb-2">Already have an account?</p>
-                <Link to="/login" className="inline-flex items-center gap-2 text-primary hover:text-violet-400 font-semibold text-sm transition-all group tracking-tight">
-                  <span>Sign in to your account</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
+              <div className="mt-8 text-center">
+                <p className="text-slate-400 text-sm">Already have an account? <Link to="/login" className="text-primary hover:text-violet-400 font-semibold transition-colors">Sign in</Link></p>
               </div>
+
+              <p className="text-center text-slate-600 text-xs mt-8">© {new Date().getFullYear()} Smart Expense Tracker. All rights reserved.</p>
             </div>
           </div>
 
-          <p className="text-center text-slate-600 text-xs mt-4 font-medium tracking-tight">
-            Smart expense tracking with AI-powered insights 🚀✨
-          </p>
         </div>
-
-        {/* ── Right: Branding Panel ──────────────────────────────────────────── */}
-        <div className="hidden lg:flex flex-col gap-8 text-white order-1 lg:order-2">
-          <div className="space-y-5">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl shadow-2xl shadow-primary/30">
-              <Wallet className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="w-4 h-4 text-yellow-400 animate-pulse" />
-                <span className="text-xs font-semibold text-yellow-400 uppercase tracking-widest">Start Your Journey</span>
-              </div>
-              <h1 className="text-4xl font-bold leading-tight tracking-tight mb-3 text-slate-100">
-                Financial
-                <span className="block bg-gradient-to-r from-primary via-violet-400 to-secondary bg-clip-text text-transparent mt-1">
-                  Freedom Awaits
-                </span>
-              </h1>
-              <p className="text-slate-400 text-base leading-relaxed">
-                Track expenses with AI insights, voice commands, and receipt scanning
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {[
-              { icon: Shield, title: 'Budget Planning', desc: 'Smart budget recommendations', gradient: 'from-emerald-500 to-teal-600' },
-              { icon: Zap, title: 'Spending Heatmap', desc: 'Visual expense calendar', gradient: 'from-amber-500 to-orange-600' },
-              { icon: Target, title: 'Savings Goals', desc: 'Track financial milestones', gradient: 'from-primary to-secondary' },
-            ].map((f, i) => (
-              <div key={i} className="flex items-center gap-4 p-4 bg-slate-800/60 backdrop-blur-sm rounded-xl border border-slate-700/60 hover:border-primary/40 hover:bg-slate-800 transition-all duration-300 group cursor-default">
-                <div className={`w-10 h-10 bg-gradient-to-br ${f.gradient} rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform`}>
-                  <f.icon className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-slate-100 tracking-tight mb-0.5">{f.title}</h3>
-                  <p className="text-xs text-slate-400">{f.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-700/60">
-            {[
-              { label: 'AI Assistant', icon: '🤖' },
-              { label: 'Voice Input', icon: '🎤' },
-              { label: 'Analytics', icon: '📊' },
-              { label: 'Gamification', icon: '🎮' },
-            ].map((f, i) => (
-              <div key={i} className="text-center p-3 bg-slate-800/40 rounded-xl border border-slate-700/40">
-                <div className="text-2xl mb-1">{f.icon}</div>
-                <div className="text-xs text-slate-400 font-medium">{f.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
       </div>
-
-      <style>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
-        }
-        .animate-shake { animation: shake 0.3s ease-in-out; }
-      `}</style>
     </div>
   )
 }

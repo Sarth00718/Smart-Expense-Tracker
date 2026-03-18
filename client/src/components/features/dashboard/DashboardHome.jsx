@@ -5,7 +5,7 @@ import { useIncome } from '../../../context/IncomeContext'
 import { TrendingUp, TrendingDown, Wallet, Plus, Receipt, Camera, Mic, ArrowUpRight, Calendar, DollarSign, Zap } from 'lucide-react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend as RechartsLegend, Tooltip as RechartsTooltip } from 'recharts'
 import toast from 'react-hot-toast'
-import { StatCard, Card, Button, EmptyState, Modal, SkeletonCard, SkeletonList, MoneyRain, Card3DTilt } from '../../ui'
+import { StatCard, Card, Button, EmptyState, Modal, MoneyRain, Card3DTilt } from '../../ui'
 import { format } from 'date-fns'
 import { useNavigate } from 'react-router-dom'
 import { staggerContainer, staggerItem, fadeInUp } from '../../../utils/animations'
@@ -19,7 +19,7 @@ const VoiceExpenseInput = lazy(() => import('../voice/VoiceExpenseInput'))
 const ReceiptScanner = lazy(() => import('../receipts/ReceiptScanner'))
 
 const DashboardHome = () => {
-  const { expenses, addExpense, fetchExpenses } = useExpense()
+  const { expenses, addExpense, loadExpenses } = useExpense()
   const { income, addIncome: addIncomeToContext } = useIncome()
   const { tooltipStyle } = useChartTheme()
   const navigate = useNavigate()
@@ -76,11 +76,10 @@ const DashboardHome = () => {
       toast.success('Expense added successfully!')
       resetExpenseForm()
       setShowAddExpense(false)
-      await fetchExpenses()
     } catch (error) {
       toast.error('Failed to add expense')
     }
-  }, [expenseFormData, addExpense, resetExpenseForm, fetchExpenses])
+  }, [expenseFormData, addExpense, resetExpenseForm])
 
   const handleIncomeSubmit = useCallback(async (e) => {
     e.preventDefault()
@@ -99,15 +98,15 @@ const DashboardHome = () => {
   }, [incomeFormData, addIncomeToContext, resetIncomeForm])
 
   const handleVoiceExpenseCreated = useCallback(async () => {
-    await fetchExpenses()
+    await loadExpenses(null, { fetchAll: true })
     setShowVoiceInput(false)
     toast.success('Expense created from voice input!')
-  }, [fetchExpenses])
+  }, [loadExpenses])
 
   const handleReceiptScanned = useCallback(async () => {
-    await fetchExpenses()
+    await loadExpenses(null, { fetchAll: true })
     setShowReceiptScanner(false)
-  }, [fetchExpenses])
+  }, [loadExpenses])
 
   const categoryData = useMemo(() => {
     if (!Array.isArray(expenses)) return {}
@@ -234,20 +233,8 @@ const DashboardHome = () => {
                     whileTap={{ scale: 0.98 }}
                   >
                     <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
-                      <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 ${expense.category === 'Food' ? 'bg-orange-100 dark:bg-orange-900/30' :
-                        expense.category === 'Travel' ? 'bg-blue-100 dark:bg-blue-900/30' :
-                          expense.category === 'Shopping' ? 'bg-pink-100 dark:bg-pink-900/30' :
-                            expense.category === 'Bills' ? 'bg-purple-100 dark:bg-purple-900/30' :
-                              expense.category === 'Entertainment' ? 'bg-indigo-100 dark:bg-indigo-900/30' :
-                                'bg-gray-100 dark:bg-slate-700'
-                        }`}>
-                        <Receipt className={`w-5 h-5 sm:w-6 sm:h-6 ${expense.category === 'Food' ? 'text-orange-600 dark:text-orange-400' :
-                          expense.category === 'Travel' ? 'text-blue-600 dark:text-blue-400' :
-                            expense.category === 'Shopping' ? 'text-pink-600 dark:text-pink-400' :
-                              expense.category === 'Bills' ? 'text-purple-600 dark:text-purple-400' :
-                                expense.category === 'Entertainment' ? 'text-indigo-600 dark:text-indigo-400' :
-                                  'text-gray-600 dark:text-slate-400'
-                          }`} />
+                      <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 ${CATEGORY_COLORS[expense.category]?.bg || CATEGORY_COLORS.Other.bg}`}>
+                        <Receipt className={`w-5 h-5 sm:w-6 sm:h-6 ${CATEGORY_COLORS[expense.category]?.text || CATEGORY_COLORS.Other.text}`} />
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold text-gray-900 dark:text-slate-100 text-sm sm:text-base">{expense.category}</p>

@@ -17,17 +17,15 @@ const OfflineIndicator = () => {
     updateQueueSize();
     const interval = setInterval(updateQueueSize, 1000);
 
-    if (isOnline && !navigator.onLine) {
-      // Just came back online
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (isOnline) {
       setShowOnlineMessage(true);
       const timer = setTimeout(() => setShowOnlineMessage(false), 3000);
-      return () => {
-        clearTimeout(timer);
-        clearInterval(interval);
-      };
+      return () => clearTimeout(timer);
     }
-
-    return () => clearInterval(interval);
   }, [isOnline]);
 
   if (isOnline && !showOnlineMessage && queueSize === 0) return null;

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { fadeInUp, hoverScale, counterVariants } from '../../utils/animations';
+import { fadeInUp, counterVariants } from '../../utils/animations';
 import AnimatedCounter from './AnimatedCounter';
 import { ParticleBurst } from './ParticleBurst';
 import { useState } from 'react';
