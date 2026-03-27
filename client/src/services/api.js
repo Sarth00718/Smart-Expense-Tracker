@@ -3,12 +3,22 @@ import offlineQueue, { isOffline } from '../utils/offlineQueue'
 import requestCache from '../utils/requestCache'
 import { deduplicateRequest } from '../utils/requestDebounce'
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+
+// Warn if the placeholder URL is still set (common deployment mistake)
+if (API_BASE.includes('your-backend-url')) {
+  console.warn(
+    '[api.js] ⚠️ VITE_API_URL is set to a placeholder value. ' +
+    'All data API calls will fail. Update .env.production with your real backend URL.'
+  )
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: API_BASE,
   headers: {
     'Content-Type': 'application/json'
   },
-  timeout: 10000, // 10 seconds - allow for cold-start backends
+  timeout: 8000, // 8s default — reduced from 10s for snappier error UX
   withCredentials: false
 })
 

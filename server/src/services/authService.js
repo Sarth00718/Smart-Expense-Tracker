@@ -40,13 +40,15 @@ class AuthService {
   async login(email, password) {
     if (!email || !password) throw new ValidationError('Email and password are required');
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
     if (!user) throw new AuthenticationError('Invalid credentials');
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) throw new AuthenticationError('Invalid credentials');
 
-    await User.findByIdAndUpdate(user._id, { lastLogin: new Date() });
+    // Update lastLogin in background — don't await to save a round-trip
+    User.findByIdAndUpdate(user._id, { lastLogin: new Date() }).exec().catch(() => {});
+
     const token = this.generateToken(user._id);
     return { token, user: this.sanitizeUser(user) };
   }

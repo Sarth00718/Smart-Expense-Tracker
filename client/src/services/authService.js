@@ -11,8 +11,9 @@ export const authService = {
         password, 
         fullName 
       }, {
-        timeout: 8000, // 8 second timeout for auth
-        skipCache: true // Don't cache auth requests
+        timeout: 5000, // 5 second timeout — fail fast, Firebase is fallback
+        retry: 0,     // No retries on auth — fall through to Firebase ASAP
+        skipCache: true
       })
       
       // Backend returns data in response.data.data structure
@@ -85,8 +86,9 @@ export const authService = {
         email, 
         password 
       }, {
-        timeout: 8000, // 8 second timeout for auth
-        skipCache: true // Don't cache auth requests
+        timeout: 5000, // 5 second timeout — fail fast, Firebase is fallback
+        retry: 0,     // No retries on auth — fall through to Firebase ASAP
+        skipCache: true
       })
       
       // Backend returns data in response.data.data structure
@@ -230,7 +232,7 @@ export const authService = {
 
   // Get auth method
   getAuthMethod: () => {
-    return localStorage.getItem('authMethod') || 'backend'
+    return localStorage.getItem('authMethod') || null
   },
 
   // Get Firebase ID token (if using Firebase)

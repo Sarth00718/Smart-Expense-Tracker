@@ -15,7 +15,7 @@ router.post('/register', auth, async (req, res) => {
       return res.status(400).json({ error: 'Credential ID and public key required' });
     }
 
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.userId).select('+biometricCredentials');
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -65,7 +65,7 @@ router.post('/authenticate', async (req, res) => {
       return res.status(400).json({ error: 'Email and credential ID required' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await User.findOne({ email: email.toLowerCase() }).select('+biometricCredentials');
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -122,7 +122,7 @@ router.post('/authenticate', async (req, res) => {
 // @access  Private
 router.get('/credentials', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.userId).select('+biometricCredentials');
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -147,7 +147,7 @@ router.delete('/credentials/:credentialId', auth, async (req, res) => {
   try {
     const { credentialId } = req.params;
 
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.userId).select('+biometricCredentials');
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }

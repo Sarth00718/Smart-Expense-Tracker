@@ -9,11 +9,12 @@ class Database {
   async connect(retries = 3) {
     try {
       const options = {
-        serverSelectionTimeoutMS: 30000, // Increased to 30 seconds
-        socketTimeoutMS: 45000,
-        family: 4,
+        serverSelectionTimeoutMS: 10000, // Fail fast — 10s is plenty for Atlas
+        connectTimeoutMS: 10000,         // TCP connection timeout
+        socketTimeoutMS: 45000,          // Operation timeout
+        family: 4,                       // Use IPv4 (avoids DNS resolve loops)
         maxPoolSize: 10,
-        minPoolSize: 2,
+        minPoolSize: 1,                  // Keep 1 warm conn, not 2 (saves resources)
         retryWrites: true,
         retryReads: true,
         heartbeatFrequencyMS: 10000,

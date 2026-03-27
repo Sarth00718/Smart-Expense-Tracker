@@ -40,6 +40,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(false)
 
         // Only bother with Firebase redirect result if the auth method was Firebase
+        // This prevents a ~1-2s delay on every page load for non-Firebase users
         if (authMethod === 'firebase') {
           firebaseAuth.handleRedirectResult()
             .then(result => {
@@ -55,6 +56,7 @@ export const AuthProvider = ({ children }) => {
               unsubscribeRef.current = setupFirebaseListener()
             })
         }
+        // For backend/null auth methods, no Firebase setup needed
       } catch (error) {
         console.error('Auth initialization error:', error)
         setLoading(false)

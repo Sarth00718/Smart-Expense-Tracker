@@ -12,11 +12,12 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
+      select: false, // Never include in query results by default
       required: function () {
         return this.authProvider === 'local' || (!this.authProvider && !this.firebaseUid);
       },
     },
-    firebaseUid: { type: String, sparse: true },
+    firebaseUid: { type: String },
     authProvider: {
       type: String,
       enum: ['local', 'firebase', 'both'],

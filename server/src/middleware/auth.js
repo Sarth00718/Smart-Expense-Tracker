@@ -24,7 +24,7 @@ const auth = async (req, res, next) => {
     }
 
     const user = await User.findById(decoded.userId)
-      .select('-password -biometricCredentials')
+      .select('-biometricCredentials') // password is select:false in schema
       .lean();
 
     if (!user) {
