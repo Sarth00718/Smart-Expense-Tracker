@@ -1,5 +1,13 @@
 import { useState } from 'react'
-import { Download, FileText, FileSpreadsheet, FileJson, File, Calendar, Loader } from 'lucide-react'
+import {
+  Download,
+  FileText,
+  FileSpreadsheet,
+  FileJson,
+  File,
+  Calendar,
+  Loader
+} from 'lucide-react'
 import { Modal } from '../ui'
 import { exportService } from '../../services/exportService'
 import toast from 'react-hot-toast'
@@ -7,15 +15,18 @@ import toast from 'react-hot-toast'
 const CommonExport = () => {
   const [showModal, setShowModal] = useState(false)
   const [loading, setLoading] = useState(false)
+
   const [dateRange, setDateRange] = useState({
     startDate: '',
     endDate: ''
   })
-  const [exportType, setExportType] = useState('all') // all, expenses, income
+
+  const [exportType, setExportType] = useState('all')
 
   const handleExport = async (format) => {
     try {
       setLoading(true)
+
       const params = {
         startDate: dateRange.startDate || undefined,
         endDate: dateRange.endDate || undefined
@@ -26,45 +37,75 @@ const CommonExport = () => {
       switch (format) {
         case 'csv':
           if (exportType === 'expenses') {
-            await exportService.exportExpensesCSV(params.startDate, params.endDate)
+            await exportService.exportExpensesCSV(
+              params.startDate,
+              params.endDate
+            )
             successMessage = 'Expenses exported to CSV'
           } else if (exportType === 'income') {
-            await exportService.exportIncomeCSV(params.startDate, params.endDate)
+            await exportService.exportIncomeCSV(
+              params.startDate,
+              params.endDate
+            )
             successMessage = 'Income exported to CSV'
           } else {
-            await exportService.exportAllDataCSV(params.startDate, params.endDate)
+            await exportService.exportAllDataCSV(
+              params.startDate,
+              params.endDate
+            )
             successMessage = 'All data exported to CSV'
           }
           break
 
         case 'excel':
           if (exportType === 'expenses') {
-            await exportService.exportExpensesExcel(params.startDate, params.endDate)
+            await exportService.exportExpensesExcel(
+              params.startDate,
+              params.endDate
+            )
             successMessage = 'Expenses exported to Excel'
           } else if (exportType === 'income') {
-            await exportService.exportIncomeExcel(params.startDate, params.endDate)
+            await exportService.exportIncomeExcel(
+              params.startDate,
+              params.endDate
+            )
             successMessage = 'Income exported to Excel'
           } else {
-            await exportService.exportAllDataExcel(params.startDate, params.endDate)
+            await exportService.exportAllDataExcel(
+              params.startDate,
+              params.endDate
+            )
             successMessage = 'All data exported to Excel'
           }
           break
 
         case 'json':
           if (exportType === 'expenses') {
-            await exportService.exportExpensesJSON(params.startDate, params.endDate)
+            await exportService.exportExpensesJSON(
+              params.startDate,
+              params.endDate
+            )
             successMessage = 'Expenses exported to JSON'
           } else if (exportType === 'income') {
-            await exportService.exportIncomeJSON(params.startDate, params.endDate)
+            await exportService.exportIncomeJSON(
+              params.startDate,
+              params.endDate
+            )
             successMessage = 'Income exported to JSON'
           } else {
-            await exportService.exportAllData(params.startDate, params.endDate)
+            await exportService.exportAllData(
+              params.startDate,
+              params.endDate
+            )
             successMessage = 'All data exported to JSON'
           }
           break
 
         case 'pdf':
-          await exportService.exportComprehensivePDF(params.startDate, params.endDate)
+          await exportService.exportComprehensivePDF(
+            params.startDate,
+            params.endDate
+          )
           successMessage = 'Comprehensive PDF report generated'
           break
 
@@ -73,8 +114,13 @@ const CommonExport = () => {
       }
 
       toast.success(successMessage)
+
       setShowModal(false)
-      setDateRange({ startDate: '', endDate: '' })
+
+      setDateRange({
+        startDate: '',
+        endDate: ''
+      })
     } catch (error) {
       console.error('Export error:', error)
       toast.error(error.message || 'Failed to export data')
@@ -83,195 +129,290 @@ const CommonExport = () => {
     }
   }
 
+  const exportTypes = [
+    {
+      key: 'all',
+      title: 'All Data',
+      description: 'Complete financial data',
+      icon: File,
+      activeClass:
+        'border-primary bg-primary/10 dark:bg-primary/20 shadow-lg shadow-primary/10'
+    },
+    {
+      key: 'expenses',
+      title: 'Expenses Only',
+      description: 'Expense records',
+      icon: FileText,
+      activeClass:
+        'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-500/10'
+    },
+    {
+      key: 'income',
+      title: 'Income Only',
+      description: 'Income records',
+      icon: FileText,
+      activeClass:
+        'border-green-500 bg-green-50 dark:bg-green-900/20 shadow-lg shadow-green-500/10'
+    }
+  ]
+
+  const exportFormats = [
+    {
+      key: 'csv',
+      title: 'CSV Format',
+      description: 'Excel, Google Sheets compatible',
+      icon: FileText,
+      color:
+        'hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20',
+      iconColor: 'text-blue-600 dark:text-blue-400'
+    },
+    {
+      key: 'excel',
+      title: 'Excel Format',
+      description: 'Native Excel with multiple sheets',
+      icon: FileSpreadsheet,
+      color:
+        'hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20',
+      iconColor: 'text-green-600 dark:text-green-400'
+    },
+    {
+      key: 'json',
+      title: 'JSON Format',
+      description: 'Raw data for developers',
+      icon: FileJson,
+      color:
+        'hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20',
+      iconColor: 'text-purple-600 dark:text-purple-400'
+    },
+    {
+      key: 'pdf',
+      title: 'Comprehensive PDF',
+      description:
+        exportType === 'all'
+          ? 'Full report with charts'
+          : 'Only available for "All Data"',
+      icon: File,
+      color:
+        'hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20',
+      iconColor: 'text-red-600 dark:text-red-400'
+    }
+  ]
+
   return (
     <>
-      {/* Export Button in Header */}
+      {/* Header Export Button */}
       <button
         onClick={() => setShowModal(true)}
-        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-600 hover:border-gray-400 dark:hover:border-slate-500 transition-all shadow-sm hover:shadow tap-target"
+        className="group flex items-center gap-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-200 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:bg-gray-50 dark:hover:bg-slate-700 hover:shadow-md"
         title="Export Financial Data"
       >
-        <Download className="w-4 h-4" />
+        <Download className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
         <span className="hidden sm:inline">Export</span>
       </button>
 
       {/* Export Modal */}
-      <Modal isOpen={showModal} onClose={() => !loading && setShowModal(false)} title="Export Financial Data" size="lg">
+      <Modal
+        isOpen={showModal}
+        onClose={() => !loading && setShowModal(false)}
+        title="Export Financial Data"
+        size="lg"
+      >
         <div className="space-y-6">
-          {/* Date Range Filter */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl p-4">
-            <h3 className="font-semibold text-blue-900 dark:text-blue-300 mb-3 flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
-              Date Range (Optional)
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Date Range */}
+          <div className="rounded-2xl border border-blue-200 dark:border-blue-800 bg-blue-50/80 dark:bg-blue-900/10 p-5 backdrop-blur-sm">
+            <div className="mb-4 flex items-center gap-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30">
+                <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-300">
+                  Date Range
+                </h3>
+                <p className="text-xs text-blue-700 dark:text-blue-400">
+                  Optional filter for exports
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">
                   Start Date
                 </label>
+
                 <input
                   type="date"
                   value={dateRange.startDate}
-                  onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })}
-                  className="input w-full"
+                  onChange={(e) =>
+                    setDateRange({
+                      ...dateRange,
+                      startDate: e.target.value
+                    })
+                  }
                   disabled={loading}
+                  className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">
                   End Date
                 </label>
+
                 <input
                   type="date"
                   value={dateRange.endDate}
-                  onChange={(e) => setDateRange({ ...dateRange, endDate: e.target.value })}
-                  className="input w-full"
+                  onChange={(e) =>
+                    setDateRange({
+                      ...dateRange,
+                      endDate: e.target.value
+                    })
+                  }
                   disabled={loading}
+                  className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             </div>
-            <p className="text-xs text-blue-700 dark:text-blue-400 mt-2">
-              Leave empty to export all data
+
+            <p className="mt-3 text-xs text-blue-700 dark:text-blue-400">
+              Leave empty to export complete data
             </p>
           </div>
 
-          {/* Export Type Selection */}
+          {/* Export Types */}
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-slate-100 mb-3">Select Data Type</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <button
-                onClick={() => setExportType('all')}
-                disabled={loading}
-                className={`p-4 rounded-lg border-2 transition-all ${
-                  exportType === 'all'
-                    ? 'border-primary bg-primary/5 dark:bg-primary/10 shadow-md'
-                    : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500'
-                }`}
-              >
-                <File className="w-6 h-6 mx-auto mb-2 text-primary" />
-                <p className="font-semibold text-sm text-gray-900 dark:text-slate-100">All Data</p>
-                <p className="text-xs text-gray-600 dark:text-slate-400 mt-1">Complete financial data</p>
-              </button>
-              <button
-                onClick={() => setExportType('expenses')}
-                disabled={loading}
-                className={`p-4 rounded-lg border-2 transition-all ${
-                  exportType === 'expenses'
-                    ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-md'
-                    : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500'
-                }`}
-              >
-                <FileText className="w-6 h-6 mx-auto mb-2 text-red-500" />
-                <p className="font-semibold text-sm text-gray-900 dark:text-slate-100">Expenses Only</p>
-                <p className="text-xs text-gray-600 dark:text-slate-400 mt-1">Expense records</p>
-              </button>
-              <button
-                onClick={() => setExportType('income')}
-                disabled={loading}
-                className={`p-4 rounded-lg border-2 transition-all ${
-                  exportType === 'income'
-                    ? 'border-green-500 bg-green-50 dark:bg-green-900/20 shadow-md'
-                    : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500'
-                }`}
-              >
-                <FileText className="w-6 h-6 mx-auto mb-2 text-green-500" />
-                <p className="font-semibold text-sm text-gray-900 dark:text-slate-100">Income Only</p>
-                <p className="text-xs text-gray-600 dark:text-slate-400 mt-1">Income records</p>
-              </button>
+            <div className="mb-4">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">
+                Select Data Type
+              </h3>
+
+              <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+                Choose which records you want to export
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {exportTypes.map((type) => {
+                const Icon = type.icon
+
+                return (
+                  <button
+                    key={type.key}
+                    onClick={() => setExportType(type.key)}
+                    disabled={loading}
+                    className={`group rounded-2xl border p-5 text-left transition-all duration-200 hover:-translate-y-1 hover:shadow-lg ${
+                      exportType === type.key
+                        ? type.activeClass
+                        : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-primary/40'
+                    }`}
+                  >
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-700">
+                      <Icon className="h-6 w-6 text-primary" />
+                    </div>
+
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-slate-100">
+                      {type.title}
+                    </h4>
+
+                    <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+                      {type.description}
+                    </p>
+                  </button>
+                )
+              })}
             </div>
           </div>
 
-          {/* Export Format Options */}
+          {/* Export Formats */}
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-slate-100 mb-3">Choose Export Format</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <button
-                onClick={() => handleExport('csv')}
-                disabled={loading}
-                className="flex items-center gap-3 p-4 border-2 border-gray-200 dark:border-slate-600 rounded-lg hover:border-primary hover:bg-primary/5 dark:hover:bg-primary/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <FileText className="w-8 h-8 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                <div className="text-left">
-                  <p className="font-semibold text-gray-900 dark:text-slate-100">CSV Format</p>
-                  <p className="text-xs text-gray-600 dark:text-slate-400">Excel, Google Sheets compatible</p>
-                </div>
-              </button>
+            <div className="mb-4">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">
+                Choose Export Format
+              </h3>
 
-              <button
-                onClick={() => handleExport('excel')}
-                disabled={loading}
-                className="flex items-center gap-3 p-4 border-2 border-gray-200 dark:border-slate-600 rounded-lg hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <FileSpreadsheet className="w-8 h-8 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <div className="text-left">
-                  <p className="font-semibold text-gray-900 dark:text-slate-100">Excel Format</p>
-                  <p className="text-xs text-gray-600 dark:text-slate-400">Native Excel with multiple sheets</p>
-                </div>
-              </button>
+              <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+                Select your preferred download format
+              </p>
+            </div>
 
-              <button
-                onClick={() => handleExport('json')}
-                disabled={loading}
-                className="flex items-center gap-3 p-4 border-2 border-gray-200 dark:border-slate-600 rounded-lg hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <FileJson className="w-8 h-8 text-purple-600 dark:text-purple-400 flex-shrink-0" />
-                <div className="text-left">
-                  <p className="font-semibold text-gray-900 dark:text-slate-100">JSON Format</p>
-                  <p className="text-xs text-gray-600 dark:text-slate-400">Raw data for developers</p>
-                </div>
-              </button>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {exportFormats.map((format) => {
+                const Icon = format.icon
 
-              <button
-                onClick={() => handleExport('pdf')}
-                disabled={loading || exportType !== 'all'}
-                className="flex items-center gap-3 p-4 border-2 border-gray-200 dark:border-slate-600 rounded-lg hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <File className="w-8 h-8 text-red-600 dark:text-red-400 flex-shrink-0" />
-                <div className="text-left">
-                  <p className="font-semibold text-gray-900 dark:text-slate-100">Comprehensive PDF</p>
-                  <p className="text-xs text-gray-600 dark:text-slate-400">
-                    {exportType === 'all' ? 'Full report with charts' : 'Only available for "All Data"'}
-                  </p>
-                </div>
-              </button>
+                return (
+                  <button
+                    key={format.key}
+                    onClick={() => handleExport(format.key)}
+                    disabled={
+                      loading ||
+                      (format.key === 'pdf' && exportType !== 'all')
+                    }
+                    className={`group flex items-center gap-4 rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg ${format.color} disabled:cursor-not-allowed disabled:opacity-50`}
+                  >
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100 dark:bg-slate-700">
+                      <Icon className={`h-7 w-7 ${format.iconColor}`} />
+                    </div>
+
+                    <div className="flex-1 text-left">
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-slate-100">
+                        {format.title}
+                      </h4>
+
+                      <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+                        {format.description}
+                      </p>
+                    </div>
+                  </button>
+                )
+              })}
             </div>
           </div>
 
-          {/* Info Box */}
-          <div className="bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-lg p-4">
-            <h4 className="font-semibold text-gray-900 dark:text-slate-100 mb-2 text-sm">📋 What's Included?</h4>
-            <ul className="text-xs text-gray-700 dark:text-slate-300 space-y-1">
+          {/* Included Info */}
+          <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/60 p-5">
+            <h4 className="mb-3 text-sm font-semibold text-gray-900 dark:text-slate-100">
+              📋 Included In Export
+            </h4>
+
+            <ul className="space-y-2 text-xs text-gray-700 dark:text-slate-300">
               {exportType === 'all' && (
                 <>
-                  <li>✓ All expenses with categories and descriptions</li>
-                  <li>✓ All income records with sources</li>
-                  <li>✓ Budget allocations and tracking</li>
-                  <li>✓ Savings goals and progress</li>
-                  <li>✓ Financial summary and statistics</li>
-                  <li>✓ Analytics charts (PDF only)</li>
+                  <li>✓ Expenses with categories and descriptions</li>
+                  <li>✓ Income records with detailed sources</li>
+                  <li>✓ Budget tracking and allocations</li>
+                  <li>✓ Savings goals and progress reports</li>
+                  <li>✓ Financial summaries and statistics</li>
+                  <li>✓ Charts and analytics (PDF only)</li>
                 </>
               )}
+
               {exportType === 'expenses' && (
                 <>
-                  <li>✓ Expense date, category, and amount</li>
-                  <li>✓ Descriptions and payment methods</li>
-                  <li>✓ Tags and recurring status</li>
+                  <li>✓ Expense dates and categories</li>
+                  <li>✓ Payment methods and descriptions</li>
+                  <li>✓ Tags and recurring information</li>
                 </>
               )}
+
               {exportType === 'income' && (
                 <>
-                  <li>✓ Income date, source, and amount</li>
-                  <li>✓ Descriptions and recurring status</li>
+                  <li>✓ Income dates and sources</li>
+                  <li>✓ Recurring income information</li>
+                  <li>✓ Complete transaction details</li>
                 </>
               )}
             </ul>
           </div>
 
-          {/* Loading State */}
+          {/* Loading */}
           {loading && (
-            <div className="flex items-center justify-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <Loader className="w-5 h-5 animate-spin text-primary" />
-              <p className="text-sm font-medium text-primary dark:text-blue-400">Generating export...</p>
+            <div className="flex items-center justify-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+              <Loader className="h-5 w-5 animate-spin text-primary" />
+
+              <p className="text-sm font-medium text-primary">
+                Generating export file...
+              </p>
             </div>
           )}
         </div>
