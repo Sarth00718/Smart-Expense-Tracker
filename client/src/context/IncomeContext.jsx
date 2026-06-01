@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react'
+import { createContext, useState, useContext, useCallback, useMemo, useEffect } from 'react'
 import { incomeService } from '../services/incomeService'
 import { useAuth } from './AuthContext'
 
@@ -6,102 +6,78 @@ const IncomeContext = createContext()
 
 export const useIncome = () => {
   const context = useContext(IncomeContext)
-  if (!context) {
-    throw new Error('useIncome must be used within IncomeProvider')
-  }
+  if (!context) throw new Error('useIncome must be used within IncomeProvider')
   return context
 }
 
+/**
+ * IncomeProvider — server-side paginated (default page size 20).
+ * Does NOT fetch 10,000 records (issue #2).
+ */
 export const IncomeProvider = ({ children }) => {
   const { user } = useAuth()
-  const [income, setIncome] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 50, pages: 0 })
+  const [income,     setIncome]     = useState([])
+  const [loading,    setLoading]    = useState(false)
+  const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 20, pages: 0 })
 
   const loadIncome = useCallback(async (signal, params = {}) => {
-    if (!user) {
-      setIncome([])
-      setLoading(false)
-      return
-    }
-    
     try {
       setLoading(true)
-      
-      // For dashboard calculations, fetch ALL income without pagination
-      const shouldFetchAll = params.fetchAll === true
-      const queryParams = {
+      const response = await incomeService.getAll({
+        page:  params.page  ?? 1,
+        limit: params.limit ?? 20,
         ...params,
-        page: shouldFetchAll ? 1 : (params.page || 1),
-        limit: shouldFetchAll ? 10000 : (params.limit || 50) // Fetch all for calculations
-      }
-      
-      const response = await incomeService.getAll(queryParams)
-      
-      // Check if request was aborted
+      })
       if (signal?.aborted) return
-      
-      setIncome(response.data.data || [])
-      setPagination(response.data.pagination || { total: 0, page: 1, limit: 50, pages: 0 })
+      setIncome(response.data?.data ?? [])
+      setPagination(response.data?.pagination ?? { total: 0, page: 1, limit: 20, pages: 0 })
     } catch (error) {
-      // Don't set error state if request was aborted
       if (error.name === 'AbortError' || signal?.aborted) return
-      
       console.error('Error loading income:', error)
     } finally {
-      if (!signal?.aborted) {
-        setLoading(false)
-      }
+      if (!signal?.aborted) setLoading(false)
     }
-  }, [user]) // Removed income from dependencies to prevent loops
-
-  useEffect(() => {
-    const abortController = new AbortController()
-
-    if (user) {
-      // Defer income loading to not block initial render
-      // Fetch ALL income for accurate dashboard calculations
-      const timer = setTimeout(() => {
-        loadIncome(abortController.signal, { fetchAll: true })
-      }, 300)
-      
-      return () => {
-        clearTimeout(timer)
-        abortController.abort()
-      }
-    } else {
-      setIncome([])
-      setLoading(false)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]) // Only depend on user, not loadIncome
+  }, [])
 
   const addIncome = async (incomeData) => {
     const response = await incomeService.add(incomeData)
-    await loadIncome(null, { fetchAll: true }) // Refresh with all data
+    await loadIncome(null, { page: pagination.page, limit: pagination.limit })
     return response.data
   }
 
   const updateIncome = async (id, incomeData) => {
     const response = await incomeService.update(id, incomeData)
-    await loadIncome(null, { fetchAll: true }) // Refresh with all data
+    await loadIncome(null, { page: pagination.page, limit: pagination.limit })
     return response.data
   }
 
   const deleteIncome = async (id) => {
     await incomeService.delete(id)
-    await loadIncome(null, { fetchAll: true }) // Refresh with all data
+    await loadIncome(null, { page: pagination.page, limit: pagination.limit })
   }
 
+  const goToPage = useCallback((page) => {
+    loadIncome(null, { page, limit: pagination.limit })
+  }, [loadIncome, pagination.limit])
+
+  // Load first page when auth becomes available and when page size changes
+  useEffect(() => {
+    if (!user) {
+      setIncome([])
+      setPagination({ total: 0, page: 1, limit: 20, pages: 0 })
+      setLoading(false)
+      return
+    }
+
+    const controller = new AbortController()
+    loadIncome(controller.signal, { page: pagination.page, limit: pagination.limit })
+    return () => controller.abort()
+  }, [user, loadIncome, pagination.limit, pagination.page])
+
   const value = useMemo(() => ({
-    income,
-    loading,
-    pagination,
-    loadIncome,
-    addIncome,
-    updateIncome,
-    deleteIncome
-  }), [income, loading, pagination, loadIncome])
+    income, loading, pagination,
+    loadIncome, addIncome, updateIncome, deleteIncome, goToPage,
+  }), [income, loading, pagination, loadIncome, goToPage])
 
   return <IncomeContext.Provider value={value}>{children}</IncomeContext.Provider>
 }

@@ -3,8 +3,6 @@ import cors from 'cors';
 import compression from 'compression';
 import { validateEnv, config } from './config/env.js';
 import database from './config/database.js';
-import { securityHeaders, sanitizeInput } from './middleware/security.js';
-import { authLimiter, aiLimiter, apiLimiter } from './middleware/rateLimiter.js';
 import errorHandler from './middleware/errorHandler.js';
 
 // Routes
@@ -24,15 +22,11 @@ import voiceRoutes from './routes/voice.js';
 import filtersRoutes from './routes/filters.js';
 import usersRoutes from './routes/users.js';
 import exportRoutes from './routes/export.js';
-import biometricRoutes from './routes/biometric.js';
 
 // Validate required environment variables
 validateEnv();
 
 const app = express();
-
-// ── Security ─────────────────────────────────────────────────────────────────
-app.use(securityHeaders);
 
 // ── Compression ───────────────────────────────────────────────────────────────
 app.use(compression());
@@ -56,30 +50,26 @@ app.use(
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
-// ── Input Sanitization ────────────────────────────────────────────────────────
-app.use(sanitizeInput);
-
 // ── Database Connection ───────────────────────────────────────────────────────
 await database.connect();
 
 // ── API Routes ────────────────────────────────────────────────────────────────
 app.use('/api/health', healthRoutes);                          // No rate limit — monitoring
-app.use('/api/auth', authLimiter, authRoutes);
-app.use('/api/expenses', apiLimiter, expenseRoutes);
-app.use('/api/income', apiLimiter, incomeRoutes);
-app.use('/api/budgets', apiLimiter, budgetRoutes);
-app.use('/api/goals', apiLimiter, goalRoutes);
-app.use('/api/analytics', apiLimiter, analyticsRoutes);
-app.use('/api/ai', aiLimiter, aiRoutes);
-app.use('/api/achievements', apiLimiter, achievementRoutes);
-app.use('/api/receipts', apiLimiter, receiptRoutes);
-app.use('/api/budget-recommendations', apiLimiter, budgetRecommendationsRoutes);
-app.use('/api/reports', apiLimiter, reportsRoutes);
-app.use('/api/voice', apiLimiter, voiceRoutes);
-app.use('/api/filters', apiLimiter, filtersRoutes);
-app.use('/api/users', apiLimiter, usersRoutes);
-app.use('/api/export', apiLimiter, exportRoutes);
-app.use('/api/biometric', authLimiter, biometricRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/income', incomeRoutes);
+app.use('/api/budgets', budgetRoutes);
+app.use('/api/goals', goalRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/achievements', achievementRoutes);
+app.use('/api/receipts', receiptRoutes);
+app.use('/api/budget-recommendations', budgetRecommendationsRoutes);
+app.use('/api/reports', reportsRoutes);
+app.use('/api/voice', voiceRoutes);
+app.use('/api/filters', filtersRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/export', exportRoutes);
 
 // ── Root ──────────────────────────────────────────────────────────────────────
 app.get('/', (_req, res) => {

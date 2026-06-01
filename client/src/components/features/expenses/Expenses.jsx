@@ -15,7 +15,7 @@ import { EXPENSE_CATEGORIES, CATEGORY_BADGE_CLASSES } from '../../../constants/c
 import ExpenseForm from '../../forms/ExpenseForm'
 
 const Expenses = () => {
-  const { expenses, deleteExpense, updateExpense, addExpense, loading, loadExpenses } = useExpense()
+  const { expenses, deleteExpense, updateExpense, addExpense, loading, loadExpenses, pagination, goToPage } = useExpense()
   const navigate = useNavigate()
   const [editingExpense, setEditingExpense] = useState(null)
   const [editForm, setEditForm] = useState({ date: '', category: '', amount: '', description: '' })
@@ -70,20 +70,20 @@ const Expenses = () => {
   }, [formData, addExpense, resetForm])
 
   const handleVoiceExpenseCreated = useCallback(async () => {
-    await loadExpenses(null, { fetchAll: true })
+    await loadExpenses(null, { page: pagination.page, limit: pagination.limit })
     setShowVoiceInput(false)
     toast.success('Expense created from voice input!')
-  }, [loadExpenses])
+  }, [loadExpenses, pagination.page, pagination.limit])
 
   const handleReceiptScanned = useCallback(async () => {
-    await loadExpenses(null, { fetchAll: true })
+    await loadExpenses(null, { page: pagination.page, limit: pagination.limit })
     setShowReceiptScanner(false)
-  }, [loadExpenses])
+  }, [loadExpenses, pagination.page, pagination.limit])
 
   const handleClearAll = async () => {
     try {
       await expenseService.deleteAll()
-      await loadExpenses(null, { fetchAll: true })
+      await loadExpenses(null, { page: 1, limit: pagination.limit })
       toast.success('All expenses cleared successfully')
     } catch (error) {
       toast.error('Failed to clear expenses')
@@ -155,6 +155,32 @@ const Expenses = () => {
   const getCategoryBadgeClass = useCallback((category) => {
     return CATEGORY_BADGE_CLASSES[category] || 'badge-other'
   }, [])
+
+  const paginationButtons = useMemo(() => {
+    const totalPages = pagination?.pages || 0
+    const currentPage = pagination?.page || 1
+
+    if (totalPages <= 1) return []
+
+    const pages = new Set([1, totalPages, currentPage - 1, currentPage, currentPage + 1])
+    return Array.from(pages)
+      .filter((page) => page >= 1 && page <= totalPages)
+      .sort((a, b) => a - b)
+  }, [pagination?.page, pagination?.pages])
+
+  const renderPaginationLabel = () => {
+    const totalPages = pagination?.pages || 0
+    const currentPage = pagination?.page || 1
+    const totalItems = pagination?.total || 0
+
+    if (totalPages <= 1) return null
+
+    return (
+      <p className="text-sm text-gray-600 dark:text-slate-400">
+        Page {currentPage} of {totalPages} • {totalItems} expense{totalItems === 1 ? '' : 's'}
+      </p>
+    )
+  }
 
   // Filter and sort expenses
   const filteredAndSortedExpenses = useMemo(() => {
@@ -561,6 +587,48 @@ const Expenses = () => {
           </div>
         )}
       </div>
+
+      {/* Pagination */}
+      {pagination.pages > 1 && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 sm:p-5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl">
+          {renderPaginationLabel()}
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => goToPage(Math.max(1, pagination.page - 1))}
+              disabled={loading || pagination.page <= 1}
+              className="min-w-20"
+            >
+              Prev
+            </Button>
+
+            {paginationButtons.map((page) => (
+              <Button
+                key={page}
+                variant={page === pagination.page ? 'primary' : 'outline'}
+                size="sm"
+                onClick={() => goToPage(page)}
+                disabled={loading}
+                className="min-w-10 px-3"
+              >
+                {page}
+              </Button>
+            ))}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => goToPage(Math.min(pagination.pages, pagination.page + 1))}
+              disabled={loading || pagination.page >= pagination.pages}
+              className="min-w-20"
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Advanced Search Modal */}
       {showAdvancedSearch && (

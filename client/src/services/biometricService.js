@@ -1,4 +1,5 @@
 import api from './api'
+import { BIOMETRIC } from '../config/apiEndpoints'
 
 // Check if WebAuthn is supported
 export const isBiometricSupported = () => {
@@ -76,7 +77,7 @@ export const biometricService = {
       const publicKey = arrayBufferToBase64(credential.response.getPublicKey())
 
       // Register with backend
-      const response = await api.post('/biometric/register', {
+      const response = await api.post(BIOMETRIC.REGISTER, {
         credentialId,
         publicKey,
         counter: 0
@@ -133,7 +134,7 @@ export const biometricService = {
       }
 
       // Send to backend for verification
-      const response = await api.post('/biometric/authenticate', {
+      const response = await api.post(BIOMETRIC.AUTHENTICATE, {
         email: email || storedEmail,
         credentialId,
         signature: arrayBufferToBase64(assertion.response.signature),
@@ -176,7 +177,7 @@ export const biometricService = {
   // Get registered credentials
   getCredentials: async () => {
     try {
-      const response = await api.get('/biometric/credentials')
+      const response = await api.get(BIOMETRIC.CREDENTIALS)
       return response.data.credentials
     } catch (error) {
       console.error('Get credentials error:', error)
@@ -187,7 +188,7 @@ export const biometricService = {
   // Remove biometric credential
   remove: async (credentialId) => {
     try {
-      await api.delete(`/biometric/credentials/${credentialId}`)
+      await api.delete(BIOMETRIC.CREDENTIAL_BY_ID(credentialId))
       
       // Clear local storage if it matches
       if (localStorage.getItem('biometricCredentialId') === credentialId) {

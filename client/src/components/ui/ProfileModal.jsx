@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { User, Mail, Calendar, Shield, X } from 'lucide-react'
 import { Modal } from './index'
-import api from '../../services/api'
+import { usersService } from '../../services/usersService'
 
 const ProfileModal = ({ isOpen, onClose, user }) => {
   const [stats, setStats] = useState({ expenses: 0, budgets: 0, goals: 0 })
@@ -16,7 +16,7 @@ const ProfileModal = ({ isOpen, onClose, user }) => {
   const fetchStats = async () => {
     try {
       setLoading(true)
-      const response = await api.get('/users/profile/stats')
+      const response = await usersService.getProfileStats()
       setStats(response.data)
     } catch (error) {
       console.error('Error fetching profile stats:', error)

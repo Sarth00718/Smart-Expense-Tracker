@@ -1,29 +1,21 @@
-import api from './api';
+import api from './api'
+import { VOICE } from '../config/apiEndpoints'
 
 export const voiceService = {
-  /**
-   * Parse voice transcript to expense data
-   */
   parseTranscript: async (transcript) => {
-    const response = await api.post('/voice/parse', { transcript });
-    return response.data;
+    const response = await api.post(VOICE.PARSE, { transcript })
+    return response.data
   },
 
-  /**
-   * Create expense directly from voice command
-   */
   createExpenseFromVoice: async (transcript, date = null) => {
-    const response = await api.post('/voice/expense', { 
+    const response = await api.post(VOICE.EXPENSE, {
       transcript,
       date: date || new Date()
-    });
-    return response.data;
+    })
+    return response.data
   },
 
-  /**
-   * Check browser support for voice input
-   */
   checkBrowserSupport: () => {
-    return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+    return !!(window.SpeechRecognition || window.webkitSpeechRecognition)
   }
-};
+}

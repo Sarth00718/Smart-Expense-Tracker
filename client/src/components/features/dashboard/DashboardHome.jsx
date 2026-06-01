@@ -1,133 +1,167 @@
-import { useState, lazy, Suspense, useCallback, useMemo } from 'react'
+import { useState, lazy, Suspense, useCallback, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { useExpense } from '../../../context/ExpenseContext'
-import { useIncome } from '../../../context/IncomeContext'
+import { analyticsService } from '../../../services/analyticsService'
 import { TrendingUp, TrendingDown, Wallet, Plus, Receipt, Camera, Mic, ArrowUpRight, Calendar, DollarSign, Zap } from 'lucide-react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend as RechartsLegend, Tooltip as RechartsTooltip } from 'recharts'
 import toast from 'react-hot-toast'
-import { StatCard, Card, Button, EmptyState, Modal, MoneyRain, Card3DTilt } from '../../ui'
+import { StatCard, Card, Button, EmptyState, Modal, Card3DTilt } from '../../ui'
 import { format } from 'date-fns'
 import { useNavigate } from 'react-router-dom'
 import { staggerContainer, staggerItem, fadeInUp } from '../../../utils/animations'
 import { useFormState } from '../../../hooks/useFormState'
 import { useChartTheme } from '../../../hooks/useChartTheme'
+import { useResponsive } from '../../../hooks/useResponsive'
 import { CHART_COLORS, CATEGORY_COLORS } from '../../../constants/categories'
 import ExpenseForm from '../../forms/ExpenseForm'
 import IncomeForm from '../../forms/IncomeForm'
+import { expenseService } from '../../../services/expenseService'
+import { incomeService } from '../../../services/incomeService'
 
 const VoiceExpenseInput = lazy(() => import('../voice/VoiceExpenseInput'))
-const ReceiptScanner = lazy(() => import('../receipts/ReceiptScanner'))
+const ReceiptScanner    = lazy(() => import('../receipts/ReceiptScanner'))
+
+// ── Initial empty dashboard stats ─────────────────────────────────────────────
+const EMPTY_STATS = {
+  totalIncome: 0, totalExpenses: 0, netBalance: 0,
+  monthIncome: 0, monthExpenses: 0, monthNetBalance: 0,
+}
 
 const DashboardHome = () => {
-  const { expenses, addExpense, loadExpenses } = useExpense()
-  const { income, addIncome: addIncomeToContext } = useIncome()
   const { tooltipStyle } = useChartTheme()
+  const { lg } = useResponsive()           // SSR-safe — no window.innerWidth in render
   const navigate = useNavigate()
-  
-  const [showVoiceInput, setShowVoiceInput] = useState(false)
-  const [showReceiptScanner, setShowReceiptScanner] = useState(false)
-  const [showAddExpense, setShowAddExpense] = useState(false)
-  const [showAddIncome, setShowAddIncome] = useState(false)
-  const [moneyRain, setMoneyRain] = useState(false)
+
+  // ── Server-side analytics (issue #10) ─────────────────────────────────────
+  const [dashStats, setDashStats] = useState(EMPTY_STATS)
+  const [statsLoading, setStatsLoading] = useState(true)
+
+  // ── Paginated local lists (issue #2) ──────────────────────────────────────
+  const [recentExpenses, setRecentExpenses] = useState([])
+  const [chartData,      setChartData]      = useState([])
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        setStatsLoading(true)
+        const [dashRes, recentRes] = await Promise.all([
+          analyticsService.getDashboard(),
+          expenseService.getRecent(5),
+        ])
+        if (cancelled) return
+
+        // Backend returns computed totals — no client calc needed
+        const d = dashRes.data
+        setDashStats({
+          totalIncome:    d.totalIncome    ?? 0,
+          totalExpenses:  d.totalExpenses  ?? 0,
+          netBalance:     d.netBalance     ?? 0,
+          monthIncome:    d.monthIncome    ?? 0,
+          monthExpenses:  d.monthExpenses  ?? 0,
+          monthNetBalance:d.monthNetBalance?? 0,
+        })
+
+        const recent = Array.isArray(recentRes.data?.data)
+          ? recentRes.data.data
+          : Array.isArray(recentRes.data) ? recentRes.data : []
+        setRecentExpenses(recent)
+
+        // Build chart data from category breakdown if provided
+        if (d.categoryBreakdown) {
+          const chart = Object.entries(d.categoryBreakdown).map(([name, value], i) => ({
+            name, value, color: CHART_COLORS[i % CHART_COLORS.length]
+          }))
+          setChartData(chart)
+        }
+      } catch (err) {
+        if (!cancelled) console.error('Dashboard load error:', err)
+      } finally {
+        if (!cancelled) setStatsLoading(false)
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
+
+  // ── Modals ─────────────────────────────────────────────────────────────────
+  const [showVoiceInput,    setShowVoiceInput]    = useState(false)
+  const [showReceiptScanner,setShowReceiptScanner] = useState(false)
+  const [showAddExpense,    setShowAddExpense]    = useState(false)
+  const [showAddIncome,     setShowAddIncome]     = useState(false)
 
   const { formData: expenseFormData, setFormData: setExpenseFormData, resetForm: resetExpenseForm } = useFormState({
     date: new Date().toISOString().split('T')[0],
-    category: '',
-    amount: '',
-    description: ''
+    category: '', amount: '', description: ''
   })
 
   const { formData: incomeFormData, setFormData: setIncomeFormData, resetForm: resetIncomeForm } = useFormState({
     date: new Date().toISOString().split('T')[0],
-    source: 'Salary',
-    amount: '',
-    description: '',
-    isRecurring: false
+    source: 'Salary', amount: '', description: '', isRecurring: false
   })
 
-  // Calculate stats locally - memoized for performance
-  const stats = useMemo(() => {
-    const totalIncome = Array.isArray(income) ? income.reduce((sum, item) => sum + (item.amount || 0), 0) : 0
-    const totalExpenses = Array.isArray(expenses) ? expenses.reduce((sum, item) => sum + (item.amount || 0), 0) : 0
-    const netBalance = totalIncome - totalExpenses
-
-    const now = new Date()
-    const thisMonthExpenses = Array.isArray(expenses)
-      ? expenses.filter(e => {
-        const expDate = new Date(e.date)
-        return expDate.getMonth() === now.getMonth() && expDate.getFullYear() === now.getFullYear()
-      }).reduce((sum, e) => sum + (e.amount || 0), 0)
-      : 0
-    const thisMonthIncome = Array.isArray(income)
-      ? income.filter(i => {
-        const incDate = new Date(i.date)
-        return incDate.getMonth() === now.getMonth() && incDate.getFullYear() === now.getFullYear()
-      }).reduce((sum, i) => sum + (i.amount || 0), 0)
-      : 0
-    const monthNetBalance = thisMonthIncome - thisMonthExpenses
-
-    return { totalIncome, totalExpenses, netBalance, monthNetBalance }
-  }, [expenses, income])
+  // Refresh stats after mutations
+  const refreshStats = useCallback(async () => {
+    try {
+      const [dashRes, recentRes] = await Promise.all([
+        analyticsService.getDashboard(),
+        expenseService.getRecent(5),
+      ])
+      const d = dashRes.data
+      setDashStats({
+        totalIncome:    d.totalIncome    ?? 0,
+        totalExpenses:  d.totalExpenses  ?? 0,
+        netBalance:     d.netBalance     ?? 0,
+        monthIncome:    d.monthIncome    ?? 0,
+        monthExpenses:  d.monthExpenses  ?? 0,
+        monthNetBalance:d.monthNetBalance?? 0,
+      })
+      const recent = Array.isArray(recentRes.data?.data)
+        ? recentRes.data.data
+        : Array.isArray(recentRes.data) ? recentRes.data : []
+      setRecentExpenses(recent)
+    } catch {}
+  }, [])
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault()
     try {
-      await addExpense(expenseFormData)
+      await expenseService.add(expenseFormData)
       toast.success('Expense added successfully!')
       resetExpenseForm()
       setShowAddExpense(false)
-    } catch (error) {
+      await refreshStats()
+    } catch {
       toast.error('Failed to add expense')
     }
-  }, [expenseFormData, addExpense, resetExpenseForm])
+  }, [expenseFormData, resetExpenseForm, refreshStats])
 
   const handleIncomeSubmit = useCallback(async (e) => {
     e.preventDefault()
     try {
-      await addIncomeToContext(incomeFormData)
-      toast.success('Income added successfully!')
-      if (parseFloat(incomeFormData.amount) > 10000) {
-        setMoneyRain(true)
-        setTimeout(() => setMoneyRain(false), 3000)
-      }
+      await incomeService.add(incomeFormData)
+      // Professional SaaS feedback — no MoneyRain (issue #4)
+      toast.success('Income added successfully! 🎉', { duration: 3500 })
       resetIncomeForm()
       setShowAddIncome(false)
-    } catch (error) {
+      await refreshStats()
+    } catch {
       toast.error('Failed to add income')
     }
-  }, [incomeFormData, addIncomeToContext, resetIncomeForm])
+  }, [incomeFormData, resetIncomeForm, refreshStats])
 
   const handleVoiceExpenseCreated = useCallback(async () => {
-    await loadExpenses(null, { fetchAll: true })
+    await refreshStats()
     setShowVoiceInput(false)
     toast.success('Expense created from voice input!')
-  }, [loadExpenses])
+  }, [refreshStats])
 
   const handleReceiptScanned = useCallback(async () => {
-    await loadExpenses(null, { fetchAll: true })
+    await refreshStats()
     setShowReceiptScanner(false)
-  }, [loadExpenses])
+  }, [refreshStats])
 
-  const categoryData = useMemo(() => {
-    if (!Array.isArray(expenses)) return {}
-    return expenses.reduce((acc, exp) => {
-      acc[exp.category] = (acc[exp.category] || 0) + exp.amount
-      return acc
-    }, {})
-  }, [expenses])
-
-  const chartData = useMemo(() => {
-    return Object.keys(categoryData).map((category, index) => ({
-      name: category,
-      value: categoryData[category],
-      color: CHART_COLORS[index % CHART_COLORS.length]
-    }))
-  }, [categoryData])
-
-  const recentExpenses = useMemo(() => {
-    if (!Array.isArray(expenses)) return []
-    return [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5)
-  }, [expenses])
+  // SSR-safe pie radius (issue #5)
+  const pieRadius = lg ? 85 : 60
 
   return (
     <motion.div
@@ -136,30 +170,40 @@ const DashboardHome = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Header Section */}
+      {/* Header */}
       <motion.div className="flex flex-col gap-3 sm:gap-4" {...fadeInUp}>
         <div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 dark:text-slate-100 mb-1 sm:mb-2 tracking-tight">
             Welcome back! 👋
           </h1>
-          <p className="text-gray-600 dark:text-slate-400 text-sm sm:text-base lg:text-lg leading-relaxed">Here's your financial overview for today</p>
+          <p className="text-gray-600 dark:text-slate-400 text-sm sm:text-base lg:text-lg leading-relaxed">
+            Here's your financial overview for today
+          </p>
         </div>
       </motion.div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards — data from backend (issue #10) */}
       <motion.div
         className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6"
         variants={staggerContainer}
         initial="initial"
         animate="animate"
       >
-        <motion.div variants={staggerItem}><StatCard title="Total Income" value={`₹${stats?.totalIncome?.toFixed(2) || '0.00'}`} icon={TrendingUp} color="green" animateValue={true} /></motion.div>
-        <motion.div variants={staggerItem}><StatCard title="Total Expenses" value={`₹${stats?.totalExpenses?.toFixed(2) || '0.00'}`} icon={TrendingDown} color="red" animateValue={true} /></motion.div>
-        <motion.div variants={staggerItem}><StatCard title="Net Balance" value={`₹${stats?.netBalance?.toFixed(2) || '0.00'}`} icon={Wallet} color={(stats?.netBalance || 0) >= 0 ? 'blue' : 'orange'} animateValue={true} /></motion.div>
-        <motion.div variants={staggerItem}><StatCard title="This Month" value={`₹${stats?.monthNetBalance?.toFixed(2) || '0.00'}`} icon={TrendingUp} color="purple" animateValue={true} /></motion.div>
+        <motion.div variants={staggerItem}>
+          <StatCard title="Total Income"    value={`₹${dashStats.totalIncome.toFixed(2)}`}    icon={TrendingUp}   color="green"  animateValue={!statsLoading} />
+        </motion.div>
+        <motion.div variants={staggerItem}>
+          <StatCard title="Total Expenses"  value={`₹${dashStats.totalExpenses.toFixed(2)}`}  icon={TrendingDown} color="red"    animateValue={!statsLoading} />
+        </motion.div>
+        <motion.div variants={staggerItem}>
+          <StatCard title="Net Balance"     value={`₹${dashStats.netBalance.toFixed(2)}`}     icon={Wallet}       color={dashStats.netBalance >= 0 ? 'blue' : 'orange'} animateValue={!statsLoading} />
+        </motion.div>
+        <motion.div variants={staggerItem}>
+          <StatCard title="This Month"      value={`₹${dashStats.monthNetBalance.toFixed(2)}`} icon={TrendingUp}  color="purple" animateValue={!statsLoading} />
+        </motion.div>
       </motion.div>
 
-      {/* Quick Action Buttons */}
+      {/* Quick Actions */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.4 }}>
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700 rounded-xl p-4 border border-blue-100 dark:border-slate-600">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3 flex items-center gap-2 tracking-tight">
@@ -192,11 +236,11 @@ const DashboardHome = () => {
         <Card title="Quick Links" subtitle="Explore more features">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {[
-              { label: 'Analytics', icon: TrendingUp, path: '/dashboard/analytics', bg: 'bg-blue-50/80   dark:bg-blue-900/20   hover:bg-blue-100/80   dark:hover:bg-blue-900/30', iconBg: 'bg-gradient-to-br from-blue-500 to-blue-600' },
-              { label: 'Budgets', icon: Wallet, path: '/dashboard/budgets', bg: 'bg-purple-50/80 dark:bg-purple-900/20 hover:bg-purple-100/80 dark:hover:bg-purple-900/30', iconBg: 'bg-gradient-to-br from-purple-500 to-purple-600' },
-              { label: 'Goals', icon: TrendingUp, path: '/dashboard/goals', bg: 'bg-emerald-50/80  dark:bg-emerald-900/20  hover:bg-emerald-100/80  dark:hover:bg-emerald-900/30', iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
-              { label: 'Income', icon: DollarSign, path: '/dashboard/income', bg: 'bg-amber-50/80   dark:bg-amber-900/20   hover:bg-amber-100/80   dark:hover:bg-amber-900/30', iconBg: 'bg-gradient-to-br from-amber-500 to-orange-600' },
-              { label: 'Heatmap', icon: Calendar, path: '/dashboard/analytics?view=heatmap', bg: 'bg-rose-50/80   dark:bg-rose-900/20   hover:bg-rose-100/80   dark:hover:bg-rose-900/30', iconBg: 'bg-gradient-to-br from-rose-500 to-pink-600' },
+              { label: 'Analytics', icon: TrendingUp, path: '/dashboard/analytics', bg: 'bg-blue-50/80 dark:bg-blue-900/20 hover:bg-blue-100/80 dark:hover:bg-blue-900/30',     iconBg: 'bg-gradient-to-br from-blue-500 to-blue-600' },
+              { label: 'Budgets',   icon: Wallet,     path: '/dashboard/budgets',   bg: 'bg-purple-50/80 dark:bg-purple-900/20 hover:bg-purple-100/80 dark:hover:bg-purple-900/30', iconBg: 'bg-gradient-to-br from-purple-500 to-purple-600' },
+              { label: 'Goals',     icon: TrendingUp, path: '/dashboard/goals',     bg: 'bg-emerald-50/80 dark:bg-emerald-900/20 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/30', iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
+              { label: 'Income',    icon: DollarSign, path: '/dashboard/income',    bg: 'bg-amber-50/80 dark:bg-amber-900/20 hover:bg-amber-100/80 dark:hover:bg-amber-900/30',   iconBg: 'bg-gradient-to-br from-amber-500 to-orange-600' },
+              { label: 'Heatmap',   icon: Calendar,   path: '/dashboard/heatmap',   bg: 'bg-rose-50/80 dark:bg-rose-900/20 hover:bg-rose-100/80 dark:hover:bg-rose-900/30',       iconBg: 'bg-gradient-to-br from-rose-500 to-pink-600' },
             ].map(({ label, icon: Icon, path, bg, iconBg }) => (
               <motion.button key={label} whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.98 }}
                 onClick={() => navigate(path)}
@@ -255,23 +299,20 @@ const DashboardHome = () => {
           </Card>
         </div>
 
-        {/* Category Chart */}
+        {/* Category Chart — SSR-safe radius (issue #5) */}
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.6, duration: 0.4 }}>
           <Card3DTilt>
-            <Card title="Spending by Category" subtitle="This month">
+            <Card title="Spending by Category" subtitle="All time">
               {chartData.length > 0 ? (
                 <div className="w-full" style={{ minHeight: '240px', height: '280px' }}>
                   <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={240}>
                     <PieChart>
                       <Pie data={chartData} cx="50%" cy="50%" labelLine={false}
-                        outerRadius={window.innerWidth < 640 ? 60 : window.innerWidth < 1024 ? 70 : 85}
+                        outerRadius={pieRadius}
                         fill="#8884d8" dataKey="value">
                         {chartData.map((entry) => (<Cell key={`cell-${entry.name}`} fill={entry.color} />))}
                       </Pie>
-                      <RechartsTooltip
-                        formatter={(value) => `₹${value.toFixed(2)}`}
-                        contentStyle={tooltipStyle}
-                      />
+                      <RechartsTooltip formatter={(value) => `₹${value.toFixed(2)}`} contentStyle={tooltipStyle} />
                       <RechartsLegend verticalAlign="bottom" height={36} iconSize={10} wrapperStyle={{ fontSize: '11px' }} />
                     </PieChart>
                   </ResponsiveContainer>
@@ -286,11 +327,7 @@ const DashboardHome = () => {
 
       {/* Add Expense Modal */}
       <Modal isOpen={showAddExpense} onClose={() => setShowAddExpense(false)} title="Add New Expense" size="md">
-        <ExpenseForm
-          formData={expenseFormData}
-          onChange={setExpenseFormData}
-          onSubmit={handleSubmit}
-        />
+        <ExpenseForm formData={expenseFormData} onChange={setExpenseFormData} onSubmit={handleSubmit} />
       </Modal>
 
       {/* Voice Input Modal */}
@@ -309,15 +346,8 @@ const DashboardHome = () => {
 
       {/* Add Income Modal */}
       <Modal isOpen={showAddIncome} onClose={() => setShowAddIncome(false)} title="Add New Income" size="md">
-        <IncomeForm
-          formData={incomeFormData}
-          onChange={setIncomeFormData}
-          onSubmit={handleIncomeSubmit}
-        />
+        <IncomeForm formData={incomeFormData} onChange={setIncomeFormData} onSubmit={handleIncomeSubmit} />
       </Modal>
-
-      {/* Money Rain Effect */}
-      <MoneyRain active={moneyRain} duration={3000} intensity={25} />
     </motion.div>
   )
 }

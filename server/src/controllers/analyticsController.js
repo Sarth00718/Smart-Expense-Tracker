@@ -19,6 +19,7 @@ export const getDashboard = async (req, res) => {
       monthExpensesResult, monthIncomeResult,
       categories, recentExpenseCount, recentIncomeCount,
       budgetCount, goalsCount, achievementsCount,
+      categoryAgg,
     ] = await Promise.all([
       Expense.aggregate([{ $match: { userId: req.userId } }, { $group: { _id: null, total: { $sum: { $toDouble: '$amount' } }, count: { $sum: 1 } } }]),
       Income.aggregate([{ $match: { userId: req.userId } }, { $group: { _id: null, total: { $sum: { $toDouble: '$amount' } }, count: { $sum: 1 } } }]),
@@ -30,30 +31,52 @@ export const getDashboard = async (req, res) => {
       Budget.countDocuments({ userId: req.userId }),
       Goal.countDocuments({ userId: req.userId }),
       Achievement.countDocuments({ userId: req.userId }),
+      // Category breakdown computed server-side (issue #10)
+      Expense.aggregate([
+        { $match: { userId: req.userId } },
+        { $group: { _id: '$category', total: { $sum: { $toDouble: '$amount' } } } },
+        { $sort: { total: -1 } },
+      ]),
     ]);
 
     const totalExpenses = totalExpensesResult[0]?.total || 0;
-    const totalIncome = totalIncomeResult[0]?.total || 0;
+    const totalIncome   = totalIncomeResult[0]?.total   || 0;
     const monthExpenses = monthExpensesResult[0]?.total || 0;
-    const monthIncome = monthIncomeResult[0]?.total || 0;
+    const monthIncome   = monthIncomeResult[0]?.total   || 0;
+
+    const categoryBreakdown = Object.fromEntries(
+      categoryAgg.map(({ _id, total }) => [_id, Math.round(total * 100) / 100])
+    );
+    const topCategories = categoryAgg.slice(0, 5).map(({ _id, total }) => ({
+      category: _id,
+      total: Math.round(total * 100) / 100,
+      percentage: totalExpenses > 0 ? Math.round((total / totalExpenses) * 1000) / 10 : 0,
+    }));
+
+    const savingsRate = totalIncome > 0
+      ? Math.round(((totalIncome - totalExpenses) / totalIncome) * 1000) / 10
+      : 0;
 
     res.json({
-      totalExpenses: Math.round(totalExpenses * 100) / 100,
-      totalIncome: Math.round(totalIncome * 100) / 100,
-      netBalance: Math.round((totalIncome - totalExpenses) * 100) / 100,
-      monthExpenses: Math.round(monthExpenses * 100) / 100,
-      monthIncome: Math.round(monthIncome * 100) / 100,
-      monthNetBalance: Math.round((monthIncome - monthExpenses) * 100) / 100,
-      categoryCount: categories.length,
+      totalExpenses:    Math.round(totalExpenses * 100) / 100,
+      totalIncome:      Math.round(totalIncome   * 100) / 100,
+      netBalance:       Math.round((totalIncome - totalExpenses) * 100) / 100,
+      savingsRate,
+      monthExpenses:    Math.round(monthExpenses * 100) / 100,
+      monthIncome:      Math.round(monthIncome   * 100) / 100,
+      monthNetBalance:  Math.round((monthIncome - monthExpenses) * 100) / 100,
+      categoryBreakdown,
+      topCategories,
+      categoryCount:    categories.length,
       recentExpenseCount,
       recentIncomeCount,
       budgetCount,
       goalsCount,
       achievementsCount,
       totalExpenseCount: totalExpensesResult[0]?.count || 0,
-      totalIncomeCount: totalIncomeResult[0]?.count || 0,
+      totalIncomeCount:  totalIncomeResult[0]?.count   || 0,
       monthExpenseCount: monthExpensesResult[0]?.count || 0,
-      monthIncomeCount: monthIncomeResult[0]?.count || 0,
+      monthIncomeCount:  monthIncomeResult[0]?.count   || 0,
       calculatedAt: new Date().toISOString(),
     });
   } catch (error) {

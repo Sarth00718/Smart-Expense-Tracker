@@ -1,29 +1,14 @@
-import api from './api';
+import api from './api'
+import { INCOME } from '../config/apiEndpoints'
 
 export const incomeService = {
-  // Get all income with pagination
   getAll: (params = {}) => {
-    const { page = 1, limit = 50, startDate, endDate, source } = params;
-    return api.get('/income', { params: { page, limit, startDate, endDate, source } });
+    const { page = 1, limit = 50, startDate, endDate, source } = params
+    return api.get(INCOME.BASE, { params: { page, limit, startDate, endDate, source } })
   },
-
-  // Add new income
-  add: (income) => {
-    return api.post('/income', income);
-  },
-
-  // Update income
-  update: (id, income) => {
-    return api.put(`/income/${id}`, income);
-  },
-
-  // Delete income
-  delete: (id) => {
-    return api.delete(`/income/${id}`);
-  },
-
-  // Get income summary
-  getSummary: () => {
-    return api.get('/income/summary');
-  }
-};
+  add:        (income)        => api.post(INCOME.BASE, income),
+  update:     (id, income)    => api.put(INCOME.BY_ID(id), income),
+  delete:     (id)            => api.delete(INCOME.BY_ID(id)),
+  getSummary: ()              => api.get(INCOME.SUMMARY),
+  getSources: ()              => api.get(INCOME.SOURCES),
+}

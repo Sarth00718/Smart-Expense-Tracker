@@ -4,7 +4,7 @@ import { useAuth } from '../../../context/AuthContext'
 import { useTheme } from '../../../context/ThemeContext'
 import { Card, Button, Modal, PageHeader } from '../../ui'
 import BiometricSettings from './BiometricSettings'
-import api from '../../../services/api'
+import { usersService } from '../../../services/usersService'
 import toast from 'react-hot-toast'
 
 const Settings = () => {
@@ -70,7 +70,7 @@ const Settings = () => {
 
     setLoading(true)
     try {
-      const response = await api.put('/users/profile', {
+      const response = await usersService.updateProfile({
         fullName: profileForm.fullName.trim(),
         email: profileForm.email.trim(),
         picture: profileForm.picture
@@ -133,10 +133,7 @@ const Settings = () => {
 
     setLoading(true)
     try {
-      await api.put('/users/change-password', {
-        currentPassword,
-        newPassword
-      })
+      await usersService.changePassword(currentPassword, newPassword)
 
       toast.success('Password changed successfully!')
       setShowPasswordModal(false)
@@ -155,7 +152,7 @@ const Settings = () => {
 
   const fetchSessions = async () => {
     try {
-      const response = await api.get('/users/sessions')
+      const response = await usersService.getSessions()
       setSessions(response.data.sessions || [])
     } catch (error) {
       console.error('Fetch sessions error:', error)
@@ -170,7 +167,7 @@ const Settings = () => {
 
   const handleRevokeSession = async (sessionId) => {
     try {
-      await api.delete(`/users/sessions/${sessionId}`)
+      await usersService.revokeSession(sessionId)
       toast.success('Session revoked successfully')
       fetchSessions()
     } catch (error) {

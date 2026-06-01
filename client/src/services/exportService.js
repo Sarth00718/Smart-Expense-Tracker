@@ -1,4 +1,5 @@
 import api from './api'
+import { EXPORT } from '../config/apiEndpoints'
 import * as XLSX from 'xlsx'
 
 export const exportService = {
@@ -9,7 +10,7 @@ export const exportService = {
       if (startDate) params.append('startDate', startDate)
       if (endDate) params.append('endDate', endDate)
 
-      const response = await api.get(`/export/expenses?${params}`, {
+      const response = await api.get(`${EXPORT.EXPENSES}?${params}`, {
         responseType: 'blob'
       })
 
@@ -36,7 +37,7 @@ export const exportService = {
       if (startDate) params.append('startDate', startDate)
       if (endDate) params.append('endDate', endDate)
 
-      const response = await api.get(`/export/expenses?${params}`)
+      const response = await api.get(`${EXPORT.EXPENSES}?${params}`)
 
       const blob = new Blob([JSON.stringify(response.data, null, 2)], { 
         type: 'application/json' 
@@ -63,7 +64,7 @@ export const exportService = {
       if (startDate) params.append('startDate', startDate)
       if (endDate) params.append('endDate', endDate)
 
-      const response = await api.get(`/export/expenses?${params}`)
+      const response = await api.get(`${EXPORT.EXPENSES}?${params}`)
       const data = response.data
 
       // Create workbook
@@ -89,7 +90,7 @@ export const exportService = {
       if (startDate) params.append('startDate', startDate)
       if (endDate) params.append('endDate', endDate)
 
-      const response = await api.get(`/export/income?${params}`, {
+      const response = await api.get(`${EXPORT.INCOME}?${params}`, {
         responseType: 'blob'
       })
 
@@ -116,7 +117,7 @@ export const exportService = {
       if (startDate) params.append('startDate', startDate)
       if (endDate) params.append('endDate', endDate)
 
-      const response = await api.get(`/export/all?${params}`)
+      const response = await api.get(`${EXPORT.ALL}?${params}`)
 
       const blob = new Blob([JSON.stringify(response.data, null, 2)], { 
         type: 'application/json' 
@@ -143,7 +144,7 @@ export const exportService = {
       if (startDate) params.append('startDate', startDate)
       if (endDate) params.append('endDate', endDate)
 
-      const response = await api.get(`/export/all?${params}`)
+      const response = await api.get(`${EXPORT.ALL}?${params}`)
       const data = response.data
 
       // Create workbook
@@ -203,7 +204,7 @@ export const exportService = {
       if (startDate) params.append('startDate', startDate)
       if (endDate) params.append('endDate', endDate)
 
-      const response = await api.get(`/export/income?${params}`)
+      const response = await api.get(`${EXPORT.INCOME}?${params}`)
 
       const blob = new Blob([JSON.stringify(response.data, null, 2)], { 
         type: 'application/json' 
@@ -230,7 +231,7 @@ export const exportService = {
       if (startDate) params.append('startDate', startDate)
       if (endDate) params.append('endDate', endDate)
 
-      const response = await api.get(`/export/income?${params}`)
+      const response = await api.get(`${EXPORT.INCOME}?${params}`)
       const data = response.data
 
       const wb = XLSX.utils.book_new()
@@ -251,7 +252,7 @@ export const exportService = {
       if (startDate) params.append('startDate', startDate)
       if (endDate) params.append('endDate', endDate)
 
-      const response = await api.get(`/export/all-csv?${params}`, {
+      const response = await api.get(`${EXPORT.ALL_CSV}?${params}`, {
         responseType: 'blob'
       })
 
@@ -278,7 +279,7 @@ export const exportService = {
       if (startDate) params.append('startDate', startDate)
       if (endDate) params.append('endDate', endDate)
 
-      const response = await api.get(`/export/comprehensive-pdf?${params}`, {
+      const response = await api.get(`${EXPORT.COMPREHENSIVE_PDF}?${params}`, {
         responseType: 'blob'
       })
 

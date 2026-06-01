@@ -1,8 +1,6 @@
-import api from './api';
+import api from './api'
+import { BUDGET_RECOMMENDATIONS } from '../config/apiEndpoints'
 
 export const budgetRecommendationService = {
-  // Get AI-driven budget recommendations
-  getRecommendations: () => {
-    return api.get('/budget-recommendations');
-  }
-};
+  getRecommendations: () => api.get(BUDGET_RECOMMENDATIONS.BASE),
+}

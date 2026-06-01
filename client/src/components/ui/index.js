@@ -24,10 +24,21 @@ export { MicrophonePulse, Waveform, TypingIndicator } from './VoiceAnimation'
 // Loading & Background Components
 export { default as LoadingSpinner, ButtonSpinner, SkeletonLoader as ContentSkeleton } from './LoadingSpinner'
 export { default as AnimatedBackground } from './AnimatedBackground'
-export { default as SnowEffect } from './SnowEffect'
+// SnowEffect is NOT re-exported globally — load explicitly where needed (issue #3)
 
 // Advanced Animations
 export { LiquidProgress } from './LiquidProgress'
 export { Card3DTilt } from './Card3DFlip'
-export { ParticleBurst } from './ParticleBurst'
-export { MoneyRain } from './MoneyRain'
+// ParticleBurst removed (issue #7) — replaced with CSS hover interactions
+// MoneyRain removed (issue #4) — replaced with toast success feedback
+
+// Error Boundaries
+export { default as ErrorBoundary } from './ErrorBoundary'
+export {
+  default as FeatureErrorBoundary,
+  DashboardErrorBoundary,
+  ExpenseErrorBoundary,
+  IncomeErrorBoundary,
+  AnalyticsErrorBoundary,
+  ProjectErrorBoundary,
+} from './FeatureErrorBoundary'

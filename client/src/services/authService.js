@@ -1,12 +1,13 @@
 import { firebaseAuth } from '../config/firebase'
 import api from './api'
+import { AUTH } from '../config/apiEndpoints'
 
 export const authService = {
   // Register - Try backend first, fallback to Firebase only on network errors
   register: async (email, password, fullName) => {
     // Try backend authentication first with short timeout
     try {
-      const response = await api.post('/auth/register', { 
+      const response = await api.post(AUTH.REGISTER, { 
         email, 
         password, 
         fullName 
@@ -55,7 +56,7 @@ export const authService = {
         }
 
         // Try to sync with backend in background (don't wait)
-        api.post('/auth/firebase-sync', {
+        api.post(AUTH.FIREBASE_SYNC, {
           uid: result.user.uid,
           email: result.user.email,
           fullName: result.user.fullName
@@ -82,7 +83,7 @@ export const authService = {
   login: async (email, password) => {
     // Try backend authentication first with short timeout
     try {
-      const response = await api.post('/auth/login', { 
+      const response = await api.post(AUTH.LOGIN, { 
         email, 
         password 
       }, {
@@ -137,7 +138,7 @@ export const authService = {
         }
 
         // Try to sync with backend in background (don't wait)
-        api.post('/auth/firebase-sync', {
+        api.post(AUTH.FIREBASE_SYNC, {
           uid: result.user.uid,
           email: result.user.email,
           fullName: result.user.fullName
@@ -173,7 +174,7 @@ export const authService = {
 
       // Sync with backend to link accounts and preserve data
       try {
-        const syncResponse = await api.post('/auth/firebase-sync', {
+        const syncResponse = await api.post(AUTH.FIREBASE_SYNC, {
           uid: result.user.uid,
           email: result.user.email,
           fullName: result.user.fullName,

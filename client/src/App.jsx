@@ -17,9 +17,7 @@ import LoadingSpinner from './components/ui/LoadingSpinner'
 import PWAUpdatePrompt from './components/ui/PWAUpdatePrompt'
 import { pageTransition } from './utils/animations'
 import api from './services/api'
-
-// Lazy load SnowEffect to not block initial render
-const SnowEffect = lazy(() => import('./components/ui/SnowEffect'))
+import { HEALTH } from './config/apiEndpoints'
 
 // Keep-alive ping to prevent server sleep
 const useServerKeepAlive = () => {
@@ -27,19 +25,12 @@ const useServerKeepAlive = () => {
     // Ping server every 5 minutes to keep it awake
     const pingInterval = setInterval(async () => {
       try {
-        await api.get('/health/ping', {
-          timeout: 5000,
-          retry: 0 // Don't retry pings
-        })
-      } catch (error) {
-        // Silently fail - this is just a keep-alive
-        console.log('Keep-alive ping failed (server may be sleeping)')
-      }
-    }, 5 * 60 * 1000) // 5 minutes
+        await api.get(HEALTH.PING, { timeout: 5000, retry: 0 })
+      } catch {}
+    }, 5 * 60 * 1000)
 
-    // Defer initial ping to not block page load
     const initialPing = setTimeout(() => {
-      api.get('/health/ping', { timeout: 5000, retry: 0 }).catch(() => { })
+      api.get(HEALTH.PING, { timeout: 5000, retry: 0 }).catch(() => {})
     }, 3000)
 
     return () => {
@@ -160,10 +151,6 @@ const AppContent = () => {
         <AuthProvider>
           <ExpenseProvider>
             <IncomeProvider>
-              {/* Lazy load SnowEffect - loads after page is interactive */}
-              <Suspense fallback={null}>
-                <SnowEffect intensity={30} speed="medium" />
-              </Suspense>
               <Toaster
                 position="top-right"
                 toastOptions={{

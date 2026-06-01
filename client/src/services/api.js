@@ -2,16 +2,24 @@ import axios from 'axios'
 import offlineQueue, { isOffline } from '../utils/offlineQueue'
 import requestCache from '../utils/requestCache'
 import { deduplicateRequest } from '../utils/requestDebounce'
+import { AUTH } from '../config/apiEndpoints'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+const DEFAULT_API_BASE = 'http://localhost:5000/api'
 
-// Warn if the placeholder URL is still set (common deployment mistake)
-if (API_BASE.includes('your-backend-url')) {
-  console.warn(
-    '[api.js] ⚠️ VITE_API_URL is set to a placeholder value. ' +
-    'All data API calls will fail. Update .env.production with your real backend URL.'
-  )
+const normalizeApiBase = (rawBase) => {
+  const base = (rawBase || DEFAULT_API_BASE).trim().replace(/\/+$/, '')
+
+  if (base.includes('your-backend-url')) {
+    console.warn(
+      '[api.js] ⚠️ VITE_API_URL is set to a placeholder value. ' +
+      'All data API calls will fail. Update .env.production with your real backend URL.'
+    )
+  }
+
+  return base.endsWith('/api') ? base : `${base}/api`
 }
+
+const API_BASE = normalizeApiBase(import.meta.env.VITE_API_URL)
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -162,7 +170,7 @@ function handleError(error) {
 
   if (status === 401) {
     // Don't redirect if we're just checking auth
-    if (!error.config.url.includes('/auth/me')) {
+    if (!error.config.url.includes(AUTH.ME)) {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       localStorage.removeItem('authMethod')
