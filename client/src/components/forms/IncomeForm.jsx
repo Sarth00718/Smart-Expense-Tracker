@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { Plus, Repeat } from 'lucide-react'
-import { Button } from '../ui'
+import { Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Checkbox } from '../ui'
 import { INCOME_SOURCES } from '../../constants/categories'
 
 const IncomeForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Income' }) => {
@@ -27,16 +27,19 @@ const IncomeForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Inco
           <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
             Source
           </label>
-          <select
+          <Select
             value={formData.source}
-            onChange={(e) => handleChange('source', e.target.value)}
-            required
-            className="input w-full"
+            onValueChange={(v) => handleChange('source', v)}
           >
-            {INCOME_SOURCES.map(source => (
-              <option key={source.value} value={source.value}>{source.label}</option>
-            ))}
-          </select>
+            <SelectTrigger>
+              <SelectValue placeholder="Select source" />
+            </SelectTrigger>
+            <SelectContent>
+              {INCOME_SOURCES.map(source => (
+                <SelectItem key={source.value} value={source.value}>{source.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -70,16 +73,14 @@ const IncomeForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Inco
       </div>
 
       <div className="flex items-center">
-        <label className="flex items-center cursor-pointer">
-          <input
-            type="checkbox"
+        <label className="flex items-center cursor-pointer gap-3">
+          <Checkbox
             checked={formData.isRecurring || false}
-            onChange={(e) => handleChange('isRecurring', e.target.checked)}
-            className="w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary mr-3"
+            onCheckedChange={(v) => handleChange('isRecurring', v === true)}
           />
           <div className="flex items-center gap-2">
-            <Repeat className="w-5 h-5 text-gray-600 dark:text-slate-400" />
-            <span className="text-sm font-medium text-gray-700 dark:text-slate-300">Recurring Income</span>
+            <Repeat className="w-5 h-5 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">Recurring Income</span>
           </div>
         </label>
       </div>

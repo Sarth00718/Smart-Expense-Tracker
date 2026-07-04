@@ -1,358 +1,338 @@
 import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Trophy,
-  Award,
-  Star,
-  Zap,
-  Target
+  Trophy, Award, Star, CheckCircle2, Medal, Crown, Flame, Lock
 } from 'lucide-react'
-
 import { analyticsService } from '../../../services/analyticsService'
-
-import {
-  Card,
-  StatCard,
-  EmptyState,
-  LoadingSpinner,
-  PageHeader
-} from '../../ui'
-
+import { Card, CardContent, PageHeader, LoadingSpinner, EmptyState } from '../../ui'
 import { format } from 'date-fns'
 
+/* ─── Constants ────────────────────────────────────────────────── */
+const TIER = {
+  gold:     { label: 'Gold',     gradient: 'from-yellow-400 to-amber-500',   icon: Crown },
+  silver:   { label: 'Silver',   gradient: 'from-slate-400 to-slate-500',    icon: Medal },
+  bronze:   { label: 'Bronze',   gradient: 'from-orange-400 to-amber-600',   icon: Award },
+  platinum: { label: 'Platinum', gradient: 'from-cyan-400 to-indigo-500',    icon: Star  },
+}
+
+const TYPE = {
+  milestone:   { gradient: 'from-blue-500 to-cyan-500',   icon: Star    },
+  achievement: { gradient: 'from-purple-500 to-pink-500', icon: Trophy  },
+  streak:      { gradient: 'from-orange-500 to-red-500',  icon: Flame   },
+  default:     { gradient: 'from-slate-500 to-slate-600', icon: Award   },
+}
+
+/* ─── Score Ring Component ────────────────────────────────────── */
+const RADIUS = 50
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS
+
+function ScoreRing({ score = 0 }) {
+  const pct = Math.min(100, Math.max(0, score))
+  const dash = (pct / 100) * CIRCUMFERENCE
+  
+  const ringColor = pct >= 80 ? '#10b981' : pct >= 60 ? '#3b82f6' : pct >= 40 ? '#f59e0b' : '#ef4444'
+  const label = pct >= 80 ? 'Excellent!' : pct >= 60 ? 'Good!' : pct >= 40 ? 'Fair' : 'Needs Work'
+  const labelColor = pct >= 80 ? 'text-emerald-500' : pct >= 60 ? 'text-blue-500' : pct >= 40 ? 'text-yellow-500' : 'text-red-500'
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <div className="relative w-36 h-36">
+        <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r={RADIUS} fill="none" strokeWidth="7" className="stroke-muted/30" />
+          <motion.circle 
+            cx="60" 
+            cy="60" 
+            r={RADIUS} 
+            fill="none" 
+            strokeWidth="7"
+            stroke={ringColor} 
+            strokeLinecap="round"
+            strokeDasharray={CIRCUMFERENCE}
+            initial={{ strokeDashoffset: CIRCUMFERENCE }}
+            animate={{ strokeDashoffset: CIRCUMFERENCE - dash }}
+            transition={{ duration: 1.2, ease: 'easeOut' }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <motion.span className="text-3xl font-bold text-foreground"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
+          >
+            {score}
+          </motion.span>
+          <span className="text-xs text-muted-foreground font-medium">/ 100</span>
+        </div>
+      </div>
+      <p className={`text-sm font-medium text-center ${labelColor}`}>{label}</p>
+    </div>
+  )
+}
+
+/* ─── Achievement Card ────────────────────────────────────────── */
+function AchievementCard({ achievement, index }) {
+  const typeData = TYPE[achievement.badgeType || achievement.type] || TYPE.default
+  const tierData = TIER[achievement.tier] || TIER.bronze
+  const Icon = typeData.icon
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05, duration: 0.3 }}
+      whileHover={{ y: -4 }}
+      className="group rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm hover:shadow-md transition-all"
+    >
+      {/* header */}
+      <div className="flex items-start gap-4 mb-4">
+        <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${typeData.gradient} flex items-center justify-center shadow-md flex-shrink-0 group-hover:scale-110 transition-transform`}>
+          <Icon className="w-6 h-6 text-white" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h4 className="font-semibold text-foreground text-sm leading-tight">
+            {achievement.title || achievement.name}
+          </h4>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-muted text-xs font-medium">
+              <tierData.icon className="w-3 h-3" />
+              {tierData.label}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* description */}
+      <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+        {achievement.description}
+      </p>
+
+      {/* footer */}
+      {achievement.date && (
+        <div className="text-xs text-muted-foreground/70 flex items-center gap-1.5 pt-2 border-t border-border/50">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+          <span>Unlocked {format(new Date(achievement.date), 'MMM d, yyyy')}</span>
+        </div>
+      )}
+    </motion.div>
+  )
+}
+
+/* ─── Locked Card ────────────────────────────────────────────── */
+function LockedCard({ index }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: index * 0.03 }}
+      className="rounded-xl border border-dashed border-border bg-muted/30 p-4 sm:p-6 opacity-50"
+    >
+      <div className="flex items-start gap-4 mb-4">
+        <div className="w-12 h-12 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0">
+          <Lock className="w-6 h-6 text-muted-foreground/40" />
+        </div>
+        <div className="flex-1 space-y-2">
+          <div className="h-3 bg-muted/40 rounded-full w-2/3" />
+          <div className="h-2 bg-muted/40 rounded-full w-full" />
+        </div>
+      </div>
+      <div className="h-2 bg-muted/40 rounded-full w-1/3" />
+    </motion.div>
+  )
+}
+
+/* ─── Main Component ────────────────────────────────────────── */
 const Achievements = () => {
   const [achievements, setAchievements] = useState([])
   const [score, setScore] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState('all')
 
   useEffect(() => {
-    loadAchievements()
-    loadScore()
+    Promise.all([
+      analyticsService.getAchievements(),
+      analyticsService.getScore(),
+    ])
+      .then(([achRes, scoreRes]) => {
+        setAchievements(achRes.data.earned || [])
+        setScore(scoreRes.data)
+      })
+      .catch(err => console.error('Error loading achievements:', err))
+      .finally(() => setLoading(false))
   }, [])
 
-  const loadAchievements = async () => {
-    try {
-      setLoading(true)
+  if (loading) return <LoadingSpinner size="lg" text="Loading achievements..." />
 
-      const response = await analyticsService.getAchievements()
+  const filtered = filter === 'all'
+    ? achievements
+    : achievements.filter(a => (a.badgeType || a.type) === filter)
 
-      setAchievements(response.data.earned || [])
-    } catch (error) {
-      console.error('Error loading achievements:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const tierCounts = { gold: 0, silver: 0, bronze: 0, platinum: 0 }
+  achievements.forEach(a => {
+    if (a.tier && tierCounts[a.tier] !== undefined) tierCounts[a.tier]++
+  })
 
-  const loadScore = async () => {
-    try {
-      const response = await analyticsService.getScore()
-      setScore(response.data)
-    } catch (error) {
-      console.error('Error loading score:', error)
-    }
-  }
-
-  const getBadgeColor = (badgeType) => {
-    switch (badgeType) {
-      case 'milestone':
-        return 'from-blue-500 to-cyan-500'
-
-      case 'achievement':
-        return 'from-purple-500 to-pink-500'
-
-      case 'streak':
-        return 'from-orange-500 to-red-500'
-
-      default:
-        return 'from-slate-500 to-slate-700'
-    }
-  }
-
-  const getBadgeIcon = (badgeType) => {
-    switch (badgeType) {
-      case 'milestone':
-        return <Star className="h-8 w-8" />
-
-      case 'achievement':
-        return <Trophy className="h-8 w-8" />
-
-      case 'streak':
-        return <Zap className="h-8 w-8" />
-
-      default:
-        return <Award className="h-8 w-8" />
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <LoadingSpinner size="lg" text="Loading achievements..." />
-      </div>
-    )
-  }
+  const lockedCount = Math.max(0, 4 - (achievements.length % 4 === 0 ? 0 : 4 - (achievements.length % 4)))
 
   return (
-    <div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
+    <div className="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
+
       {/* Header */}
       <PageHeader
         icon={Trophy}
         gradient="from-yellow-400 via-orange-500 to-red-500"
         title="Achievements"
-        subtitle="Track your financial milestones and unlock rewards"
+        subtitle="Your milestones and financial health score"
       />
 
-      {/* Financial Health Score */}
+      {/* Score Card */}
       {score && (
-        <Card className="overflow-hidden border-0 bg-gradient-to-br from-primary via-purple-600 to-indigo-700 text-white shadow-2xl">
-          <div className="relative">
-            {/* Background Blur */}
-            <div className="absolute inset-0 opacity-20">
-              <div className="absolute -left-10 top-0 h-40 w-40 rounded-full bg-white blur-3xl" />
-              <div className="absolute bottom-0 right-0 h-52 w-52 rounded-full bg-pink-400 blur-3xl" />
-            </div>
-
-            <div className="relative flex flex-col items-center gap-10 lg:flex-row">
-              {score.score !== null ? (
-                <>
-                  {/* Score Circle */}
-                  <div className="relative flex items-center justify-center">
-                    <div className="relative h-44 w-44">
-                      <svg
-                        className="h-full w-full -rotate-90"
-                        viewBox="0 0 160 160"
-                      >
-                        {/* Background Circle */}
-                        <circle
-                          cx="80"
-                          cy="80"
-                          r="68"
-                          fill="none"
-                          stroke="rgba(255,255,255,0.15)"
-                          strokeWidth="12"
-                        />
-
-                        {/* Progress Circle */}
-                        <circle
-                          cx="80"
-                          cy="80"
-                          r="68"
-                          fill="none"
-                          stroke="white"
-                          strokeWidth="12"
-                          strokeLinecap="round"
-                          strokeDasharray={427}
-                          strokeDashoffset={427 - (427 * score.score) / 100}
-                          className="transition-all duration-1000 ease-out"
-                        />
-                      </svg>
-
-                      {/* Score Content */}
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-5xl font-bold tracking-tight text-white">
-                          {score.score}
-                        </span>
-
-                        <span className="mt-1 text-sm font-medium text-white/80">
-                          / {score.maxScore}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Score Content */}
-                  <div className="flex-1 text-center lg:text-left">
-                    <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur-sm">
-                      <Trophy className="h-5 w-5 text-yellow-300" />
-
-                      <span className="text-sm font-medium">
-                        Financial Health
-                      </span>
-                    </div>
-
-                    <h2 className="mb-3 text-3xl font-bold tracking-tight sm:text-4xl">
-                      {score.rating}
-                    </h2>
-
-                    <p className="max-w-2xl text-base leading-relaxed text-white/80 sm:text-lg">
-                      Keep tracking expenses, managing budgets, and achieving
-                      goals to improve your financial score and unlock more
-                      achievements.
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <div className="w-full py-8 text-center">
-                  <div className="mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-white/10 backdrop-blur-sm">
-                    <Trophy className="h-12 w-12 text-yellow-300" />
-                  </div>
-
-                  <h2 className="mb-3 text-3xl font-bold tracking-tight">
-                    Financial Health Score
-                  </h2>
-
-                  <p className="mb-2 text-xl font-semibold">
-                    {score.rating}
-                  </p>
-
-                  <p className="mx-auto max-w-xl text-white/80">
-                    {score.message ||
-                      'Start tracking expenses to generate your financial health score.'}
-                  </p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <Card className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-purple-600/5 to-pink-500/5">
+            <CardContent className="p-6 sm:p-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                
+                {/* Score Ring */}
+                <div className="flex justify-center sm:col-span-1">
+                  <ScoreRing score={score.score || 0} />
                 </div>
-              )}
-            </div>
-          </div>
-        </Card>
+
+                {/* Stats Grid */}
+                <div className="sm:col-span-1 lg:col-span-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    
+                    {/* Total Earned */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.15 }}
+                      className="rounded-lg border border-border bg-card/50 p-4"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mb-3">
+                        <Trophy className="w-5 h-5 text-white" />
+                      </div>
+                      <p className="text-2xl font-bold text-foreground tabular-nums">{achievements.length}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Total Earned</p>
+                    </motion.div>
+
+                    {/* Tier Pills */}
+                    {[
+                      { key: 'gold',   icon: Crown },
+                      { key: 'silver', icon: Medal },
+                      { key: 'bronze', icon: Award },
+                    ].map(({ key, icon: Icon }, i) => (
+                      <motion.div
+                        key={key}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 + i * 0.05 }}
+                        className="rounded-lg border border-border bg-card/50 p-4"
+                      >
+                        <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${TIER[key].gradient} flex items-center justify-center mb-3`}>
+                          <Icon className="w-5 h-5 text-white" />
+                        </div>
+                        <p className="text-2xl font-bold text-foreground tabular-nums">{tierCounts[key]}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{TIER[key].label}</p>
+                      </motion.div>
+                    ))}
+
+                    {/* Score Breakdown */}
+                    {score.breakdown?.slice(0, 3).map((item, i) => (
+                      <motion.div
+                        key={`breakdown-${i}`}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.35 + i * 0.05 }}
+                        className="rounded-lg border border-border bg-card/50 p-4"
+                      >
+                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-3">
+                          <Star className="w-5 h-5 text-white" />
+                        </div>
+                        <p className="text-2xl font-bold text-foreground tabular-nums">{item.value || 0}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{item.label}</p>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       )}
 
-      {/* Achievements Section */}
-      <Card
-        title="Your Achievements"
-        subtitle={`${achievements.length} achievements unlocked`}
-        icon={Trophy}
-      >
-        {achievements.length === 0 ? (
+      {/* Filters */}
+      {achievements.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="flex items-center gap-2 flex-wrap"
+        >
+          {[
+            { key: 'all', label: `All (${achievements.length})` },
+            { key: 'milestone', label: `Milestone (${achievements.filter(a => (a.badgeType || a.type) === 'milestone').length})` },
+            { key: 'achievement', label: `Achievement (${achievements.filter(a => (a.badgeType || a.type) === 'achievement').length})` },
+            { key: 'streak', label: `Streak (${achievements.filter(a => (a.badgeType || a.type) === 'streak').length})` },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setFilter(key)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                filter === key
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'bg-muted/60 text-muted-foreground hover:bg-muted border border-border/50'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </motion.div>
+      )}
+
+      {/* Grid */}
+      {achievements.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="py-12"
+        >
           <EmptyState
             icon={Trophy}
             title="No achievements yet"
-            description="Start tracking your finances to unlock achievements."
+            description="Start tracking your expenses to unlock badges and milestones!"
           />
-        ) : (
-          <>
-            {/* Stats */}
-            <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-              <StatCard
-                title="Total Earned"
-                value={achievements.length}
-                icon={Trophy}
-                color="orange"
+        </motion.div>
+      ) : filtered.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="py-12"
+        >
+          <EmptyState
+            icon={Trophy}
+            title={`No ${filter} achievements`}
+            description="Keep improving to unlock more badges!"
+          />
+        </motion.div>
+      ) : (
+        <AnimatePresence mode="popLayout">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filtered.map((achievement, i) => (
+              <AchievementCard
+                key={achievement._id || i}
+                achievement={achievement}
+                index={i}
               />
-
-              <StatCard
-                title="Milestones"
-                value={
-                  achievements.filter(
-                    (a) => a.badgeType === 'milestone'
-                  ).length
-                }
-                icon={Star}
-                color="blue"
-              />
-
-              <StatCard
-                title="Streaks"
-                value={
-                  achievements.filter(
-                    (a) => a.badgeType === 'streak'
-                  ).length
-                }
-                icon={Zap}
-                color="purple"
-              />
-            </div>
-
-            {/* Achievement Cards */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {achievements.map((achievement, index) => (
-                <div
-                  key={index}
-                  className="group relative overflow-hidden rounded-3xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 p-6 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-primary/40 hover:shadow-2xl"
-                >
-                  {/* Glow */}
-                  <div className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
-                  </div>
-
-                  <div className="relative">
-                    {/* Icon */}
-                    <div
-                      className={`mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br ${getBadgeColor(
-                        achievement.badgeType
-                      )} text-white shadow-xl`}
-                    >
-                      <span className="text-5xl">
-                        {achievement.icon}
-                      </span>
-                    </div>
-
-                    {/* Content */}
-                    <div className="text-center">
-                      <h3 className="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-slate-100">
-                        {achievement.title}
-                      </h3>
-
-                      <p className="mb-5 text-sm leading-relaxed text-gray-600 dark:text-slate-400">
-                        {achievement.description}
-                      </p>
-
-                      {/* Footer */}
-                      <div className="inline-flex items-center gap-2 rounded-full bg-gray-100 dark:bg-slate-700 px-4 py-2 text-xs font-medium text-gray-600 dark:text-slate-300">
-                        <Award className="h-4 w-4" />
-
-                        <span>
-                          Earned{' '}
-                          {format(
-                            new Date(achievement.earnedAt),
-                            'MMM dd, yyyy'
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* Available Achievements */}
-        <div className="mt-10 overflow-hidden rounded-3xl border border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/10 dark:via-indigo-900/10 dark:to-purple-900/10">
-          <div className="border-b border-blue-100 dark:border-blue-800/40 px-6 py-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 dark:bg-blue-900/30">
-                <Target className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              </div>
-
-              <div>
-                <h4 className="text-lg font-bold tracking-tight text-blue-900 dark:text-blue-300">
-                  Available Achievements
-                </h4>
-
-                <p className="text-sm text-blue-700 dark:text-blue-400">
-                  Unlock these by completing financial goals
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2">
-            {[
-              ['🎯', 'First Step - Add your first expense'],
-              ['📊', 'Expense Master - Add 50+ expenses'],
-              ['🗂️', 'Category Explorer - Use 5+ categories'],
-              ['🎖️', 'Goal Achiever - Complete a savings goal'],
-              ['💰', 'Budget Master - Stay under all budgets'],
-              ['🔥', '7-Day Streak - Track for 7 days'],
-              ['📸', 'Receipt Pro - Scan 5+ receipts'],
-              ['🏆', 'Super Saver - Save 20%+ of income']
-            ].map(([emoji, text], index) => (
-              <div
-                key={index}
-                className="flex items-center gap-4 rounded-2xl border border-white/40 dark:border-slate-700/40 bg-white/70 dark:bg-slate-800/50 p-4 backdrop-blur-sm transition-all hover:scale-[1.02] hover:shadow-md"
-              >
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100 dark:bg-slate-700 text-2xl">
-                  {emoji}
-                </div>
-
-                <span className="text-sm font-medium text-blue-900 dark:text-blue-300">
-                  {text}
-                </span>
-              </div>
+            ))}
+            {filter === 'all' && Array.from({ length: lockedCount }).map((_, i) => (
+              <LockedCard key={`locked-${i}`} index={filtered.length + i} />
             ))}
           </div>
-        </div>
-      </Card>
+        </AnimatePresence>
+      )}
     </div>
   )
 }

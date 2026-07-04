@@ -2,7 +2,12 @@ import { useState, useEffect } from 'react'
 import { useIncome } from '../../../context/IncomeContext'
 import { incomeService } from '../../../services/incomeService'
 import { DollarSign, Plus, Edit2, Trash2, TrendingUp, Calendar, Repeat, X } from 'lucide-react'
-import { Card, Button, StatCard, EmptyState, LoadingSpinner, PageHeader, Modal } from '../../ui'
+import {
+  Button, Card, CardHeader, CardTitle, CardDescription, CardContent,
+  Badge, Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
+  Modal, Input, EmptyState, SkeletonList, Separator, StatCard, PageHeader,
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Checkbox,
+} from '../../ui'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 
@@ -100,27 +105,30 @@ const Income = () => {
     loadIncome({ page: newPage, limit: pagination.limit })
   }
 
-  const getSourceBadgeClass = (source) => {
-    const classes = {
-      Salary: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
-      Freelance: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300',
-      Investment: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
-      Business: 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300',
-      Gift: 'bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300',
-      Bonus: 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300',
-      Rental: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300',
-      Other: 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300'
+  const getSourceVariant = (source) => {
+    const variants = {
+      Salary: 'default',
+      Freelance: 'secondary',
+      Investment: 'success',
+      Business: 'warning',
+      Gift: 'outline',
+      Bonus: 'default',
+      Rental: 'warning',
+      Other: 'outline'
     }
-    return classes[source] || 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300'
+    return variants[source] || 'default'
   }
 
   if (loading) {
-    return <LoadingSpinner size="lg" text="Loading income data..." />
+    return (
+      <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
+        <SkeletonList rows={5} />
+      </div>
+    )
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto font-sans">
-      {/* Header Section */}
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
       <PageHeader
         icon={DollarSign}
         gradient="from-emerald-500 to-teal-600"
@@ -128,17 +136,16 @@ const Income = () => {
         subtitle="Track and manage your income sources"
         actions={
           <Button
-            variant="primary"
-            size="md"
+            variant="default"
+            size="default"
             icon={showForm ? X : Plus}
-            onClick={() => { setShowForm(!showForm); setEditingId(null); resetForm(); }}
+            onClick={() => { setShowForm(!showForm); setEditingId(null); resetForm() }}
           >
             {showForm ? 'Cancel' : 'Add Income'}
           </Button>
         }
       />
 
-      {/* Summary Cards */}
       {summary && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
           <StatCard
@@ -162,211 +169,217 @@ const Income = () => {
         </div>
       )}
 
-      {/* Add/Edit Income Form */}
       {showForm && (
-        <Card
-          title={editingId ? 'Edit Income' : 'Add New Income'}
-          icon={Plus}
-          subtitle="Enter your income details"
-        >
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
-                  Date
-                </label>
-                <input
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  className="input w-full"
-                  required
-                />
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-sm shrink-0">
+                <Plus className="w-5 h-5 text-primary-foreground" />
               </div>
-
               <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
-                  Source
-                </label>
-                <select
-                  value={formData.source}
-                  onChange={(e) => setFormData({ ...formData, source: e.target.value })}
-                  className="input w-full"
-                  required
-                >
-                  {sources.map(src => (
-                    <option key={src} value={src}>{src}</option>
-                  ))}
-                </select>
+                <CardTitle>{editingId ? 'Edit Income' : 'Add New Income'}</CardTitle>
+                <CardDescription>Enter your income details</CardDescription>
               </div>
             </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
-                Amount (₹)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.amount}
-                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                className="input w-full text-lg"
-                placeholder="0.00"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
-                Description (Optional)
-              </label>
-              <input
-                type="text"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Add a note about this income"
-                className="input w-full"
-              />
-            </div>
-
-            <div className="flex items-center">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.isRecurring}
-                  onChange={(e) => setFormData({ ...formData, isRecurring: e.target.checked })}
-                  className="w-5 h-5 text-primary border-gray-300 dark:border-slate-600 rounded focus:ring-primary mr-3"
-                />
-                <div className="flex items-center gap-2">
-                  <Repeat className="w-5 h-5 text-gray-600 dark:text-slate-400" />
-                  <span className="text-sm font-medium text-gray-700 dark:text-slate-300">Recurring Income</span>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Date</label>
+                  <Input
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    required
+                  />
                 </div>
-              </label>
-            </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Source</label>
+                  <Select
+                    value={formData.source}
+                    onValueChange={(v) => setFormData({ ...formData, source: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select source" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sources.map(src => (
+                        <SelectItem key={src} value={src}>{src}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-            <div className="flex gap-3 pt-2">
-              <Button type="submit" variant="primary" fullWidth size="lg" loading={submitting}>
-                {editingId ? 'Update Income' : 'Add Income'}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => { setShowForm(false); setEditingId(null); resetForm(); }}
-                className="px-6"
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Amount (₹)</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formData.amount}
+                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                  placeholder="0.00"
+                  className="text-lg"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Description (Optional)</label>
+                <Input
+                  type="text"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Add a note about this income"
+                />
+              </div>
+
+              <div className="flex items-center">
+                <label className="flex items-center cursor-pointer gap-3">
+                  <Checkbox
+                    checked={formData.isRecurring}
+                    onCheckedChange={(v) => setFormData({ ...formData, isRecurring: v === true })}
+                  />
+                  <div className="flex items-center gap-2">
+                    <Repeat className="w-5 h-5 text-muted-foreground" />
+                    <span className="text-sm font-medium text-foreground">Recurring Income</span>
+                  </div>
+                </label>
+              </div>
+
+              <Separator />
+
+              <div className="flex gap-3">
+                <Button type="submit" size="lg" className="flex-1" loading={submitting}>
+                  {editingId ? 'Update Income' : 'Add Income'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  onClick={() => { setShowForm(false); setEditingId(null); resetForm() }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </CardContent>
         </Card>
       )}
 
-      {/* Income List */}
-      <Card title="Income History" subtitle="All your income entries">
-        {income.length === 0 ? (
-          <EmptyState
-            icon={DollarSign}
-            title="No income entries yet"
-            description="Start tracking your income to see it here"
-          />
-        ) : (
-          <div className="overflow-x-auto -mx-6">
-            <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-slate-700/50 border-y border-gray-200 dark:border-slate-600">
-                <tr>
-                  <th className="text-left py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest">Date</th>
-                  <th className="text-left py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest">Source</th>
-                  <th className="text-right py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest">Amount</th>
-                  <th className="text-left py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest hidden sm:table-cell">Description</th>
-                  <th className="text-center py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest hidden md:table-cell">Recurring</th>
-                  <th className="text-center py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
-                {income.map(incomeItem => (
-                  <tr key={incomeItem._id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
-                    <td className="py-4 px-6 text-gray-700 dark:text-slate-300 font-medium">
-                      {format(new Date(incomeItem.date), 'MMM dd, yyyy')}
-                    </td>
-                    <td className="py-4 px-6">
-                      <span className={`badge ${getSourceBadgeClass(incomeItem.source)}`}>
-                        {incomeItem.source}
-                      </span>
-                    </td>
-                    <td className="py-4 px-6 text-right font-semibold text-green-600 dark:text-green-400 text-base sm:text-lg tabular-nums tracking-tight">
-                      ₹{incomeItem.amount.toFixed(2)}
-                    </td>
-                    <td className="py-4 px-6 text-gray-600 dark:text-slate-400 hidden sm:table-cell">
-                      {incomeItem.description || <span className="text-gray-400 dark:text-slate-500 italic">No description</span>}
-                    </td>
-                    <td className="py-4 px-6 text-center hidden md:table-cell">
-                      {incomeItem.isRecurring ? (
-                        <span className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400">
-                          <Repeat className="w-4 h-4" />
-                          <span className="text-sm font-medium">Yes</span>
-                        </span>
-                      ) : (
-                        <span className="text-gray-400 dark:text-slate-500">-</span>
-                      )}
-                    </td>
-                    <td className="py-4 px-6 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => handleEdit(incomeItem)}
-                          className="p-2.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all hover:scale-110"
-                          title="Edit income"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => setDeleteTarget(incomeItem._id)}
-                          className="p-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all hover:scale-110"
-                          title="Delete income"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+      <Card>
+        <CardHeader>
+          <CardTitle>Income History</CardTitle>
+          <CardDescription>All your income entries</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          {income.length === 0 ? (
+            <EmptyState
+              icon={DollarSign}
+              title="No income entries yet"
+              description="Start tracking your income to see it here"
+            />
+          ) : (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Source</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="hidden sm:table-cell">Description</TableHead>
+                    <TableHead className="text-center hidden md:table-cell">Recurring</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {income.map(incomeItem => (
+                    <TableRow key={incomeItem._id}>
+                      <TableCell className="font-medium">
+                        {format(new Date(incomeItem.date), 'MMM dd, yyyy')}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getSourceVariant(incomeItem.source)}>
+                          {incomeItem.source}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right font-semibold text-success tabular-nums tracking-tight">
+                        ₹{incomeItem.amount.toFixed(2)}
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell text-muted-foreground">
+                        {incomeItem.description || <span className="italic text-muted-foreground/60">No description</span>}
+                      </TableCell>
+                      <TableCell className="text-center hidden md:table-cell">
+                        {incomeItem.isRecurring ? (
+                          <span className="inline-flex items-center gap-1 text-primary">
+                            <Repeat className="w-4 h-4" />
+                            <span className="text-sm font-medium">Yes</span>
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEdit(incomeItem)}
+                            title="Edit income"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeleteTarget(incomeItem._id)}
+                            title="Delete income"
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
 
-        {/* Pagination */}
-        {pagination.pages > 1 && (
-          <div className="flex items-center justify-center gap-4 mt-6 pt-6 border-t border-gray-200 dark:border-slate-700">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(pagination.page - 1)}
-              disabled={pagination.page === 1}
-            >
-              Previous
-            </Button>
-            <span className="text-sm font-medium text-gray-700 dark:text-slate-300">
-              Page {pagination.page} of {pagination.pages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(pagination.page + 1)}
-              disabled={pagination.page === pagination.pages}
-            >
-              Next
-            </Button>
-          </div>
-        )}
+              {pagination.pages > 1 && (
+                <div className="flex items-center justify-center gap-4 p-4 border-t border-border">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(pagination.page - 1)}
+                    disabled={pagination.page === 1}
+                  >
+                    Previous
+                  </Button>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Page {pagination.page} of {pagination.pages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(pagination.page + 1)}
+                    disabled={pagination.page === pagination.pages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
       </Card>
 
-      {/* Delete Confirm Modal */}
       <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Delete Income" size="sm">
-        <p className="text-gray-600 dark:text-slate-400 mb-6">Are you sure you want to delete this income entry?</p>
+        <p className="text-muted-foreground mb-6">Are you sure you want to delete this income entry?</p>
         <div className="flex gap-3">
-          <Button variant="outline" fullWidth onClick={() => setDeleteTarget(null)}>Cancel</Button>
-          <Button variant="danger" fullWidth onClick={handleDelete}>Delete</Button>
+          <Button variant="outline" className="flex-1" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+          <Button variant="destructive" className="flex-1" onClick={handleDelete}>Delete</Button>
         </div>
       </Modal>
     </div>

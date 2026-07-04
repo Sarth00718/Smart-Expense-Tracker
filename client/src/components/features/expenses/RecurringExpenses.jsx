@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Plus, Repeat, Trash2, Edit2, X, Save } from 'lucide-react'
 import { useExpense } from '../../../context/ExpenseContext'
 import toast from 'react-hot-toast'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../../ui'
 
 const RecurringExpenses = ({ onClose }) => {
   const { addExpense } = useExpense()
@@ -139,22 +140,25 @@ const RecurringExpenses = ({ onClose }) => {
                     <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">
                       Category *
                     </label>
-                    <select
+                    <Select
                       value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      className="input w-full"
+                      onValueChange={(v) => setFormData({ ...formData, category: v })}
                     >
-                      <option value="">Select</option>
-                      <option value="Food">Food</option>
-                      <option value="Travel">Travel</option>
-                      <option value="Transport">Transport</option>
-                      <option value="Shopping">Shopping</option>
-                      <option value="Bills">Bills</option>
-                      <option value="Entertainment">Entertainment</option>
-                      <option value="Healthcare">Healthcare</option>
-                      <option value="Education">Education</option>
-                      <option value="Other">Other</option>
-                    </select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Food">Food</SelectItem>
+                        <SelectItem value="Travel">Travel</SelectItem>
+                        <SelectItem value="Transport">Transport</SelectItem>
+                        <SelectItem value="Shopping">Shopping</SelectItem>
+                        <SelectItem value="Bills">Bills</SelectItem>
+                        <SelectItem value="Entertainment">Entertainment</SelectItem>
+                        <SelectItem value="Healthcare">Healthcare</SelectItem>
+                        <SelectItem value="Education">Education</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">

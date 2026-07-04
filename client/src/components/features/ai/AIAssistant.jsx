@@ -2,11 +2,14 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import {
   Send, Bot, User, Mic, MicOff, Plus, Clock, TrendingUp, TrendingDown,
   DollarSign, Target, Sparkles, Lightbulb, RefreshCw, X, Brain, Zap,
-  ShoppingBag, MessageSquare, Activity
+  ShoppingBag, MessageSquare, Activity, ChevronRight
 } from 'lucide-react'
 import { useExpense } from '../../../context/ExpenseContext'
 import { useIncome } from '../../../context/IncomeContext'
-import { PageHeader } from '../../ui'
+import {
+  PageHeader, Button, Card, CardHeader, CardTitle, CardDescription,
+  CardContent, Badge, Separator, Input, Avatar, AvatarImage, AvatarFallback
+} from '../../ui'
 import toast from 'react-hot-toast'
 import api from '../../../services/api'
 
@@ -42,7 +45,7 @@ function parseInline(text) {
     .replace(/\*([^*]+)\*/g, '<em>$1</em>')
     .replace(
       /`([^`]+)`/g,
-      '<code class="px-1.5 py-0.5 bg-gray-100 dark:bg-slate-700 rounded text-xs font-mono">$1</code>'
+      '<code class="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">$1</code>'
     )
 }
 
@@ -163,7 +166,7 @@ function SnapshotCards({ expenses, income }) {
             : sr > 0
               ? 'text-amber-500'
               : 'text-red-500'
-          : 'text-gray-400',
+          : 'text-muted-foreground',
       gradient: 'from-violet-500 to-purple-600',
     },
   ]
@@ -171,25 +174,23 @@ function SnapshotCards({ expenses, income }) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {cards.map(({ icon: Icon, label, value, sub, subColor, gradient }) => (
-        <div
-          key={label}
-          className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4 hover:shadow-lg transition-all duration-300"
-        >
-          <div
-            className={`w-10 h-10 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center mb-3 shadow-md`}
-          >
-            <Icon className="w-5 h-5 text-white" />
-          </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-slate-100 tabular-nums">{value}</p>
-          <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">{label}</p>
-          {sub && (
-            <p className={`text-xs mt-1.5 font-medium ${subColor || 'text-gray-400'}`}>{sub}</p>
-          )}
-        </div>
+        <Card key={label} className="hover:shadow-lg transition-all duration-300">
+          <CardContent>
+            <div
+              className={`w-10 h-10 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center mb-3 shadow-md`}
+            >
+              <Icon className="w-5 h-5 text-white" />
+            </div>
+            <p className="text-2xl font-bold text-foreground tabular-nums">{value}</p>
+            <p className="text-xs text-muted-foreground mt-1">{label}</p>
+            {sub && (
+              <p className={`text-xs mt-1.5 font-medium ${subColor || 'text-muted-foreground'}`}>{sub}</p>
+            )}
+          </CardContent>
+        </Card>
       ))}
     </div>
   )
-
 }
 
 function InsightsPanel({ expenses, income, tabContent, loading, onRefresh, onBudgetTips, onForecast }) {
@@ -208,37 +209,40 @@ function InsightsPanel({ expenses, income, tabContent, loading, onRefresh, onBud
   }
 
   return (
-    <div className="w-full bg-white dark:bg-slate-800 rounded-3xl border border-gray-200 dark:border-slate-700 p-4 shadow-lg">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-sm font-bold text-gray-900 dark:text-slate-100">AI Insights</p>
-        <div className="flex items-center gap-2">
-          <button onClick={onRefresh} className="w-9 h-9 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex items-center justify-center hover:shadow-sm">
-            <RefreshCw className="w-4 h-4 text-indigo-600" />
-          </button>
+    <Card className="border-border">
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-bold">AI Insights</CardTitle>
+          <Button variant="ghost" size="icon-sm" onClick={onRefresh}>
+            <RefreshCw className="w-4 h-4" />
+          </Button>
         </div>
-      </div>
-
-      <div className="flex gap-2 mb-3">
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => handleTab(t.id)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === t.id ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800' : 'bg-transparent text-gray-600 dark:text-slate-300'}`}>
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="min-h-[120px] text-sm text-gray-700 dark:text-slate-300">
-        {loading ? (
-          <p className="text-xs text-gray-500">Loading...</p>
-        ) : tabContent?.[activeTab] ? (
-          <div className="prose prose-sm dark:prose-invert max-w-full text-xs" dangerouslySetInnerHTML={{ __html: parseInline(tabContent[activeTab]) }} />
-        ) : (
-          <p className="text-xs text-gray-500">No insights available. Click Get AI insights.</p>
-        )}
-      </div>
-    </div>
+      </CardHeader>
+      <CardContent>
+        <div className="flex gap-2 mb-3">
+          {tabs.map((t) => (
+            <Button
+              key={t.id}
+              variant={activeTab === t.id ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => handleTab(t.id)}
+              className="text-xs"
+            >
+              {t.label}
+            </Button>
+          ))}
+        </div>
+        <div className="min-h-[120px]">
+          {loading ? (
+            <p className="text-xs text-muted-foreground">Loading...</p>
+          ) : tabContent?.[activeTab] ? (
+            <div className="prose prose-sm dark:prose-invert max-w-full text-xs text-foreground" dangerouslySetInnerHTML={{ __html: parseInline(tabContent[activeTab]) }} />
+          ) : (
+            <p className="text-xs text-muted-foreground">No insights available. Click Get AI insights.</p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -248,23 +252,16 @@ function Bubble({ msg }) {
 
   return (
     <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''} animate-fadeIn`}>
-      <div
-        className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-md ${isUser
-            ? 'bg-gradient-to-br from-indigo-500 to-violet-600'
-            : 'bg-gradient-to-br from-emerald-400 to-teal-500'
-          }`}
-      >
-        {isUser ? (
-          <User className="w-5 h-5 text-white" />
-        ) : (
-          <Bot className="w-5 h-5 text-white" />
-        )}
-      </div>
+      <Avatar className={`w-10 h-10 shadow-md ${isUser ? '' : ''}`}>
+        <AvatarFallback className={isUser ? 'bg-gradient-to-br from-indigo-500 to-violet-600' : 'bg-gradient-to-br from-emerald-400 to-teal-500'}>
+          {isUser ? <User className="w-5 h-5 text-white" /> : <Bot className="w-5 h-5 text-white" />}
+        </AvatarFallback>
+      </Avatar>
 
       <div
         className={`max-w-[85%] rounded-2xl px-5 py-4 text-base leading-relaxed shadow-md ${isUser
             ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-tr-md'
-            : 'bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-100 border border-gray-200 dark:border-slate-700 rounded-tl-md'
+            : 'bg-card text-foreground border border-border rounded-tl-md'
           }`}
       >
         {lines.map((line, i) => (
@@ -276,7 +273,7 @@ function Bubble({ msg }) {
 
         {msg.timestamp && (
           <p
-            className={`text-[11px] mt-2 ${isUser ? 'text-white/60' : 'text-gray-400 dark:text-slate-500'
+            className={`text-[11px] mt-2 ${isUser ? 'text-white/60' : 'text-muted-foreground'
               }`}
           >
             {new Date(msg.timestamp).toLocaleTimeString('en-IN', {
@@ -293,24 +290,25 @@ function Bubble({ msg }) {
 function Typing() {
   return (
     <div className="flex gap-3 animate-fadeIn">
-      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shrink-0 shadow-md">
-        <Bot className="w-4 h-4 text-white" />
-      </div>
-      <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl rounded-tl-md px-5 py-3 shadow-md">
+      <Avatar className="w-9 h-9 shadow-md">
+        <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-teal-500">
+          <Bot className="w-4 h-4 text-white" />
+        </AvatarFallback>
+      </Avatar>
+      <div className="bg-card border border-border rounded-2xl rounded-tl-md px-5 py-3 shadow-md">
         <div className="flex gap-1.5 items-center">
           {[0, 150, 300].map((delay) => (
             <span
               key={delay}
-              className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce"
+              className="w-2 h-2 rounded-full bg-primary animate-bounce"
               style={{ animationDelay: `${delay}ms` }}
             />
           ))}
-          <span className="text-xs text-gray-500 dark:text-slate-400 ml-2">AI is thinking…</span>
+          <span className="text-xs text-muted-foreground ml-2">AI is thinking…</span>
         </div>
       </div>
     </div>
   )
-
 }
 
 function PersonalizedTips({ expenses, income }) {
@@ -335,22 +333,26 @@ function PersonalizedTips({ expenses, income }) {
   }, [expenses, income])
 
   return (
-    <div className="w-full bg-white dark:bg-slate-800 rounded-3xl border border-gray-200 dark:border-slate-700 shadow-lg p-4">
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md">
-          <Lightbulb className="w-4 h-4 text-white" />
-        </div>
-        <p className="text-sm font-bold text-gray-900 dark:text-slate-100">Personalized Tips</p>
-      </div>
-      <div className="space-y-2">
-        {tips.map((tip, i) => (
-          <div key={i} className="flex items-start gap-2.5 p-3 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-700/50 dark:to-slate-700/30 hover:shadow-md transition-shadow">
-            <span className="text-lg shrink-0 leading-none mt-0.5">{tip.icon}</span>
-            <p className="text-xs text-gray-700 dark:text-slate-300 leading-relaxed">{tip.text}</p>
+    <Card className="border-border">
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md">
+            <Lightbulb className="w-4 h-4 text-white" />
           </div>
-        ))}
-      </div>
-    </div>
+          <CardTitle className="text-sm font-bold">Personalized Tips</CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          {tips.map((tip, i) => (
+            <div key={i} className="flex items-start gap-2.5 p-3 rounded-lg bg-muted/50 hover:shadow-md transition-shadow">
+              <span className="text-lg shrink-0 leading-none mt-0.5">{tip.icon}</span>
+              <p className="text-xs text-foreground leading-relaxed">{tip.text}</p>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -358,36 +360,41 @@ function HistoryDrawer({ conversations, onLoad, onClose }) {
   return (
     <div className="absolute inset-0 z-20 flex">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative ml-auto w-80 bg-white dark:bg-slate-800 h-full shadow-2xl flex flex-col">
-        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200 dark:border-slate-700 bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-slate-800 dark:to-slate-800">
+      <div className="relative ml-auto w-80 bg-card h-full shadow-2xl flex flex-col border-l border-border">
+        <div className="flex items-center justify-between px-4 py-4 border-b border-border">
           <div className="flex items-center gap-2">
-            <Clock className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-            <p className="text-sm font-bold text-gray-900 dark:text-slate-100">Chat History</p>
+            <Clock className="w-5 h-5 text-primary" />
+            <p className="text-sm font-bold text-foreground">Chat History</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-white/50 dark:hover:bg-slate-700 flex items-center justify-center transition-colors">
-            <X className="w-4 h-4 text-gray-500" />
-          </button>
+          <Button variant="ghost" size="icon-sm" onClick={onClose}>
+            <X className="w-4 h-4" />
+          </Button>
         </div>
         <div className="flex-1 overflow-y-auto p-3 space-y-2">
           {(!conversations || conversations.length === 0) ? (
-            <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-slate-500">
+            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
               <MessageSquare className="w-12 h-12 mb-3 opacity-30" />
               <p className="text-sm font-medium">No previous chats</p>
               <p className="text-xs mt-1">Start a conversation to see history</p>
             </div>
           ) : conversations.map((c, i) => (
-            <button key={i} onClick={() => onLoad(c.conversationId)}
-              className="w-full text-left p-3 rounded-lg hover:bg-gradient-to-r hover:from-indigo-50 hover:to-violet-50 dark:hover:from-slate-700 dark:hover:to-slate-700 transition-all group border border-transparent hover:border-indigo-200 dark:hover:border-indigo-800">
-              <div className="flex items-center gap-3">
+            <Button
+              key={i}
+              variant="ghost"
+              className="w-full justify-start h-auto p-3 rounded-lg hover:bg-muted transition-all group border border-transparent hover:border-border"
+              onClick={() => onLoad(c.conversationId)}
+            >
+              <div className="flex items-center gap-3 w-full">
                 <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shrink-0 shadow-md">
                   <MessageSquare className="w-4 h-4 text-white" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-800 dark:text-slate-200 truncate">{c.title || 'Conversation'}</p>
-                  <p className="text-xs text-gray-500 dark:text-slate-400">{c.messages?.length || 0} messages</p>
+                <div className="min-w-0 flex-1 text-left">
+                  <p className="text-sm font-medium text-foreground truncate">{c.title || 'Conversation'}</p>
+                  <p className="text-xs text-muted-foreground">{c.messages?.length || 0} messages</p>
                 </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -407,30 +414,35 @@ function InputBar({ value, onChange, onSend, onVoice, isListening, isVoiceSuppor
   }, [value])
 
   return (
-    <div className="flex items-end gap-2 p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-900/50 dark:to-slate-900/30 border-t border-gray-200 dark:border-slate-700">
+    <div className="flex items-end gap-2 p-4 bg-muted/30 border-t border-border">
       <textarea
         ref={ref}
         value={value}
         onChange={e => onChange(e.target.value)}
-        onKeyPress={handleKey}
+        onKeyDown={handleKey}
         rows={1}
         placeholder="Ask about expenses, savings rate, budget recommendations…"
-        className="flex-1 resize-none rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm text-gray-800 dark:text-slate-100 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-gray-400 dark:placeholder:text-slate-500 shadow-sm"
+        className="flex-1 resize-none rounded-xl border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground/60 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all shadow-sm"
         style={{ maxHeight: '120px', minHeight: '44px' }}
       />
       {isVoiceSupported && (
-        <button
+        <Button
+          variant={isListening ? 'destructive' : 'outline'}
+          size="icon"
           onClick={onVoice}
-          className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all shadow-md ${isListening ? 'bg-red-500 text-white animate-pulse shadow-red-300 dark:shadow-red-900' : 'bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 text-gray-600 hover:border-indigo-400 hover:text-indigo-600 hover:shadow-lg'}`}>
+          className={`shadow-md ${isListening ? 'animate-pulse' : ''}`}
+        >
           {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-        </button>
+        </Button>
       )}
-      <button
+      <Button
         onClick={onSend}
         disabled={!value.trim() || isLoading}
-        className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-indigo-300 dark:hover:shadow-indigo-900 transition-all active:scale-95 shadow-md">
+        size="icon"
+        className="bg-gradient-to-br from-indigo-500 to-violet-600 text-white hover:from-indigo-600 hover:to-violet-700 shadow-md hover:shadow-lg active:scale-95"
+      >
         <Send className="w-5 h-5" />
-      </button>
+      </Button>
     </div>
   )
 }
@@ -569,8 +581,7 @@ export default function AIAssistant() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto font-sans">
-      {/* Header */}
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
       <PageHeader
         icon={Brain}
         gradient="from-indigo-500 to-violet-600"
@@ -578,59 +589,54 @@ export default function AIAssistant() {
         subtitle="Powered by intelligent NLP · Ask anything about your finances"
         actions={
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="outline"
               onClick={() => setShowHistory(true)}
-              className="h-10 px-4 rounded-xl bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:border-indigo-400 hover:text-indigo-600 transition-all flex items-center gap-2 text-sm font-medium shadow-sm hover:shadow-md">
+            >
               <Clock className="w-4 h-4" /> History
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={newChat}
-              className="h-10 px-4 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white hover:shadow-lg hover:shadow-indigo-300 dark:hover:shadow-indigo-900 transition-all flex items-center gap-2 text-sm font-medium shadow-md active:scale-95">
+              className="bg-gradient-to-br from-indigo-500 to-violet-600 text-white hover:from-indigo-600 hover:to-violet-700 shadow-md"
+            >
               <Plus className="w-4 h-4" /> New Chat
-            </button>
+            </Button>
           </div>
         }
       />
 
-
-      {/* Snapshot Cards */}
       <SnapshotCards expenses={expenses} income={income} />
 
-      {/* Main Content Flow */}
       <div className="space-y-6">
-        {/* Chat Panel */}
-        <div className="flex flex-col bg-white dark:bg-slate-800 rounded-3xl border border-gray-200 dark:border-slate-700 shadow-xl overflow-hidden relative lg:h-[85vh] min-h-[60vh] w-full">
-
-          {/* History Drawer */}
+        <div className="flex flex-col bg-card rounded-3xl border border-border shadow-xl overflow-hidden relative lg:h-[85vh] min-h-[60vh] w-full">
           {showHistory && <HistoryDrawer conversations={conversations} onLoad={loadConversation} onClose={() => setShowHistory(false)} />}
 
-          {/* Chat Header */}
-          <div className="px-5 py-4 border-b border-gray-200 dark:border-slate-700 bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-slate-800 dark:to-slate-800 flex items-center gap-3 shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-md">
-              <Bot className="w-5 h-5 text-white" />
-            </div>
+          <div className="px-5 py-4 border-b border-border flex items-center gap-3 shrink-0">
+            <Avatar className="w-10 h-10">
+              <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-teal-500">
+                <Bot className="w-5 h-5 text-white" />
+              </AvatarFallback>
+            </Avatar>
             <div className="flex-1">
-              <p className="text-sm font-bold text-gray-900 dark:text-slate-100">Chat</p>
-              <p className="text-xs text-gray-500 dark:text-slate-400">
+              <p className="text-sm font-bold text-foreground">Chat</p>
+              <p className="text-xs text-muted-foreground">
                 {messages.filter(m => m.role === 'user').length} messages · {conversationId ? 'Saved conversation' : 'New session'}
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">Online</span>
-            </div>
+            <Badge variant="success" className="gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+              Online
+            </Badge>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5 min-h-0 bg-gradient-to-b from-gray-50/30 to-white dark:from-slate-900/30 dark:to-slate-800">
+          <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5 min-h-0 bg-muted/20">
             {messages.map((m, i) => <Bubble key={i} msg={m} />)}
             {chatLoading && <Typing />}
             <div ref={chatEndRef} />
           </div>
 
-          {/* Quick Chips */}
-          <div className="px-5 py-3 border-t border-gray-200 dark:border-slate-700 shrink-0 bg-white dark:bg-slate-800">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 mb-2">Quick questions</p>
+          <div className="px-5 py-3 border-t border-border shrink-0 bg-card">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Quick questions</p>
             <div className="flex flex-wrap gap-2">
               {chips.map((c, i) => (
                 <button
@@ -643,7 +649,6 @@ export default function AIAssistant() {
             </div>
           </div>
 
-          {/* Input Bar */}
           <InputBar
             value={input}
             onChange={setInput}
@@ -655,7 +660,6 @@ export default function AIAssistant() {
           />
         </div>
 
-        {/* AI Insights */}
         <div className="mt-6">
           <InsightsPanel
             expenses={expenses}
@@ -668,7 +672,6 @@ export default function AIAssistant() {
           />
         </div>
 
-        {/* Personalized Tips */}
         <div>
           <PersonalizedTips expenses={expenses} income={income} />
         </div>

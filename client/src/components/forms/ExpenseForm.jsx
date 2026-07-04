@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { Plus } from 'lucide-react'
-import { Button } from '../ui'
+import { Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui'
 import { EXPENSE_CATEGORIES } from '../../constants/categories'
 
 const ExpenseForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Expense' }) => {
@@ -27,17 +27,19 @@ const ExpenseForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Exp
           <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
             Category
           </label>
-          <select
+          <Select
             value={formData.category}
-            onChange={(e) => handleChange('category', e.target.value)}
-            required
-            className="input w-full"
+            onValueChange={(v) => handleChange('category', v)}
           >
-            <option value="">Select Category</option>
-            {EXPENSE_CATEGORIES.map(cat => (
-              <option key={cat.value} value={cat.value}>{cat.label}</option>
-            ))}
-          </select>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Category" />
+            </SelectTrigger>
+            <SelectContent>
+              {EXPENSE_CATEGORIES.map(cat => (
+                <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

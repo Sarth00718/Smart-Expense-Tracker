@@ -4,7 +4,6 @@ import { expenseService } from '../../../services/expenseService'
 import { Trash2, Edit2, X, Search, ArrowUpDown, Filter, Repeat, Plus, Mic, Camera, Receipt, Trash, Calendar } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
-import { Button, Modal, LoadingSpinner, PageHeader } from '../../ui'
 import { useNavigate } from 'react-router-dom'
 import AdvancedSearch from './AdvancedSearch'
 import RecurringExpenses from './RecurringExpenses'
@@ -13,6 +12,29 @@ import ReceiptScanner from '../receipts/ReceiptScanner'
 import { useFormState } from '../../../hooks/useFormState'
 import { EXPENSE_CATEGORIES, CATEGORY_BADGE_CLASSES } from '../../../constants/categories'
 import ExpenseForm from '../../forms/ExpenseForm'
+import {
+  Button, Card, CardHeader, CardTitle, CardDescription, CardContent,
+  Badge, Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
+  Dialog, DialogHeader, DialogTitle, DialogContent, DialogFooter,
+  Input, EmptyState, SkeletonList, Separator,
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from '../../ui'
+import { PageHeader, LoadingSpinner } from '../../ui'
+
+const getBadgeVariant = (category) => {
+  const map = {
+    Food: 'warning',
+    Travel: 'default',
+    Transport: 'default',
+    Shopping: 'secondary',
+    Bills: 'secondary',
+    Entertainment: 'default',
+    Healthcare: 'destructive',
+    Education: 'secondary',
+    Other: 'outline'
+  }
+  return map[category] || 'outline'
+}
 
 const Expenses = () => {
   const { expenses, deleteExpense, updateExpense, addExpense, loading, loadExpenses, pagination, goToPage } = useExpense()
@@ -176,13 +198,12 @@ const Expenses = () => {
     if (totalPages <= 1) return null
 
     return (
-      <p className="text-sm text-gray-600 dark:text-slate-400">
-        Page {currentPage} of {totalPages} • {totalItems} expense{totalItems === 1 ? '' : 's'}
+      <p className="text-sm text-muted-foreground">
+        Page {currentPage} of {totalPages} &bull; {totalItems} expense{totalItems === 1 ? '' : 's'}
       </p>
     )
   }
 
-  // Filter and sort expenses
   const filteredAndSortedExpenses = useMemo(() => {
     let result = advancedSearchResults
       ? advancedSearchResults.expenses
@@ -190,7 +211,6 @@ const Expenses = () => {
         ? nlResults.results
         : [...expenses]
 
-    // Apply time period filter
     if (filterPeriod !== 'all') {
       const now = new Date()
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -201,7 +221,6 @@ const Expenses = () => {
       })
     }
 
-    // Apply text search
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
       result = result.filter(exp =>
@@ -210,7 +229,6 @@ const Expenses = () => {
       )
     }
 
-    // Sort
     result.sort((a, b) => {
       let comparison = 0
 
@@ -239,8 +257,7 @@ const Expenses = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto font-sans">
-      {/* Header Section */}
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
       <PageHeader
         icon={Receipt}
         gradient="from-blue-500 to-indigo-600"
@@ -248,7 +265,7 @@ const Expenses = () => {
         subtitle="Manage and track all your expenses"
         actions={
           <>
-            <Button variant="primary" size="md" icon={Plus} onClick={() => setShowAddExpense(true)}>
+            <Button variant="default" size="default" icon={Plus} onClick={() => setShowAddExpense(true)}>
               Add Expense
             </Button>
             <button
@@ -263,13 +280,13 @@ const Expenses = () => {
             >
               <Camera className="w-4 h-4" /> Scan
             </button>
-            <Button variant="outline" size="md" icon={Repeat} onClick={() => setShowRecurring(true)}
+            <Button variant="outline" size="default" icon={Repeat} onClick={() => setShowRecurring(true)}
               className="border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-600 dark:text-amber-400">
               Recurring
             </Button>
             {expenses.length > 0 && (
-              <Button variant="outline" size="md" icon={Trash} onClick={() => setShowClearConfirm(true)}
-                className="text-red-600 border-red-300 hover:bg-red-50 dark:border-red-600 dark:text-red-400">
+              <Button variant="outline" size="default" icon={Trash} onClick={() => setShowClearConfirm(true)}
+                className="text-destructive border-destructive/30 hover:bg-destructive/10">
                 Clear All
               </Button>
             )}
@@ -277,320 +294,291 @@ const Expenses = () => {
         }
       />
 
-      {/* Search & Filter Section */}
-      <div className="card space-y-4">
-        {/* Search Bar */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by category or description..."
-              className="input pl-10 w-full"
-            />
-          </div>
-          <Button
-            variant="outline"
-            size="md"
-            icon={Filter}
-            onClick={() => setShowAdvancedSearch(true)}
-          >
-            Advanced
-          </Button>
-          <Button
-            variant="outline"
-            size="md"
-            icon={Search}
-            onClick={() => setShowNLSearch(!showNLSearch)}
-          >
-            AI Search
-          </Button>
-        </div>
-
-        {/* Natural Language Search Panel */}
-        {showNLSearch && (
-          <div className="bg-primary/5 dark:bg-primary/10 border-2 border-primary/20 dark:border-primary/30 rounded-xl p-4">
-            <div className="flex items-start gap-3 mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center flex-shrink-0">
-                <Search className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 dark:text-slate-100 mb-1 tracking-tight">🔍 AI-Powered Search</h3>
-                <p className="text-sm text-gray-600 dark:text-slate-400 leading-snug">
-                  Try: "food over 500 last week" or "shopping this month" or "travel expenses"
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={nlQuery}
-                onChange={(e) => setNlQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleNaturalLanguageSearch()}
-                placeholder="e.g., food over ₹500 last week"
-                className="input flex-1"
+      <Card>
+        <CardContent className="space-y-4 pt-6">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by category or description..."
+                icon={Search}
               />
-              <Button
-                variant="primary"
-                size="md"
-                onClick={handleNaturalLanguageSearch}
-              >
-                Search
-              </Button>
-              {nlResults && (
-                <Button
-                  variant="outline"
-                  size="md"
-                  onClick={clearNLSearch}
-                >
-                  Clear
+            </div>
+            <Button variant="outline" size="default" icon={Filter} onClick={() => setShowAdvancedSearch(true)}>
+              Advanced
+            </Button>
+            <Button variant="outline" size="default" icon={Search} onClick={() => setShowNLSearch(!showNLSearch)}>
+              AI Search
+            </Button>
+          </div>
+
+          {showNLSearch && (
+            <div className="bg-muted/50 border border-border rounded-xl p-4">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Search className="w-5 h-5 text-primary-foreground" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-foreground mb-1 tracking-tight">AI-Powered Search</h3>
+                  <p className="text-sm text-muted-foreground leading-snug">
+                    Try: "food over 500 last week" or "shopping this month" or "travel expenses"
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  value={nlQuery}
+                  onChange={(e) => setNlQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleNaturalLanguageSearch()}
+                  placeholder="e.g., food over ₹500 last week"
+                  className="flex-1"
+                />
+                <Button variant="default" size="default" onClick={handleNaturalLanguageSearch}>
+                  Search
                 </Button>
+                {nlResults && (
+                  <Button variant="outline" size="default" onClick={clearNLSearch}>
+                    Clear
+                  </Button>
+                )}
+              </div>
+              {nlResults && (
+                <div className="mt-3 p-3 bg-card border border-border rounded-lg">
+                  <p className="text-sm font-semibold text-foreground">
+                    Found {nlResults.count} expenses matching &quot;{nlResults.query}&quot;
+                  </p>
+                </div>
               )}
             </div>
-            {nlResults && (
-              <div className="mt-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-primary/20">
-                <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">
-                  ✓ Found {nlResults.count} expenses matching "{nlResults.query}"
-                </p>
-              </div>
-            )}
+          )}
+
+          <Separator />
+
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm font-semibold text-foreground">Filters:</span>
+
+            <div className="flex gap-1 bg-muted rounded-lg p-1">
+              <button
+                onClick={() => setFilterPeriod('all')}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${filterPeriod === 'all'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+                  }`}
+              >
+                All Time
+              </button>
+              <button
+                onClick={() => setFilterPeriod('month')}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${filterPeriod === 'month'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+                  }`}
+              >
+                This Month
+              </button>
+            </div>
+
+            <div className="flex gap-2 ml-auto">
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="date">Sort by Date</SelectItem>
+                  <SelectItem value="amount">Sort by Amount</SelectItem>
+                  <SelectItem value="category">Sort by Category</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <button
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                className="inline-flex items-center justify-center h-10 w-10 rounded-xl border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+                title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+              >
+                <ArrowUpDown className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-        )}
+        </CardContent>
+      </Card>
 
-        {/* Filter Controls */}
-        <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-gray-200 dark:border-slate-700">
-          <span className="text-sm font-semibold text-gray-700 dark:text-slate-300">Filters:</span>
-
-          {/* Period Filter */}
-          <div className="flex gap-1 bg-gray-100 dark:bg-slate-700 rounded-lg p-1">
-            <button
-              onClick={() => setFilterPeriod('all')}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${filterPeriod === 'all'
-                ? 'bg-white dark:bg-slate-600 text-primary shadow-sm'
-                : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
-                }`}
-            >
-              All Time
-            </button>
-            <button
-              onClick={() => setFilterPeriod('month')}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${filterPeriod === 'month'
-                ? 'bg-white dark:bg-slate-600 text-primary shadow-sm'
-                : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
-                }`}
-            >
-              This Month
-            </button>
-          </div>
-
-          {/* Sort Controls */}
-          <div className="flex gap-2 ml-auto">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="input py-2 text-sm pr-8"
-            >
-              <option value="date">Sort by Date</option>
-              <option value="amount">Sort by Amount</option>
-              <option value="category">Sort by Category</option>
-            </select>
-
-            <button
-              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="btn btn-secondary py-2 px-3"
-              title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
-            >
-              <ArrowUpDown className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Advanced Search Results Banner */}
       {advancedSearchResults && (
-        <div className="card border-2 border-green-200 dark:border-green-700/50 bg-green-50 dark:bg-green-900/10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
-                <Filter className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-green-900 dark:text-green-300 mb-1 tracking-tight">Advanced Search Results</h3>
-                <div className="flex gap-6 text-sm">
-                  <div>
-                    <span className="text-green-700 dark:text-green-400">Total: </span>
-                    <span className="font-semibold text-green-900 dark:text-green-200">
-                      ₹{advancedSearchResults.stats.total.toFixed(2)}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-green-700 dark:text-green-400">Count: </span>
-                    <span className="font-semibold text-green-900 dark:text-green-200">
-                      {advancedSearchResults.stats.count}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-green-700 dark:text-green-400">Average: </span>
-                    <span className="font-semibold text-green-900 dark:text-green-200">
-                      ₹{advancedSearchResults.stats.average.toFixed(2)}
-                    </span>
+        <Card className="border-green-200 dark:border-green-700/50 bg-green-50 dark:bg-green-900/10">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+                  <Filter className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-green-900 dark:text-green-300 mb-1 tracking-tight">Advanced Search Results</h3>
+                  <div className="flex gap-6 text-sm">
+                    <div>
+                      <span className="text-green-700 dark:text-green-400">Total: </span>
+                      <span className="font-semibold text-green-900 dark:text-green-200">
+                        ₹{advancedSearchResults.stats.total.toFixed(2)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-green-700 dark:text-green-400">Count: </span>
+                      <span className="font-semibold text-green-900 dark:text-green-200">
+                        {advancedSearchResults.stats.count}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-green-700 dark:text-green-400">Average: </span>
+                      <span className="font-semibold text-green-900 dark:text-green-200">
+                        ₹{advancedSearchResults.stats.average.toFixed(2)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
+              <Button variant="outline" size="sm" onClick={clearAdvancedSearch}>
+                Clear Results
+              </Button>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={clearAdvancedSearch}
-            >
-              Clear Results
-            </Button>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
-      {/* Expenses Table */}
-      <div className="card">
+      <Card>
         {expenses.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-20 h-20 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Calendar className="w-10 h-10 text-gray-400 dark:text-slate-500" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-2 tracking-tight">No expenses yet</h3>
-            <p className="text-sm text-gray-500 dark:text-slate-400 mb-6 leading-relaxed">Start tracking your expenses to see them here</p>
-            <Button
-              variant="primary"
-              size="md"
-              onClick={() => navigate('/dashboard')}
-            >
-              Add Your First Expense
-            </Button>
-          </div>
+          <EmptyState
+            icon={Calendar}
+            title="No expenses yet"
+            description="Start tracking your expenses to see them here"
+            action={
+              <Button variant="default" size="default" onClick={() => navigate('/dashboard')}>
+                Add Your First Expense
+              </Button>
+            }
+          />
         ) : (
-          <div className="overflow-x-auto -mx-6">
-            <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-slate-700/60 border-y border-gray-200 dark:border-slate-700">
-                <tr>
-                  <th className="text-left py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest">Date</th>
-                  <th className="text-left py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest">Category</th>
-                  <th className="text-left py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest">Description</th>
-                  <th className="text-right py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest">Amount</th>
-                  <th className="text-center py-4 px-6 font-semibold text-gray-700 dark:text-slate-300 text-sm uppercase tracking-widest">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
-                {filteredAndSortedExpenses.map((expense) => (
-                  editingExpense === expense._id ? (
-                    <tr key={expense._id} className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-700 dark:to-slate-700/80">
-                      <td colSpan="5" className="py-5 px-6">
-                        <form onSubmit={handleUpdate} className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                          <div>
-                            <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1 tracking-tight">Date</label>
-                            <input
-                              type="date"
-                              value={editForm.date}
-                              onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
-                              required
-                              className="input"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1 tracking-tight">Category</label>
-                            <select
-                              value={editForm.category}
-                              onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-                              required
-                              className="input"
-                            >
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                <TableHead className="text-center">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredAndSortedExpenses.map((expense) => (
+                editingExpense === expense._id ? (
+                  <TableRow key={expense._id} className="bg-muted/50">
+                    <TableCell colSpan={5} className="p-4">
+                      <form onSubmit={handleUpdate} className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div>
+                          <label className="block text-xs font-semibold text-muted-foreground mb-1 tracking-tight">Date</label>
+                          <input
+                            type="date"
+                            value={editForm.date}
+                            onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+                            required
+                            className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-muted-foreground mb-1 tracking-tight">Category</label>
+                          <Select
+                            value={editForm.category}
+                            onValueChange={(v) => setEditForm({ ...editForm, category: v })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                            <SelectContent>
                               {EXPENSE_CATEGORIES.map(cat => (
-                                <option key={cat.value} value={cat.value}>{cat.label}</option>
+                                <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
                               ))}
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1 tracking-tight">Description</label>
-                            <input
-                              type="text"
-                              value={editForm.description}
-                              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                              placeholder="Description"
-                              className="input"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1 tracking-tight">Amount (₹)</label>
-                            <input
-                              type="number"
-                              step="0.01"
-                              min="0.01"
-                              value={editForm.amount}
-                              onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })}
-                              required
-                              className="input"
-                            />
-                          </div>
-                          <div className="flex gap-2 items-end">
-                            <Button type="submit" variant="primary" className="flex-1" loading={submitting}>
-                              Save
-                            </Button>
-                            <button
-                              type="button"
-                              onClick={cancelEdit}
-                              className="btn btn-secondary px-3"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </form>
-                      </td>
-                    </tr>
-                  ) : (
-                    <tr key={expense._id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
-                      <td className="py-4 px-6 text-gray-700 dark:text-slate-300 font-medium">
-                        {format(new Date(expense.date), 'MMM dd, yyyy')}
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className={`badge ${getCategoryBadgeClass(expense.category)}`}>
-                          {expense.category}
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-gray-600 dark:text-slate-400">
-                        {expense.description || <span className="text-gray-400 dark:text-slate-500 italic">No description</span>}
-                      </td>
-                      <td className="py-4 px-6 text-right font-semibold text-gray-900 dark:text-slate-100 text-base sm:text-lg tabular-nums tracking-tight">
-                        ₹{expense.amount.toFixed(2)}
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="flex items-center justify-center gap-2">
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-muted-foreground mb-1 tracking-tight">Description</label>
+                          <input
+                            type="text"
+                            value={editForm.description}
+                            onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                            placeholder="Description"
+                            className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-muted-foreground mb-1 tracking-tight">Amount (₹)</label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0.01"
+                            value={editForm.amount}
+                            onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })}
+                            required
+                            className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all"
+                          />
+                        </div>
+                        <div className="flex gap-2 items-end">
+                          <Button type="submit" variant="default" className="flex-1" loading={submitting}>
+                            Save
+                          </Button>
                           <button
-                            onClick={() => startEdit(expense)}
-                            className="p-2.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all hover:scale-110"
-                            title="Edit expense"
+                            type="button"
+                            onClick={cancelEdit}
+                            className="inline-flex items-center justify-center h-10 w-10 rounded-xl border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
                           >
-                            <Edit2 className="w-4 h-4" />
+                            <X className="w-4 h-4" />
                           </button>
-                          <button
-                            onClick={() => setDeleteTarget(expense._id)}
-                            className="p-2.5 text-red-600 hover:bg-red-50 rounded-lg transition-all hover:scale-110"
-                            title="Delete expense"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>                        </div>
-                      </td>
-                    </tr>
-                  )
-                ))}
-              </tbody>
-            </table>
-          </div>
+                        </div>
+                      </form>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  <TableRow key={expense._id}>
+                    <TableCell className="font-medium">
+                      {format(new Date(expense.date), 'MMM dd, yyyy')}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getBadgeVariant(expense.category)}>
+                        {expense.category}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {expense.description || <span className="text-muted-foreground/50 italic">No description</span>}
+                    </TableCell>
+                    <TableCell className="text-right font-semibold text-foreground text-base sm:text-lg tabular-nums tracking-tight">
+                      ₹{expense.amount.toFixed(2)}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => startEdit(expense)}
+                          className="p-2.5 text-primary hover:bg-primary/10 rounded-lg transition-all hover:scale-110"
+                          title="Edit expense"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteTarget(expense._id)}
+                          className="p-2.5 text-destructive hover:bg-destructive/10 rounded-lg transition-all hover:scale-110"
+                          title="Delete expense"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              ))}
+            </TableBody>
+          </Table>
         )}
-      </div>
+      </Card>
 
-      {/* Pagination */}
       {pagination.pages > 1 && (
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 sm:p-5 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 sm:p-5 bg-muted/50 border border-border rounded-xl">
           {renderPaginationLabel()}
 
           <div className="flex items-center gap-2 flex-wrap">
@@ -607,7 +595,7 @@ const Expenses = () => {
             {paginationButtons.map((page) => (
               <Button
                 key={page}
-                variant={page === pagination.page ? 'primary' : 'outline'}
+                variant={page === pagination.page ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => goToPage(page)}
                 disabled={loading}
@@ -630,83 +618,77 @@ const Expenses = () => {
         </div>
       )}
 
-      {/* Advanced Search Modal */}
-      {showAdvancedSearch && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="my-8">
-            <AdvancedSearch
-              onSearch={handleAdvancedSearch}
-              onClose={() => setShowAdvancedSearch(false)}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Recurring Expenses Modal */}
-      {showRecurring && (
-        <RecurringExpenses onClose={() => setShowRecurring(false)} />
-      )}
-
-      {/* Add Expense Modal */}
-      <Modal
-        isOpen={showAddExpense}
-        onClose={() => setShowAddExpense(false)}
-        title="Add New Expense"
-        size="md"
-      >
-        <ExpenseForm
-          formData={formData}
-          onChange={setFormData}
-          onSubmit={handleSubmit}
-        />
-      </Modal>
-
-      {/* Voice Input Modal */}
-      {showVoiceInput && (
-        <Modal
-          isOpen={showVoiceInput}
-          onClose={() => setShowVoiceInput(false)}
-          size="lg"
-          showCloseButton={false}
-          noPadding
-        >
-          <VoiceExpenseInput
-            onExpenseCreated={handleVoiceExpenseCreated}
-            onClose={() => setShowVoiceInput(false)}
+      <Dialog open={showAdvancedSearch} onClose={() => setShowAdvancedSearch(false)} size="lg">
+        <DialogHeader onClose={() => setShowAdvancedSearch(false)}>
+          <DialogTitle>Advanced Search</DialogTitle>
+        </DialogHeader>
+        <DialogContent>
+          <AdvancedSearch
+            onSearch={handleAdvancedSearch}
+            onClose={() => setShowAdvancedSearch(false)}
           />
-        </Modal>
-      )}
+        </DialogContent>
+      </Dialog>
 
-      {showReceiptScanner && (
-        <Modal
-          isOpen={showReceiptScanner}
-          onClose={() => setShowReceiptScanner(false)}
-          size="xl"
-          showCloseButton={false}
-          noPadding
-        >
-          <ReceiptScanner onSuccess={handleReceiptScanned} />
-        </Modal>
-      )}
+      <Dialog open={showRecurring} onClose={() => setShowRecurring(false)} size="lg">
+        <DialogHeader onClose={() => setShowRecurring(false)}>
+          <DialogTitle>Recurring Expenses</DialogTitle>
+        </DialogHeader>
+        <DialogContent>
+          <RecurringExpenses onClose={() => setShowRecurring(false)} />
+        </DialogContent>
+      </Dialog>
 
-      {/* Delete Expense Confirm */}
-      <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Delete Expense" size="sm">
-        <p className="text-gray-600 dark:text-slate-400 mb-6">Are you sure you want to delete this expense?</p>
-        <div className="flex gap-3">
-          <Button variant="outline" fullWidth onClick={() => setDeleteTarget(null)}>Cancel</Button>
-          <Button variant="danger" fullWidth onClick={handleDelete}>Delete</Button>
-        </div>
-      </Modal>
+      <Dialog open={showAddExpense} onClose={() => setShowAddExpense(false)} size="md">
+        <DialogHeader onClose={() => setShowAddExpense(false)}>
+          <DialogTitle>Add New Expense</DialogTitle>
+        </DialogHeader>
+        <DialogContent>
+          <ExpenseForm
+            formData={formData}
+            onChange={setFormData}
+            onSubmit={handleSubmit}
+          />
+        </DialogContent>
+      </Dialog>
 
-      {/* Clear All Confirm */}
-      <Modal isOpen={showClearConfirm} onClose={() => setShowClearConfirm(false)} title="Clear All Expenses" size="sm">
-        <p className="text-gray-600 dark:text-slate-400 mb-2">This will permanently delete <span className="font-semibold text-red-600">all your expense data</span>. This cannot be undone.</p>
-        <p className="text-sm text-gray-500 dark:text-slate-500 mb-6">Are you absolutely sure?</p>
-        <div className="flex gap-3">
-          <Button variant="outline" fullWidth onClick={() => setShowClearConfirm(false)}>Cancel</Button>
-          <Button variant="danger" fullWidth onClick={handleClearAll}>Yes, Clear All</Button>
-        </div>
-      </Modal>
+      <Dialog open={showVoiceInput} onClose={() => setShowVoiceInput(false)} size="lg">
+        <VoiceExpenseInput
+          onExpenseCreated={handleVoiceExpenseCreated}
+          onClose={() => setShowVoiceInput(false)}
+        />
+      </Dialog>
+
+      <Dialog open={showReceiptScanner} onClose={() => setShowReceiptScanner(false)} size="xl">
+        <ReceiptScanner onSuccess={handleReceiptScanned} />
+      </Dialog>
+
+      <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} size="sm">
+        <DialogHeader onClose={() => setDeleteTarget(null)}>
+          <DialogTitle>Delete Expense</DialogTitle>
+        </DialogHeader>
+        <DialogContent>
+          <p className="text-muted-foreground">Are you sure you want to delete this expense?</p>
+        </DialogContent>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+          <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+        </DialogFooter>
+      </Dialog>
+
+      <Dialog open={showClearConfirm} onClose={() => setShowClearConfirm(false)} size="sm">
+        <DialogHeader onClose={() => setShowClearConfirm(false)}>
+          <DialogTitle>Clear All Expenses</DialogTitle>
+        </DialogHeader>
+        <DialogContent>
+          <p className="text-muted-foreground mb-2">This will permanently delete <span className="font-semibold text-destructive">all your expense data</span>. This cannot be undone.</p>
+          <p className="text-sm text-muted-foreground/70">Are you absolutely sure?</p>
+        </DialogContent>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setShowClearConfirm(false)}>Cancel</Button>
+          <Button variant="destructive" onClick={handleClearAll}>Yes, Clear All</Button>
+        </DialogFooter>
+      </Dialog>
     </div>
   )
 }

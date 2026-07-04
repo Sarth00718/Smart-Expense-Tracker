@@ -19,126 +19,61 @@ import { pageTransition } from './utils/animations'
 import api from './services/api'
 import { HEALTH } from './config/apiEndpoints'
 
-// Keep-alive ping to prevent server sleep
 const useServerKeepAlive = () => {
   useEffect(() => {
-    // Ping server every 5 minutes to keep it awake
     const pingInterval = setInterval(async () => {
-      try {
-        await api.get(HEALTH.PING, { timeout: 5000, retry: 0 })
-      } catch {}
+      try { await api.get(HEALTH.PING, { timeout: 5000, retry: 0 }) } catch {}
     }, 5 * 60 * 1000)
-
     const initialPing = setTimeout(() => {
       api.get(HEALTH.PING, { timeout: 5000, retry: 0 }).catch(() => {})
     }, 3000)
-
-    return () => {
-      clearInterval(pingInterval)
-      clearTimeout(initialPing)
-    }
+    return () => { clearInterval(pingInterval); clearTimeout(initialPing) }
   }, [])
 }
 
-// Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth()
-
-  // Keep server alive when user is logged in
   useServerKeepAlive()
-
-  if (loading) {
-    return (
-      <LoadingSpinner fullScreen text="Loading..." variant="logo" />
-    )
-  }
-
+  if (loading) return <LoadingSpinner fullScreen text="Loading..." variant="logo" />
   return user ? children : <Navigate to="/login" />
 }
 
-// Public Route Component
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth()
-
-  if (loading) {
-    return (
-      <LoadingSpinner fullScreen text="Loading..." />
-    )
-  }
-
+  if (loading) return <LoadingSpinner fullScreen text="Loading..." />
   return !user ? children : <Navigate to="/dashboard" />
 }
 
-// Animated Routes wrapper
 const AnimatedRoutes = () => {
-  const location = useLocation();
+  const location = useLocation()
 
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route
-          path="/login"
-          element={
-            <PublicRoute>
-              <motion.div {...pageTransition}>
-                <Login />
-              </motion.div>
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <PublicRoute>
-              <motion.div {...pageTransition}>
-                <Register />
-              </motion.div>
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/dashboard/*"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/login" element={<PublicRoute><motion.div {...pageTransition}><Login /></motion.div></PublicRoute>} />
+        <Route path="/register" element={<PublicRoute><motion.div {...pageTransition}><Register /></motion.div></PublicRoute>} />
+        <Route path="/dashboard/*" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/" element={<Navigate to="/dashboard" />} />
         <Route path="*" element={<Navigate to="/dashboard" />} />
       </Routes>
     </AnimatePresence>
-  );
-};
+  )
+}
 
-// App content wrapper to access theme context
 const AppContent = () => {
   const { isDark } = useTheme()
 
-  // Setup offline sync listeners
   useEffect(() => {
     const handleSyncComplete = (event) => {
       const { processed, failed } = event.detail
-      if (processed > 0) {
-        toast.success(`${processed} offline ${processed === 1 ? 'change' : 'changes'} synced!`, {
-          icon: '🔄',
-          duration: 4000,
-        })
-      }
+      if (processed > 0) toast.success(`${processed} offline ${processed === 1 ? 'change' : 'changes'} synced!`, { icon: '🔄', duration: 4000 })
     }
-
     const handleSyncFailed = (event) => {
       const { failed } = event.detail
-      if (failed > 0) {
-        toast.error(`${failed} ${failed === 1 ? 'change' : 'changes'} failed to sync`, {
-          duration: 5000,
-        })
-      }
+      if (failed > 0) toast.error(`${failed} ${failed === 1 ? 'change' : 'changes'} failed to sync`, { duration: 5000 })
     }
-
     window.addEventListener('offline-sync-complete', handleSyncComplete)
     window.addEventListener('offline-sync-failed', handleSyncFailed)
-
     return () => {
       window.removeEventListener('offline-sync-complete', handleSyncComplete)
       window.removeEventListener('offline-sync-failed', handleSyncFailed)
@@ -156,27 +91,16 @@ const AppContent = () => {
                 toastOptions={{
                   duration: 3000,
                   style: {
-                    background: isDark ? '#1e293b' : '#fff',
-                    color: isDark ? '#f1f5f9' : '#1e293b',
-                    padding: '16px',
-                    borderRadius: '8px',
-                    boxShadow: isDark 
-                      ? '0 4px 6px -1px rgba(0, 0, 0, 0.4)' 
-                      : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                    border: isDark ? '1px solid #334155' : 'none',
+                    background: isDark ? 'hsl(222.2 84% 4.9%)' : '#fff',
+                    color: isDark ? 'hsl(210 40% 98%)' : 'hsl(222.2 84% 4.9%)',
+                    padding: '14px 18px',
+                    borderRadius: '12px',
+                    border: isDark ? '1px solid hsl(217.2 32.6% 17.5%)' : '1px solid hsl(214.3 31.8% 91.4%)',
+                    fontSize: '14px',
+                    boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.08)',
                   },
-                  success: {
-                    iconTheme: {
-                      primary: '#10b981',
-                      secondary: isDark ? '#1e293b' : '#fff',
-                    },
-                  },
-                  error: {
-                    iconTheme: {
-                      primary: '#ef4444',
-                      secondary: isDark ? '#1e293b' : '#fff',
-                    },
-                  },
+                  success: { iconTheme: { primary: '#10b981', secondary: isDark ? '#0f172a' : '#fff' } },
+                  error: { iconTheme: { primary: '#ef4444', secondary: isDark ? '#0f172a' : '#fff' } },
                 }}
               />
               <OfflineIndicator />
