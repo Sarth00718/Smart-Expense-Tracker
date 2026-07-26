@@ -6,11 +6,9 @@ import { useEffect, lazy, Suspense } from 'react'
 
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ThemeProvider, useTheme } from './context/ThemeContext'
+import { CategoryProvider } from './context/CategoryContext'
 import { ExpenseProvider } from './context/ExpenseContext'
 import { IncomeProvider } from './context/IncomeContext'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import Dashboard from './pages/Dashboard'
 import OfflineIndicator from './components/ui/OfflineIndicator'
 import ErrorBoundary from './components/ui/ErrorBoundary'
 import LoadingSpinner from './components/ui/LoadingSpinner'
@@ -18,6 +16,12 @@ import PWAUpdatePrompt from './components/ui/PWAUpdatePrompt'
 import { pageTransition } from './utils/animations'
 import api from './services/api'
 import { HEALTH } from './config/apiEndpoints'
+
+const Login = lazy(() => import('./pages/Login'))
+const Register = lazy(() => import('./pages/Register'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+
+const AppFallback = () => <LoadingSpinner fullScreen text="Preparing your workspace..." variant="logo" />
 
 const useServerKeepAlive = () => {
   useEffect(() => {
@@ -64,6 +68,18 @@ const AppContent = () => {
   const { isDark } = useTheme()
 
   useEffect(() => {
+    const preloadShell = window.setTimeout(() => {
+      Promise.allSettled([
+        import('./pages/Login'),
+        import('./pages/Register'),
+        import('./pages/Dashboard')
+      ]).catch(() => {})
+    }, 800)
+
+    return () => window.clearTimeout(preloadShell)
+  }, [])
+
+  useEffect(() => {
     const handleSyncComplete = (event) => {
       const { processed, failed } = event.detail
       if (processed > 0) toast.success(`${processed} offline ${processed === 1 ? 'change' : 'changes'} synced!`, { icon: '🔄', duration: 4000 })
@@ -82,34 +98,38 @@ const AppContent = () => {
 
   return (
     <ErrorBoundary>
-      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <AuthProvider>
-          <ExpenseProvider>
-            <IncomeProvider>
-              <Toaster
-                position="top-right"
-                toastOptions={{
-                  duration: 3000,
-                  style: {
-                    background: isDark ? 'hsl(222.2 84% 4.9%)' : '#fff',
-                    color: isDark ? 'hsl(210 40% 98%)' : 'hsl(222.2 84% 4.9%)',
-                    padding: '14px 18px',
-                    borderRadius: '12px',
-                    border: isDark ? '1px solid hsl(217.2 32.6% 17.5%)' : '1px solid hsl(214.3 31.8% 91.4%)',
-                    fontSize: '14px',
-                    boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.08)',
-                  },
-                  success: { iconTheme: { primary: '#10b981', secondary: isDark ? '#0f172a' : '#fff' } },
-                  error: { iconTheme: { primary: '#ef4444', secondary: isDark ? '#0f172a' : '#fff' } },
-                }}
-              />
-              <OfflineIndicator />
-              <PWAUpdatePrompt />
-              <AnimatedRoutes />
-            </IncomeProvider>
-          </ExpenseProvider>
-        </AuthProvider>
-      </Router>
+      <Suspense fallback={<AppFallback />}>
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <AuthProvider>
+            <CategoryProvider>
+              <ExpenseProvider>
+                <IncomeProvider>
+                  <Toaster
+                    position="top-right"
+                    toastOptions={{
+                      duration: 3000,
+                      style: {
+                        background: isDark ? 'hsl(222.2 84% 4.9%)' : '#fff',
+                        color: isDark ? 'hsl(210 40% 98%)' : 'hsl(222.2 84% 4.9%)',
+                        padding: '14px 18px',
+                        borderRadius: '12px',
+                        border: isDark ? '1px solid hsl(217.2 32.6% 17.5%)' : '1px solid hsl(214.3 31.8% 91.4%)',
+                        fontSize: '14px',
+                        boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.08)',
+                      },
+                      success: { iconTheme: { primary: '#10b981', secondary: isDark ? '#0f172a' : '#fff' } },
+                      error: { iconTheme: { primary: '#ef4444', secondary: isDark ? '#0f172a' : '#fff' } },
+                    }}
+                  />
+                  <OfflineIndicator />
+                  <PWAUpdatePrompt />
+                  <AnimatedRoutes />
+                </IncomeProvider>
+              </ExpenseProvider>
+            </CategoryProvider>
+          </AuthProvider>
+        </Router>
+      </Suspense>
     </ErrorBoundary>
   )
 }

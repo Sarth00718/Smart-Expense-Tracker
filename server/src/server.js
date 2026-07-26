@@ -60,6 +60,21 @@ app.use(sanitizeInput);
 // ── Database Connection ───────────────────────────────────────────────────────
 await database.connect();
 
+// ── Availability Guard ───────────────────────────────────────────────────────
+app.use((req, res, next) => {
+  const isHealthRoute = req.path === '/health' || req.path.startsWith('/api/health') || req.method === 'OPTIONS';
+  if (isHealthRoute) return next();
+
+  if (!database.isConnected()) {
+    return res.status(503).json({
+      success: false,
+      error: 'Service temporarily unavailable. The database is reconnecting.',
+    });
+  }
+
+  return next();
+});
+
 // ── API Routes ────────────────────────────────────────────────────────────────
 app.use('/api/health', healthRoutes);                          // No rate limit — monitoring
 app.use('/api/auth', authRoutes);
@@ -121,6 +136,10 @@ const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🌍 Environment: ${config.nodeEnv}`);
 });
+
+server.keepAliveTimeout = 65 * 1000;
+server.headersTimeout = 70 * 1000;
+server.requestTimeout = 30 * 1000;
 
 server.on('error', (error) => {
   if (error.code === 'EADDRINUSE') {

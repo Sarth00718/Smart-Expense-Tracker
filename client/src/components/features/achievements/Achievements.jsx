@@ -160,8 +160,6 @@ const Achievements = () => {
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading) return <LoadingSpinner size="lg" text="Loading achievements..." />
-
   const filtered = filter === 'all'
     ? achievements
     : achievements.filter(a => (a.badgeType || a.type) === filter)
@@ -183,6 +181,13 @@ const Achievements = () => {
         title="Achievements"
         subtitle="Your milestones and financial health score"
       />
+
+      {loading && achievements.length === 0 && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <LoadingSpinner size="sm" text="" />
+          <span>Loading achievements…</span>
+        </div>
+      )}
 
       {/* Score Card */}
       {score && (

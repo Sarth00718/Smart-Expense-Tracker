@@ -183,6 +183,13 @@ const Analytics = () => {
 
       <Separator />
 
+      {analyticsLoading && patterns.length === 0 && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-primary" />
+          <span>Refreshing insights…</span>
+        </div>
+      )}
+
       {/* Stats Overview */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
         {statCards.map(({ icon: Icon, label, value, grad }) => (

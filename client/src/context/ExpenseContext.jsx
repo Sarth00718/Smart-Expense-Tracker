@@ -34,7 +34,17 @@ export const ExpenseProvider = ({ children }) => {
 
       const expenseData  = response.data?.data ?? response.data
       const paginationData = response.data?.pagination
-      setExpenses(Array.isArray(expenseData) ? expenseData : [])
+      
+      setExpenses(prev => {
+        const newData = Array.isArray(expenseData) ? expenseData : []
+        if (options.append) {
+          // Filter out duplicates just in case
+          const existingIds = new Set(prev.map(e => e._id))
+          const uniqueNewData = newData.filter(e => !existingIds.has(e._id))
+          return [...prev, ...uniqueNewData]
+        }
+        return newData
+      })
       if (paginationData) setPagination(paginationData)
     } catch (error) {
       if (error.name === 'AbortError' || signal?.aborted) return
@@ -45,26 +55,50 @@ export const ExpenseProvider = ({ children }) => {
   }, [])
 
   const addExpense = async (expense) => {
-    const response = await expenseService.add(expense)
-    // Reload current page only — no need to refetch all
-    await loadExpenses(null, { page: pagination.page, limit: pagination.limit })
-    return response.data
+    const tempId = `temp-${Date.now()}`
+    const optimisticExpense = { ...expense, _id: tempId, date: expense.date || new Date().toISOString() }
+    setExpenses(prev => [optimisticExpense, ...prev])
+    
+    try {
+      const response = await expenseService.add(expense)
+      loadExpenses(null, { page: 1, limit: pagination.limit })
+      return response.data
+    } catch (error) {
+      loadExpenses(null, { page: 1, limit: pagination.limit })
+      throw error
+    }
   }
 
   const updateExpense = async (id, expense) => {
-    const response = await expenseService.update(id, expense)
-    await loadExpenses(null, { page: pagination.page, limit: pagination.limit })
-    return response.data
+    setExpenses(prev => prev.map(e => e._id === id ? { ...e, ...expense } : e))
+    
+    try {
+      const response = await expenseService.update(id, expense)
+      loadExpenses(null, { page: 1, limit: pagination.limit })
+      return response.data
+    } catch (error) {
+      loadExpenses(null, { page: 1, limit: pagination.limit })
+      throw error
+    }
   }
 
   const deleteExpense = async (id) => {
-    await expenseService.delete(id)
-    await loadExpenses(null, { page: pagination.page, limit: pagination.limit })
+    setExpenses(prev => prev.filter(e => e._id !== id))
+    
+    try {
+      await expenseService.delete(id)
+      loadExpenses(null, { page: 1, limit: pagination.limit })
+    } catch (error) {
+      loadExpenses(null, { page: 1, limit: pagination.limit })
+      throw error
+    }
   }
 
-  const goToPage = useCallback((page) => {
-    loadExpenses(null, { page, limit: pagination.limit })
-  }, [loadExpenses, pagination.limit])
+  const loadMore = useCallback(() => {
+    if (pagination.page < pagination.pages && !loading) {
+      loadExpenses(null, { page: pagination.page + 1, limit: pagination.limit, append: true })
+    }
+  }, [loadExpenses, pagination.page, pagination.pages, pagination.limit, loading])
 
   // Load first page when auth becomes available and when page size changes
   useEffect(() => {
@@ -76,9 +110,9 @@ export const ExpenseProvider = ({ children }) => {
     }
 
     const controller = new AbortController()
-    loadExpenses(controller.signal, { page: pagination.page, limit: pagination.limit })
+    loadExpenses(controller.signal, { page: 1, limit: pagination.limit })
     return () => controller.abort()
-  }, [user, loadExpenses, pagination.limit, pagination.page])
+  }, [user, loadExpenses, pagination.limit])
 
   const value = useMemo(() => ({
     expenses,
@@ -88,8 +122,8 @@ export const ExpenseProvider = ({ children }) => {
     addExpense,
     updateExpense,
     deleteExpense,
-    goToPage,
-  }), [expenses, loading, pagination, loadExpenses, goToPage])
+    loadMore,
+  }), [expenses, loading, pagination, loadExpenses, loadMore])
 
   return <ExpenseContext.Provider value={value}>{children}</ExpenseContext.Provider>
 }

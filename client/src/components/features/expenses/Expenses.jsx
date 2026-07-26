@@ -1,16 +1,16 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useExpense } from '../../../context/ExpenseContext'
 import { expenseService } from '../../../services/expenseService'
-import { Trash2, Edit2, X, Search, ArrowUpDown, Filter, Repeat, Plus, Mic, Camera, Receipt, Trash, Calendar } from 'lucide-react'
+import { Trash2, Edit2, X, Search, ArrowUpDown, Filter, Plus, Mic, Camera, Receipt, Trash, Calendar } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 import { useNavigate } from 'react-router-dom'
 import AdvancedSearch from './AdvancedSearch'
-import RecurringExpenses from './RecurringExpenses'
 import VoiceExpenseInput from '../voice/VoiceExpenseInput'
 import ReceiptScanner from '../receipts/ReceiptScanner'
 import { useFormState } from '../../../hooks/useFormState'
-import { EXPENSE_CATEGORIES, CATEGORY_BADGE_CLASSES } from '../../../constants/categories'
+import { useCategories } from '../../../context/CategoryContext'
+import { useIntersectionObserver } from '../../../hooks/useIntersectionObserver'
 import ExpenseForm from '../../forms/ExpenseForm'
 import {
   Button, Card, CardHeader, CardTitle, CardDescription, CardContent,
@@ -21,23 +21,9 @@ import {
 } from '../../ui'
 import { PageHeader, LoadingSpinner } from '../../ui'
 
-const getBadgeVariant = (category) => {
-  const map = {
-    Food: 'warning',
-    Travel: 'default',
-    Transport: 'default',
-    Shopping: 'secondary',
-    Bills: 'secondary',
-    Entertainment: 'default',
-    Healthcare: 'destructive',
-    Education: 'secondary',
-    Other: 'outline'
-  }
-  return map[category] || 'outline'
-}
-
 const Expenses = () => {
-  const { expenses, deleteExpense, updateExpense, addExpense, loading, loadExpenses, pagination, goToPage } = useExpense()
+  const { expenseCategories, getCategoryColor, getCategoryEmoji } = useCategories()
+  const { expenses, deleteExpense, updateExpense, addExpense, loading, loadExpenses, pagination, loadMore } = useExpense()
   const navigate = useNavigate()
   const [editingExpense, setEditingExpense] = useState(null)
   const [editForm, setEditForm] = useState({ date: '', category: '', amount: '', description: '' })
@@ -50,7 +36,6 @@ const Expenses = () => {
   const [nlResults, setNlResults] = useState(null)
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false)
   const [advancedSearchResults, setAdvancedSearchResults] = useState(null)
-  const [showRecurring, setShowRecurring] = useState(false)
   const [showAddExpense, setShowAddExpense] = useState(false)
   const [showVoiceInput, setShowVoiceInput] = useState(false)
   const [showReceiptScanner, setShowReceiptScanner] = useState(false)
@@ -174,35 +159,15 @@ const Expenses = () => {
     }
   }
 
-  const getCategoryBadgeClass = useCallback((category) => {
-    return CATEGORY_BADGE_CLASSES[category] || 'badge-other'
-  }, [])
 
-  const paginationButtons = useMemo(() => {
-    const totalPages = pagination?.pages || 0
-    const currentPage = pagination?.page || 1
 
-    if (totalPages <= 1) return []
+  const { targetRef, isIntersecting } = useIntersectionObserver({ threshold: 0.1 })
 
-    const pages = new Set([1, totalPages, currentPage - 1, currentPage, currentPage + 1])
-    return Array.from(pages)
-      .filter((page) => page >= 1 && page <= totalPages)
-      .sort((a, b) => a - b)
-  }, [pagination?.page, pagination?.pages])
-
-  const renderPaginationLabel = () => {
-    const totalPages = pagination?.pages || 0
-    const currentPage = pagination?.page || 1
-    const totalItems = pagination?.total || 0
-
-    if (totalPages <= 1) return null
-
-    return (
-      <p className="text-sm text-muted-foreground">
-        Page {currentPage} of {totalPages} &bull; {totalItems} expense{totalItems === 1 ? '' : 's'}
-      </p>
-    )
-  }
+  useEffect(() => {
+    if (isIntersecting && pagination?.page < pagination?.pages && !loading) {
+      loadMore()
+    }
+  }, [isIntersecting, pagination?.page, pagination?.pages, loading, loadMore])
 
   const filteredAndSortedExpenses = useMemo(() => {
     let result = advancedSearchResults
@@ -252,9 +217,7 @@ const Expenses = () => {
     return result
   }, [expenses, nlResults, advancedSearchResults, filterPeriod, searchQuery, sortBy, sortOrder])
 
-  if (loading) {
-    return <LoadingSpinner size="lg" text="Loading expenses..." />
-  }
+  // removed the loading block to allow table to render the first page items alongside the loader at the bottom
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
@@ -280,10 +243,6 @@ const Expenses = () => {
             >
               <Camera className="w-4 h-4" /> Scan
             </button>
-            <Button variant="outline" size="default" icon={Repeat} onClick={() => setShowRecurring(true)}
-              className="border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-600 dark:text-amber-400">
-              Recurring
-            </Button>
             {expenses.length > 0 && (
               <Button variant="outline" size="default" icon={Trash} onClick={() => setShowClearConfirm(true)}
                 className="text-destructive border-destructive/30 hover:bg-destructive/10">
@@ -459,11 +418,11 @@ const Expenses = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="text-center">Actions</TableHead>
+                <TableHead className="w-1/6 pl-6">Date</TableHead>
+                <TableHead className="w-1/6">Category</TableHead>
+                <TableHead className="w-1/3">Description</TableHead>
+                <TableHead className="text-right w-1/6">Amount</TableHead>
+                <TableHead className="text-center w-1/6 pr-6">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -474,12 +433,11 @@ const Expenses = () => {
                       <form onSubmit={handleUpdate} className="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div>
                           <label className="block text-xs font-semibold text-muted-foreground mb-1 tracking-tight">Date</label>
-                          <input
+                          <Input
                             type="date"
                             value={editForm.date}
                             onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
                             required
-                            className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all"
                           />
                         </div>
                         <div>
@@ -492,7 +450,7 @@ const Expenses = () => {
                               <SelectValue placeholder="Select category" />
                             </SelectTrigger>
                             <SelectContent>
-                              {EXPENSE_CATEGORIES.map(cat => (
+                              {expenseCategories.map(cat => (
                                 <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
                               ))}
                             </SelectContent>
@@ -500,24 +458,22 @@ const Expenses = () => {
                         </div>
                         <div>
                           <label className="block text-xs font-semibold text-muted-foreground mb-1 tracking-tight">Description</label>
-                          <input
+                          <Input
                             type="text"
                             value={editForm.description}
                             onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                             placeholder="Description"
-                            className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all"
                           />
                         </div>
                         <div>
                           <label className="block text-xs font-semibold text-muted-foreground mb-1 tracking-tight">Amount (₹)</label>
-                          <input
+                          <Input
                             type="number"
                             step="0.01"
                             min="0.01"
                             value={editForm.amount}
                             onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })}
                             required
-                            className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all"
                           />
                         </div>
                         <div className="flex gap-2 items-end">
@@ -537,36 +493,40 @@ const Expenses = () => {
                   </TableRow>
                 ) : (
                   <TableRow key={expense._id}>
-                    <TableCell className="font-medium">
+                    <TableCell className="font-medium whitespace-nowrap pl-6">
                       {format(new Date(expense.date), 'MMM dd, yyyy')}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={getBadgeVariant(expense.category)}>
+                      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${getCategoryColor(expense.category).bg} ${getCategoryColor(expense.category).text}`}>
+                        <span>{getCategoryEmoji(expense.category)}</span>
                         {expense.category}
-                      </Badge>
+                      </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {expense.description || <span className="text-muted-foreground/50 italic">No description</span>}
                     </TableCell>
-                    <TableCell className="text-right font-semibold text-foreground text-base sm:text-lg tabular-nums tracking-tight">
+                    <TableCell className="text-right font-semibold text-foreground tabular-nums tracking-tight whitespace-nowrap">
                       ₹{expense.amount.toFixed(2)}
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center pr-6">
                       <div className="flex items-center justify-center gap-2">
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
                           onClick={() => startEdit(expense)}
-                          className="p-2.5 text-primary hover:bg-primary/10 rounded-lg transition-all hover:scale-110"
                           title="Edit expense"
                         >
                           <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
                           onClick={() => setDeleteTarget(expense._id)}
-                          className="p-2.5 text-destructive hover:bg-destructive/10 rounded-lg transition-all hover:scale-110"
                           title="Delete expense"
+                          className="text-destructive hover:text-destructive"
                         >
                           <Trash2 className="w-4 h-4" />
-                        </button>
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -577,44 +537,9 @@ const Expenses = () => {
         )}
       </Card>
 
-      {pagination.pages > 1 && (
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 sm:p-5 bg-muted/50 border border-border rounded-xl">
-          {renderPaginationLabel()}
-
-          <div className="flex items-center gap-2 flex-wrap">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => goToPage(Math.max(1, pagination.page - 1))}
-              disabled={loading || pagination.page <= 1}
-              className="min-w-20"
-            >
-              Prev
-            </Button>
-
-            {paginationButtons.map((page) => (
-              <Button
-                key={page}
-                variant={page === pagination.page ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => goToPage(page)}
-                disabled={loading}
-                className="min-w-10 px-3"
-              >
-                {page}
-              </Button>
-            ))}
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => goToPage(Math.min(pagination.pages, pagination.page + 1))}
-              disabled={loading || pagination.page >= pagination.pages}
-              className="min-w-20"
-            >
-              Next
-            </Button>
-          </div>
+      {(pagination?.page < pagination?.pages || loading) && (
+        <div ref={targetRef} className="py-6 flex justify-center">
+          {loading && <LoadingSpinner size="sm" text="Loading more expenses..." />}
         </div>
       )}
 
@@ -627,15 +552,6 @@ const Expenses = () => {
             onSearch={handleAdvancedSearch}
             onClose={() => setShowAdvancedSearch(false)}
           />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showRecurring} onClose={() => setShowRecurring(false)} size="lg">
-        <DialogHeader onClose={() => setShowRecurring(false)}>
-          <DialogTitle>Recurring Expenses</DialogTitle>
-        </DialogHeader>
-        <DialogContent>
-          <RecurringExpenses onClose={() => setShowRecurring(false)} />
         </DialogContent>
       </Dialog>
 

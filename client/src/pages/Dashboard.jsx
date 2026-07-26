@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import AppLayout from '../components/layout/AppLayout'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
@@ -35,45 +35,64 @@ const Page = ({ boundary: Boundary = FeatureErrorBoundary, children }) => (
   </Boundary>
 )
 
-const Dashboard = () => (
-  <Routes>
-    <Route element={<AppLayout />}>
-      <Route index element={
-        <Page boundary={DashboardErrorBoundary}><DashboardHome /></Page>
-      } />
-      <Route path="expenses" element={
-        <Page boundary={ExpenseErrorBoundary}><Expenses /></Page>
-      } />
-      <Route path="income" element={
-        <Page boundary={IncomeErrorBoundary}><Income /></Page>
-      } />
-      <Route path="budgets" element={
-        <Page boundary={ProjectErrorBoundary}><Budgets /></Page>
-      } />
-      <Route path="goals" element={
-        <Page boundary={ProjectErrorBoundary}><Goals /></Page>
-      } />
-      <Route path="ai" element={
-        <Page><AIAssistant /></Page>
-      } />
-      <Route path="analytics" element={
-        <Page boundary={AnalyticsErrorBoundary}><Analytics /></Page>
-      } />
-      <Route path="heatmap" element={
-        <Page boundary={AnalyticsErrorBoundary}><SpendingHeatmap /></Page>
-      } />
-      <Route path="receipt" element={
-        <Page><ReceiptScanner /></Page>
-      } />
-      <Route path="achievements" element={
-        <Page><Achievements /></Page>
-      } />
-      <Route path="settings" element={
-        <Page><Settings /></Page>
-      } />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
-    </Route>
-  </Routes>
-)
+const preloadFeatureModules = () => {
+  Promise.allSettled([
+    import('../components/features/analytics/Analytics'),
+    import('../components/features/analytics/SpendingHeatmap'),
+    import('../components/features/budgets/Budgets'),
+    import('../components/features/goals/Goals'),
+    import('../components/features/achievements/Achievements'),
+    import('../components/features/ai/AIAssistant'),
+    import('../components/features/settings/Settings'),
+  ]).catch(() => {})
+}
+
+const Dashboard = () => {
+  useEffect(() => {
+    const timer = window.setTimeout(preloadFeatureModules, 400)
+    return () => window.clearTimeout(timer)
+  }, [])
+
+  return (
+    <Routes>
+      <Route element={<AppLayout />}>
+        <Route index element={
+          <Page boundary={DashboardErrorBoundary}><DashboardHome /></Page>
+        } />
+        <Route path="expenses" element={
+          <Page boundary={ExpenseErrorBoundary}><Expenses /></Page>
+        } />
+        <Route path="income" element={
+          <Page boundary={IncomeErrorBoundary}><Income /></Page>
+        } />
+        <Route path="budgets" element={
+          <Page boundary={ProjectErrorBoundary}><Budgets /></Page>
+        } />
+        <Route path="goals" element={
+          <Page boundary={ProjectErrorBoundary}><Goals /></Page>
+        } />
+        <Route path="ai" element={
+          <Page><AIAssistant /></Page>
+        } />
+        <Route path="analytics" element={
+          <Page boundary={AnalyticsErrorBoundary}><Analytics /></Page>
+        } />
+        <Route path="heatmap" element={
+          <Page boundary={AnalyticsErrorBoundary}><SpendingHeatmap /></Page>
+        } />
+        <Route path="receipt" element={
+          <Page><ReceiptScanner /></Page>
+        } />
+        <Route path="achievements" element={
+          <Page><Achievements /></Page>
+        } />
+        <Route path="settings" element={
+          <Page><Settings /></Page>
+        } />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Route>
+    </Routes>
+  )
+}
 
 export default Dashboard

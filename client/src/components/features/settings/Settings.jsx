@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { User, Lock, Edit2, Save, X, Camera, Eye, EyeOff, Monitor, Smartphone, Sun, Moon, Palette, Settings2 } from 'lucide-react'
+import { User, Lock, Edit2, Save, X, Camera, Eye, EyeOff, Monitor, Smartphone, Sun, Moon, Palette, Settings2, Tag } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { useTheme } from '../../../context/ThemeContext'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Input, Badge, Separator, Tabs, TabsList, TabsTrigger, TabsContent, PageHeader, Dialog, DialogHeader, DialogTitle, DialogContent, DialogFooter } from '../../ui'
 import BiometricSettings from './BiometricSettings'
+import CategorySettings from './CategorySettings'
 import { usersService } from '../../../services/usersService'
 import toast from 'react-hot-toast'
 import { Avatar, AvatarFallback, AvatarImage } from '../../ui'
@@ -27,6 +28,7 @@ const Settings = () => {
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
+    { id: 'categories', label: 'Categories', icon: Tag },
     { id: 'security', label: 'Security', icon: Lock },
     { id: 'appearance', label: 'Appearance', icon: Palette },
   ]
@@ -191,6 +193,10 @@ const Settings = () => {
           </div>
         </TabsContent>
 
+        <TabsContent value="categories" activeTab={activeTab}>
+          <CategorySettings />
+        </TabsContent>
+
         <TabsContent value="appearance" activeTab={activeTab}>
           <Card>
             <CardHeader>
@@ -199,7 +205,15 @@ const Settings = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                <button onClick={setLightMode} className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${!isDark ? 'border-primary bg-primary/5 shadow-md' : 'border-border hover:border-muted-foreground/30'}`}>
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault()
+                    console.log('[Settings] Switching to light mode')
+                    setLightMode()
+                  }} 
+                  type="button"
+                  className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${!isDark ? 'border-primary bg-primary/5 shadow-md' : 'border-border hover:border-muted-foreground/30'}`}
+                >
                   {!isDark && <div className="absolute top-3 right-3 w-5 h-5 bg-primary rounded-full flex items-center justify-center"><svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg></div>}
                   <div className="w-full h-24 bg-white border border-gray-200 rounded-lg mb-3 overflow-hidden shadow-sm">
                     <div className="h-6 bg-white border-b border-gray-200 flex items-center px-2 gap-1">
@@ -218,7 +232,15 @@ const Settings = () => {
                   <div className="flex items-center gap-2"><Sun className="w-4 h-4 text-amber-500" /><span className="font-semibold text-sm text-foreground">Light Mode</span></div>
                   <p className="text-xs text-muted-foreground mt-1">Classic bright interface</p>
                 </button>
-                <button onClick={setDarkMode} className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${isDark ? 'border-primary bg-primary/10 shadow-md' : 'border-border hover:border-muted-foreground/30'}`}>
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault()
+                    console.log('[Settings] Switching to dark mode')
+                    setDarkMode()
+                  }} 
+                  type="button"
+                  className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${isDark ? 'border-primary bg-primary/10 shadow-md' : 'border-border hover:border-muted-foreground/30'}`}
+                >
                   {isDark && <div className="absolute top-3 right-3 w-5 h-5 bg-primary rounded-full flex items-center justify-center"><svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg></div>}
                   <div className="w-full h-24 bg-slate-900 border border-slate-700 rounded-lg mb-3 overflow-hidden shadow-sm">
                     <div className="h-6 bg-slate-800 border-b border-slate-700 flex items-center px-2 gap-1">
@@ -248,7 +270,18 @@ const Settings = () => {
                     <p className="text-xs text-muted-foreground">Currently: <span className="font-medium text-primary">{isDark ? 'Dark Mode' : 'Light Mode'}</span></p>
                   </div>
                 </div>
-                <button onClick={toggleTheme} className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-ring/20 ${isDark ? 'bg-primary' : 'bg-muted-foreground/30'}`} role="switch" aria-checked={isDark}>
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    console.log('[Settings Toggle] Toggling theme, current isDark:', isDark)
+                    toggleTheme()
+                  }} 
+                  type="button"
+                  className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-ring/20 ${isDark ? 'bg-primary' : 'bg-muted-foreground/30'}`} 
+                  role="switch" 
+                  aria-checked={isDark}
+                >
                   <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ${isDark ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
               </div>
@@ -315,12 +348,14 @@ const Settings = () => {
               <div key={field}>
                 <label className="block text-sm font-medium text-foreground/80 mb-2">{labels[field]}</label>
                 <div className="relative">
-                  <input type={showPasswords[field.replace('Password', '').toLowerCase()] || (field === 'currentPassword' ? showPasswords.current : field === 'newPassword' ? showPasswords.new : showPasswords.confirm) ? 'text' : 'password'}
-                    value={passwordForm[field]} onChange={(e) => setPasswordForm({ ...passwordForm, [field]: e.target.value })}
-                    className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 pr-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
-                    placeholder={placeholders[field]} />
+                  <Input 
+                    type={showPasswords[field.replace('Password', '').toLowerCase()] || (field === 'currentPassword' ? showPasswords.current : field === 'newPassword' ? showPasswords.new : showPasswords.confirm) ? 'text' : 'password'}
+                    value={passwordForm[field]} 
+                    onChange={(e) => setPasswordForm({ ...passwordForm, [field]: e.target.value })}
+                    placeholder={placeholders[field]} 
+                  />
                   <button type="button" onClick={() => setShowPasswords({ ...showPasswords, [field === 'currentPassword' ? 'current' : field === 'newPassword' ? 'new' : 'confirm']: !showPasswords[field === 'currentPassword' ? 'current' : field === 'newPassword' ? 'new' : 'confirm'] })}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors z-10">
                     {showPasswords[field === 'currentPassword' ? 'current' : field === 'newPassword' ? 'new' : 'confirm'] ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>

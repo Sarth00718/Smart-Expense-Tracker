@@ -29,7 +29,16 @@ export const IncomeProvider = ({ children }) => {
         ...params,
       })
       if (signal?.aborted) return
-      setIncome(response.data?.data ?? [])
+      
+      const incomeData = response.data?.data ?? []
+      setIncome(prev => {
+        if (params.append) {
+          const existingIds = new Set(prev.map(i => i._id))
+          const uniqueNewData = incomeData.filter(i => !existingIds.has(i._id))
+          return [...prev, ...uniqueNewData]
+        }
+        return incomeData
+      })
       setPagination(response.data?.pagination ?? { total: 0, page: 1, limit: 20, pages: 0 })
     } catch (error) {
       if (error.name === 'AbortError' || signal?.aborted) return
@@ -40,25 +49,49 @@ export const IncomeProvider = ({ children }) => {
   }, [])
 
   const addIncome = async (incomeData) => {
-    const response = await incomeService.add(incomeData)
-    await loadIncome(null, { page: pagination.page, limit: pagination.limit })
-    return response.data
+    const tempId = `temp-${Date.now()}`
+    setIncome(prev => [optimisticIncome, ...prev])
+    
+    try {
+      const response = await incomeService.add(incomeData)
+      loadIncome(null, { page: 1, limit: pagination.limit })
+      return response.data
+    } catch (error) {
+      loadIncome(null, { page: 1, limit: pagination.limit })
+      throw error
+    }
   }
 
   const updateIncome = async (id, incomeData) => {
-    const response = await incomeService.update(id, incomeData)
-    await loadIncome(null, { page: pagination.page, limit: pagination.limit })
-    return response.data
+    setIncome(prev => prev.map(i => i._id === id ? { ...i, ...incomeData } : i))
+    
+    try {
+      const response = await incomeService.update(id, incomeData)
+      loadIncome(null, { page: 1, limit: pagination.limit })
+      return response.data
+    } catch (error) {
+      loadIncome(null, { page: 1, limit: pagination.limit })
+      throw error
+    }
   }
 
   const deleteIncome = async (id) => {
-    await incomeService.delete(id)
-    await loadIncome(null, { page: pagination.page, limit: pagination.limit })
+    setIncome(prev => prev.filter(i => i._id !== id))
+    
+    try {
+      await incomeService.delete(id)
+      loadIncome(null, { page: 1, limit: pagination.limit })
+    } catch (error) {
+      loadIncome(null, { page: 1, limit: pagination.limit })
+      throw error
+    }
   }
 
-  const goToPage = useCallback((page) => {
-    loadIncome(null, { page, limit: pagination.limit })
-  }, [loadIncome, pagination.limit])
+  const loadMore = useCallback(() => {
+    if (pagination.page < pagination.pages && !loading) {
+      loadIncome(null, { page: pagination.page + 1, limit: pagination.limit, append: true })
+    }
+  }, [loadIncome, pagination.page, pagination.pages, pagination.limit, loading])
 
   // Load first page when auth becomes available and when page size changes
   useEffect(() => {
@@ -70,14 +103,14 @@ export const IncomeProvider = ({ children }) => {
     }
 
     const controller = new AbortController()
-    loadIncome(controller.signal, { page: pagination.page, limit: pagination.limit })
+    loadIncome(controller.signal, { page: 1, limit: pagination.limit })
     return () => controller.abort()
-  }, [user, loadIncome, pagination.limit, pagination.page])
+  }, [user, loadIncome, pagination.limit])
 
   const value = useMemo(() => ({
     income, loading, pagination,
-    loadIncome, addIncome, updateIncome, deleteIncome, goToPage,
-  }), [income, loading, pagination, loadIncome, goToPage])
+    loadIncome, addIncome, updateIncome, deleteIncome, loadMore,
+  }), [income, loading, pagination, loadIncome, loadMore])
 
   return <IncomeContext.Provider value={value}>{children}</IncomeContext.Provider>
 }

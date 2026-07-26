@@ -1,9 +1,11 @@
 import { memo } from 'react'
-import { Plus, Repeat } from 'lucide-react'
-import { Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Checkbox } from '../ui'
-import { INCOME_SOURCES } from '../../constants/categories'
+import { Plus } from 'lucide-react'
+import { Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Input } from '../ui'
+import { useCategories } from '../../context/CategoryContext'
 
 const IncomeForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Income', loading }) => {
+  const { incomeCategories } = useCategories()
+  
   const handleChange = (field, value) => {
     onChange({ ...formData, [field]: value })
   }
@@ -15,12 +17,11 @@ const IncomeForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Inco
           <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
             Date
           </label>
-          <input
+          <Input
             type="date"
             value={formData.date}
             onChange={(e) => handleChange('date', e.target.value)}
             required
-            className="input w-full"
           />
         </div>
         <div>
@@ -35,7 +36,7 @@ const IncomeForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Inco
               <SelectValue placeholder="Select source" />
             </SelectTrigger>
             <SelectContent>
-              {INCOME_SOURCES.map(source => (
+              {incomeCategories.map(source => (
                 <SelectItem key={source.value} value={source.value}>{source.label}</SelectItem>
               ))}
             </SelectContent>
@@ -47,7 +48,7 @@ const IncomeForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Inco
         <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
           Amount (₹)
         </label>
-        <input
+        <Input
           type="number"
           step="0.01"
           min="0.01"
@@ -55,7 +56,7 @@ const IncomeForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Inco
           onChange={(e) => handleChange('amount', e.target.value)}
           required
           placeholder="0.00"
-          className="input w-full text-lg"
+          className="text-lg"
         />
       </div>
 
@@ -63,26 +64,12 @@ const IncomeForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Inco
         <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
           Description (Optional)
         </label>
-        <input
+        <Input
           type="text"
           value={formData.description}
           onChange={(e) => handleChange('description', e.target.value)}
           placeholder="Add a note about this income"
-          className="input w-full"
         />
-      </div>
-
-      <div className="flex items-center">
-        <label className="flex items-center cursor-pointer gap-3">
-          <Checkbox
-            checked={formData.isRecurring || false}
-            onCheckedChange={(v) => handleChange('isRecurring', v === true)}
-          />
-          <div className="flex items-center gap-2">
-            <Repeat className="w-5 h-5 text-muted-foreground" />
-            <span className="text-sm font-medium text-foreground">Recurring Income</span>
-          </div>
-        </label>
       </div>
 
       <Button type="submit" variant="primary" fullWidth icon={Plus} size="lg" loading={loading} disabled={loading}>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Filter, X, Save, Calendar, DollarSign, Tag } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../../services/api';
+import { Input } from '../../ui';
 
 const AdvancedSearch = ({ onSearch, onClose }) => {
   const [filters, setFilters] = useState({
@@ -153,12 +154,11 @@ const AdvancedSearch = ({ onSearch, onClose }) => {
           <Search className="w-4 h-4 mr-1.5" />
           Search Description
         </label>
-        <input
+        <Input
           type="text"
           value={filters.searchText}
           onChange={(e) => handleFilterChange('searchText', e.target.value)}
           placeholder="Search in descriptions..."
-          className="input w-full"
         />
       </div>
 
@@ -169,17 +169,15 @@ const AdvancedSearch = ({ onSearch, onClose }) => {
           Date Range
         </label>
         <div className="grid grid-cols-2 gap-3">
-          <input
+          <Input
             type="date"
             value={filters.dateRange.start}
             onChange={(e) => handleFilterChange('dateRange', { ...filters.dateRange, start: e.target.value })}
-            className="input"
           />
-          <input
+          <Input
             type="date"
             value={filters.dateRange.end}
             onChange={(e) => handleFilterChange('dateRange', { ...filters.dateRange, end: e.target.value })}
-            className="input"
           />
         </div>
       </div>
@@ -191,19 +189,17 @@ const AdvancedSearch = ({ onSearch, onClose }) => {
           Amount Range
         </label>
         <div className="grid grid-cols-2 gap-3">
-          <input
+          <Input
             type="number"
             value={filters.amountRange.min}
             onChange={(e) => handleFilterChange('amountRange', { ...filters.amountRange, min: e.target.value })}
             placeholder="Min amount"
-            className="input"
           />
-          <input
+          <Input
             type="number"
             value={filters.amountRange.max}
             onChange={(e) => handleFilterChange('amountRange', { ...filters.amountRange, max: e.target.value })}
             placeholder="Max amount"
-            className="input"
           />
         </div>
       </div>
@@ -277,12 +273,12 @@ const AdvancedSearch = ({ onSearch, onClose }) => {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white dark:bg-slate-800 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl border border-gray-200 dark:border-slate-700">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-slate-100 mb-4">Save Filter</h3>
-            <input
+            <Input
               type="text"
               value={filterName}
               onChange={(e) => setFilterName(e.target.value)}
               placeholder="Enter filter name"
-              className="input w-full mb-4"
+              className="mb-4"
               autoFocus
             />
             <div className="flex gap-3">

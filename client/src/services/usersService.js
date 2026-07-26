@@ -12,6 +12,8 @@ export const usersService = {
   revokeSession: (sessionId) => api.delete(USERS.SESSION_BY_ID(sessionId)),
   getPreferences: () => api.get(USERS.PREFERENCES),
   updatePreferences: (preferences) => api.patch(USERS.PREFERENCES, preferences),
+  getCategories: () => api.get('/users/categories'),
+  updateCategories: (categories) => api.put('/users/categories', categories),
 }
 
 export default usersService

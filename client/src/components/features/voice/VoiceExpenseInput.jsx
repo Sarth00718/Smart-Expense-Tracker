@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Mic, MicOff, X, Check, Edit3, Volume2, Sparkles, AlertCircle, RefreshCw, CheckCircle2, ChevronRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../../services/api'
+import { Input } from '../../ui'
 
 // ── Animated Waveform ────────────────────────────────────────────────────────
 const Waveform = ({ isActive }) => {
@@ -372,13 +373,13 @@ const VoiceExpenseInput = ({ onExpenseCreated, onClose }) => {
             </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-gray-400 dark:text-slate-500">₹</span>
-              <input
+              <Input
                 type="number"
                 step="0.01"
                 min="0.01"
                 value={editedData.amount || ''}
                 onChange={e => setEditedData(d => ({ ...d, amount: parseFloat(e.target.value) }))}
-                className="input pl-9 text-xl font-bold"
+                className="pl-9 text-xl font-bold"
                 placeholder="0.00"
               />
             </div>
@@ -408,11 +409,10 @@ const VoiceExpenseInput = ({ onExpenseCreated, onClose }) => {
           {/* Description */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Description</label>
-            <input
+            <Input
               type="text"
               value={editedData.description || ''}
               onChange={e => setEditedData(d => ({ ...d, description: e.target.value }))}
-              className="input"
               placeholder="Optional note"
             />
           </div>

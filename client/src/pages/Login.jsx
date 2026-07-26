@@ -163,25 +163,35 @@ const Login = () => {
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-foreground/80 mb-2">Email Address</label>
-                  <div className="relative">
-                    <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${emailError ? 'text-destructive' : 'text-muted-foreground'}`} />
-                    <input type="email" id="email" value={email} onChange={(e) => { setEmail(e.target.value); setEmailError('') }} required placeholder="you@example.com"
-                      className={`w-full pl-12 pr-4 py-3.5 bg-background border rounded-xl text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 transition-all ${emailError ? 'border-destructive/60 focus:ring-destructive/30' : 'border-input focus:border-ring focus:ring-ring/20'}`} />
-                  </div>
-                  {emailError && <p className="mt-2 text-xs text-destructive flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{emailError}</p>}
+                  <Input 
+                    type="email" 
+                    id="email" 
+                    value={email} 
+                    onChange={(e) => { setEmail(e.target.value); setEmailError('') }} 
+                    required 
+                    placeholder="you@example.com"
+                    icon={Mail}
+                    error={emailError}
+                  />
                 </div>
 
                 <div>
                   <label htmlFor="password" className="block text-sm font-medium text-foreground/80 mb-2">Password</label>
                   <div className="relative">
-                    <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${passwordError ? 'text-destructive' : 'text-muted-foreground'}`} />
-                    <input type={showPassword ? 'text' : 'password'} id="password" value={password} onChange={(e) => { setPassword(e.target.value); setPasswordError('') }} required placeholder="Enter your password"
-                      className={`w-full pl-12 pr-12 py-3.5 bg-background border rounded-xl text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 transition-all ${passwordError ? 'border-destructive/60 focus:ring-destructive/30' : 'border-input focus:border-ring focus:ring-ring/20'}`} />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    <Input 
+                      type={showPassword ? 'text' : 'password'} 
+                      id="password" 
+                      value={password} 
+                      onChange={(e) => { setPassword(e.target.value); setPasswordError('') }} 
+                      required 
+                      placeholder="Enter your password"
+                      icon={Lock}
+                      error={passwordError}
+                    />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors z-10" style={{ transform: passwordError ? 'translateY(-140%)' : 'translateY(-50%)' }}>
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-                  {passwordError && <p className="mt-2 text-xs text-destructive flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{passwordError}</p>}
                 </div>
 
                 <button type="submit" disabled={loading || !!emailError || !!passwordError}

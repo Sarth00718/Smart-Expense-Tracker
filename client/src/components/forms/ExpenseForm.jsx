@@ -1,9 +1,11 @@
 import { memo } from 'react'
 import { Plus } from 'lucide-react'
-import { Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui'
-import { EXPENSE_CATEGORIES } from '../../constants/categories'
+import { Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Input } from '../ui'
+import { useCategories } from '../../context/CategoryContext'
 
 const ExpenseForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Expense', loading }) => {
+  const { expenseCategories } = useCategories()
+  
   const handleChange = (field, value) => {
     onChange({ ...formData, [field]: value })
   }
@@ -15,12 +17,11 @@ const ExpenseForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Exp
           <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
             Date
           </label>
-          <input
+          <Input
             type="date"
             value={formData.date}
             onChange={(e) => handleChange('date', e.target.value)}
             required
-            className="input w-full"
           />
         </div>
         <div>
@@ -35,7 +36,7 @@ const ExpenseForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Exp
               <SelectValue placeholder="Select Category" />
             </SelectTrigger>
             <SelectContent>
-              {EXPENSE_CATEGORIES.map(cat => (
+              {expenseCategories.map(cat => (
                 <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
               ))}
             </SelectContent>
@@ -47,7 +48,7 @@ const ExpenseForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Exp
         <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
           Amount (₹)
         </label>
-        <input
+        <Input
           type="number"
           step="0.01"
           min="0.01"
@@ -55,7 +56,7 @@ const ExpenseForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Exp
           onChange={(e) => handleChange('amount', e.target.value)}
           required
           placeholder="0.00"
-          className="input w-full text-lg"
+          className="text-lg"
         />
       </div>
 
@@ -63,12 +64,11 @@ const ExpenseForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Exp
         <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
           Description (Optional)
         </label>
-        <input
+        <Input
           type="text"
           value={formData.description}
           onChange={(e) => handleChange('description', e.target.value)}
           placeholder="What was this expense for?"
-          className="input w-full"
         />
       </div>
 

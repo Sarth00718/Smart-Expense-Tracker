@@ -48,9 +48,15 @@ const Header = ({ toggleSidebar }) => {
 
       <div className="flex items-center gap-2 shrink-0">
         <button
-          onClick={toggleTheme}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            console.log('[Header] Theme toggle clicked, current isDark:', isDark)
+            toggleTheme()
+          }}
           className="p-2 rounded-lg hover:bg-muted transition-all duration-200"
           aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          type="button"
         >
           {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-muted-foreground" />}
         </button>
@@ -103,7 +109,17 @@ const Header = ({ toggleSidebar }) => {
                       <Settings className="w-4 h-4 text-muted-foreground" />
                       Settings
                     </button>
-                    <button onClick={() => { toggleTheme(); setShowUserMenu(false) }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground hover:bg-muted transition-colors">
+                    <button 
+                      onClick={(e) => { 
+                        e.preventDefault()
+                        e.stopPropagation()
+                        console.log('[User Menu] Theme toggle clicked')
+                        toggleTheme()
+                        setShowUserMenu(false)
+                      }} 
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground hover:bg-muted transition-colors"
+                      type="button"
+                    >
                       {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-muted-foreground" />}
                       {isDark ? 'Light Mode' : 'Dark Mode'}
                     </button>

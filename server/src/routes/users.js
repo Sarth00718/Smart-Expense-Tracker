@@ -155,6 +155,53 @@ router.patch('/preferences', auth, async (req, res) => {
 });
 
 /**
+ * GET /api/users/categories
+ * Get user custom categories
+ */
+router.get('/categories', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('categories');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json({
+      categories: user.categories
+    });
+  } catch (error) {
+    console.error('Get categories error:', error);
+    res.status(500).json({ error: 'Failed to get categories' });
+  }
+});
+
+/**
+ * PUT /api/users/categories
+ * Update user custom categories
+ */
+router.put('/categories', auth, async (req, res) => {
+  try {
+    const { expense, income } = req.body;
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (expense) user.categories.expense = expense;
+    if (income) user.categories.income = income;
+
+    await user.save();
+
+    res.json({
+      categories: user.categories,
+      message: 'Categories updated successfully'
+    });
+  } catch (error) {
+    console.error('Update categories error:', error);
+    res.status(500).json({ error: 'Failed to update categories' });
+  }
+});
+
+/**
  * PUT /api/users/change-password
  * Change user password
  */

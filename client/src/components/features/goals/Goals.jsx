@@ -57,14 +57,29 @@ const Goals = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSubmitting(true)
+    
+    const newGoal = {
+      _id: `temp-${Date.now()}`,
+      name: formData.name,
+      target: parseFloat(formData.targetAmount),
+      current: parseFloat(formData.currentAmount || 0),
+      deadline: formData.deadline || null,
+      percentage: (parseFloat(formData.currentAmount || 0) / parseFloat(formData.targetAmount)) * 100,
+      daysLeft: null,
+      neededPerDay: 0
+    }
+    
+    setGoals(prev => [newGoal, ...prev])
+    setFormData({ name: '', targetAmount: '', currentAmount: '0', deadline: '' })
+    setShowForm(false)
+
     try {
       await goalService.addGoal(formData)
       toast.success('Goal added successfully!')
-      setFormData({ name: '', targetAmount: '', currentAmount: '0', deadline: '' })
-      setShowForm(false)
       loadGoals()
     } catch (error) {
       toast.error('Failed to add goal')
+      loadGoals()
     } finally {
       setSubmitting(false)
     }
@@ -73,15 +88,32 @@ const Goals = () => {
   const handleUpdate = async (e) => {
     e.preventDefault()
     setSubmitting(true)
+    
+    const newCurrent = parseFloat(updateAmount)
+    const goalId = selectedGoal._id
+    
+    setGoals(prev => prev.map(g => {
+      if (g._id === goalId) {
+        return {
+          ...g,
+          current: newCurrent,
+          percentage: (newCurrent / g.target) * 100
+        }
+      }
+      return g
+    }))
+    
+    setShowUpdateModal(false)
+    setSelectedGoal(null)
+    setUpdateAmount('')
+
     try {
-      await goalService.updateGoal(selectedGoal._id, { currentAmount: parseFloat(updateAmount) })
+      await goalService.updateGoal(goalId, { currentAmount: newCurrent })
       toast.success('Progress updated!')
-      setShowUpdateModal(false)
-      setSelectedGoal(null)
-      setUpdateAmount('')
       loadGoals()
     } catch (error) {
       toast.error('Failed to update goal')
+      loadGoals()
     } finally {
       setSubmitting(false)
     }
@@ -90,32 +122,55 @@ const Goals = () => {
   const handleEdit = async (e) => {
     e.preventDefault()
     setSubmitting(true)
+    
+    const goalId = selectedGoal._id
+    const updatedData = {
+      name: editData.name,
+      targetAmount: parseFloat(editData.targetAmount),
+      deadline: editData.deadline || null
+    }
+
+    setGoals(prev => prev.map(g => {
+      if (g._id === goalId) {
+        return {
+          ...g,
+          name: updatedData.name,
+          target: updatedData.targetAmount,
+          deadline: updatedData.deadline,
+          percentage: (g.current / updatedData.targetAmount) * 100
+        }
+      }
+      return g
+    }))
+    
+    setShowEditModal(false)
+    setSelectedGoal(null)
+
     try {
-      await goalService.updateGoal(selectedGoal._id, {
-        name: editData.name,
-        targetAmount: parseFloat(editData.targetAmount),
-        deadline: editData.deadline || null
-      })
+      await goalService.updateGoal(goalId, updatedData)
       toast.success('Goal updated!')
-      setShowEditModal(false)
-      setSelectedGoal(null)
       loadGoals()
     } catch (error) {
       toast.error('Failed to update goal')
+      loadGoals()
     } finally {
       setSubmitting(false)
     }
   }
 
   const handleDelete = async () => {
+    const goalId = selectedGoal._id
+    setGoals(prev => prev.filter(g => g._id !== goalId))
+    setShowDeleteModal(false)
+    setSelectedGoal(null)
+
     try {
-      await goalService.deleteGoal(selectedGoal._id)
+      await goalService.deleteGoal(goalId)
       toast.success('Goal deleted')
-      setShowDeleteModal(false)
-      setSelectedGoal(null)
       loadGoals()
     } catch (error) {
       toast.error('Failed to delete goal')
+      loadGoals()
     }
   }
 
@@ -147,7 +202,7 @@ const Goals = () => {
     return 'bg-orange-500'
   }
 
-  if (loading) return <LoadingSpinner size="lg" text="Loading goals..." />
+  const showInitialLoader = loading && goals.length === 0
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
@@ -163,6 +218,13 @@ const Goals = () => {
           </Button>
         }
       />
+
+      {showInitialLoader && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <LoadingSpinner size="sm" text="" />
+          <span>Loading your goals…</span>
+        </div>
+      )}
 
       {showForm && (
         <Card>

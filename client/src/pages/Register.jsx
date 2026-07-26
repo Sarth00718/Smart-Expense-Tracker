@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 import { Wallet, Mail, Lock, User, UserPlus, AlertCircle, Eye, EyeOff, Shield, Zap, Target, CheckCircle, Sparkles, ArrowRight } from 'lucide-react'
 import { ButtonSpinner } from '../components/ui/LoadingSpinner'
+import { Input } from '../components/ui'
 
 const Register = () => {
   const [formData, setFormData] = useState({ fullName: '', email: '', password: '', confirmPassword: '' })
@@ -178,17 +179,19 @@ const Register = () => {
                     <div key={field}>
                       <label htmlFor={field} className="block text-sm font-medium text-foreground/80 mb-2">{labels[field]}</label>
                       <div className="relative">
-                        <Icon className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${fieldErrors[field] ? 'text-destructive' : 'text-muted-foreground'}`} />
-                        <input type={isPass ? (showState ? 'text' : 'password') : field === 'email' ? 'email' : 'text'}
+                        <Input
+                          type={isPass ? (showState ? 'text' : 'password') : field === 'email' ? 'email' : 'text'}
                           id={field} name={field} value={formData[field]} onChange={handleChange} onBlur={handleBlur} required placeholder={placeholders[field]}
-                          className={`w-full pl-12 pr-12 py-3.5 bg-background border rounded-xl text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 transition-all ${fieldErrors[field] ? 'border-destructive/60 focus:ring-destructive/30' : 'border-input focus:border-ring focus:ring-ring/20'}`} />
+                          icon={Icon}
+                          error={fieldErrors[field]}
+                        />
                         {showToggle && (
-                          <button type="button" onClick={() => toggleShow(!showState)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
-                            {showState ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                          <button type="button" onClick={() => toggleShow(!showState)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors z-10" style={{ transform: fieldErrors[field] ? 'translateY(-140%)' : 'translateY(-50%)' }}>
+                            {showState ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
                         )}
                         {formData[field] && !fieldErrors[field] && !isPass && field !== 'confirmPassword' && (
-                          <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-success" />
+                          <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-success z-10" />
                         )}
                       </div>
                       {fieldErrors[field] && <p className="mt-2 text-xs text-destructive flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{fieldErrors[field]}</p>}

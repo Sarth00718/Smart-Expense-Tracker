@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Download, FileText, FileSpreadsheet, FileJson, Calendar, FileBarChart } from 'lucide-react'
 import { exportService } from '../../../services/exportService'
-import { Card, Button } from '../../ui'
+import { Card, Button, Input } from '../../ui'
 import toast from 'react-hot-toast'
 
 const DataExport = () => {
@@ -58,22 +58,20 @@ const DataExport = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                 Start Date
               </label>
-              <input
+              <Input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="input w-full"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                 End Date
               </label>
-              <input
+              <Input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="input w-full"
               />
             </div>
           </div>

@@ -8,7 +8,7 @@ import {
   Calendar,
   Loader
 } from 'lucide-react'
-import { Modal } from '../ui'
+import { Modal, Input } from '../ui'
 import { exportService } from '../../services/exportService'
 import toast from 'react-hot-toast'
 
@@ -241,7 +241,7 @@ const CommonExport = () => {
                   Start Date
                 </label>
 
-                <input
+                <Input
                   type="date"
                   value={dateRange.startDate}
                   onChange={(e) =>
@@ -251,7 +251,6 @@ const CommonExport = () => {
                     })
                   }
                   disabled={loading}
-                  className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
@@ -260,7 +259,7 @@ const CommonExport = () => {
                   End Date
                 </label>
 
-                <input
+                <Input
                   type="date"
                   value={dateRange.endDate}
                   onChange={(e) =>
@@ -270,7 +269,6 @@ const CommonExport = () => {
                     })
                   }
                   disabled={loading}
-                  className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             </div>
@@ -398,7 +396,6 @@ const CommonExport = () => {
               {exportType === 'income' && (
                 <>
                   <li>✓ Income dates and sources</li>
-                  <li>✓ Recurring income information</li>
                   <li>✓ Complete transaction details</li>
                 </>
               )}

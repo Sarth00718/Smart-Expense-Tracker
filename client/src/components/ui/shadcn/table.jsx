@@ -36,7 +36,7 @@ function TableHead({ className, children, ...props }) {
   return (
     <th
       className={cn(
-        'h-12 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider',
+        'h-12 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider [&:not(:first-child)]:pl-6 [&:not(:last-child)]:pr-6',
         className
       )}
       {...props}
@@ -49,7 +49,7 @@ function TableHead({ className, children, ...props }) {
 function TableCell({ className, children, ...props }) {
   return (
     <td
-      className={cn('p-4 align-middle', className)}
+      className={cn('py-4 px-4 align-middle [&:not(:first-child)]:pl-6 [&:not(:last-child)]:pr-6', className)}
       {...props}
     >
       {children}

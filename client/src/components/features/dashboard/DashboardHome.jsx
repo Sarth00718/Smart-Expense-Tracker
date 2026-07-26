@@ -12,7 +12,8 @@ import { format } from 'date-fns'
 import { useNavigate } from 'react-router-dom'
 import { useChartTheme } from '../../../hooks/useChartTheme'
 import { useResponsive } from '../../../hooks/useResponsive'
-import { CHART_COLORS, CATEGORY_COLORS } from '../../../constants/categories'
+import { CHART_COLORS } from '../../../constants/categories'
+import { useCategories } from '../../../context/CategoryContext'
 import { expenseService } from '../../../services/expenseService'
 import { incomeService } from '../../../services/incomeService'
 import ExpenseForm from '../../forms/ExpenseForm'
@@ -76,6 +77,7 @@ const DashboardHome = () => {
   const { tooltipStyle } = useChartTheme()
   const { lg } = useResponsive()
   const navigate = useNavigate()
+  const { getCategoryColor, getCategoryEmoji } = useCategories()
 
   const [dashStats, setDashStats] = useState(EMPTY_STATS)
   const [statsLoading, setStatsLoading] = useState(true)
@@ -257,8 +259,8 @@ const DashboardHome = () => {
                       onClick={() => navigate('/dashboard/expenses')}
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${CATEGORY_COLORS[expense.category]?.bg || 'bg-muted'}`}>
-                          <Receipt className={`w-5 h-5 ${CATEGORY_COLORS[expense.category]?.text || 'text-muted-foreground'}`} />
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${getCategoryColor(expense.category).bg}`}>
+                          <span className="text-lg">{getCategoryEmoji(expense.category)}</span>
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="font-medium text-sm text-foreground">{expense.category}</p>

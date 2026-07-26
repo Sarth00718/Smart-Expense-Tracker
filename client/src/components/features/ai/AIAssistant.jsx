@@ -464,6 +464,11 @@ export default function AIAssistant() {
 
   const chatEndRef = useRef(null)
   const recognitionRef = useRef(null)
+  const initialMountRef = useRef(true)
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [])
 
   useEffect(() => {
     setMessages([{ role: 'assistant', content: buildWelcomeMessage(expenses, income), timestamp: new Date() }])
@@ -483,7 +488,17 @@ export default function AIAssistant() {
     recognitionRef.current = r
   }, [])
 
-  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, chatLoading])
+  useEffect(() => {
+    if (initialMountRef.current) {
+      initialMountRef.current = false
+      return
+    }
+
+    if (messages.length > 1 || chatLoading) {
+      chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    }
+  }, [messages, chatLoading])
+
   useEffect(() => { loadSuggestions(); loadConversations() }, [])
 
   const loadConversations = async () => {

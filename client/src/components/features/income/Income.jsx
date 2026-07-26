@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react'
 import { useIncome } from '../../../context/IncomeContext'
+import { useCategories } from '../../../context/CategoryContext'
 import { incomeService } from '../../../services/incomeService'
-import { DollarSign, Plus, Edit2, Trash2, TrendingUp, Calendar, Repeat, X } from 'lucide-react'
+import { DollarSign, Plus, Edit2, Trash2, TrendingUp, Calendar, X } from 'lucide-react'
 import {
   Button, Card, CardHeader, CardTitle, CardDescription, CardContent,
   Badge, Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
-  Modal, Input, EmptyState, SkeletonList, Separator, StatCard, PageHeader,
-  Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Checkbox,
+  Modal, Input, EmptyState, SkeletonList, Separator, StatCard, PageHeader, LoadingSpinner,
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from '../../ui'
+import { useIntersectionObserver } from '../../../hooks/useIntersectionObserver'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 
 const Income = () => {
-  const { income, loading, pagination, loadIncome, addIncome, updateIncome, deleteIncome } = useIncome()
+  const { incomeCategories, getCategoryColor, getCategoryEmoji } = useCategories()
+  const { income, loading, pagination, loadIncome, addIncome, updateIncome, deleteIncome, loadMore } = useIncome()
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [summary, setSummary] = useState(null)
@@ -23,11 +26,8 @@ const Income = () => {
     date: new Date().toISOString().split('T')[0],
     source: 'Salary',
     amount: '',
-    description: '',
-    isRecurring: false
+    description: ''
   })
-
-  const sources = ['Salary', 'Freelance', 'Investment', 'Business', 'Gift', 'Bonus', 'Rental', 'Other']
 
   useEffect(() => {
     fetchSummary()
@@ -70,8 +70,7 @@ const Income = () => {
       date: new Date(incomeItem.date).toISOString().split('T')[0],
       source: incomeItem.source,
       amount: incomeItem.amount,
-      description: incomeItem.description,
-      isRecurring: incomeItem.isRecurring
+      description: incomeItem.description
     })
     setEditingId(incomeItem._id)
     setShowForm(true)
@@ -96,36 +95,21 @@ const Income = () => {
       date: new Date().toISOString().split('T')[0],
       source: 'Salary',
       amount: '',
-      description: '',
-      isRecurring: false
+      description: ''
     })
   }
 
-  const handlePageChange = (newPage) => {
-    loadIncome({ page: newPage, limit: pagination.limit })
-  }
+  const { targetRef, isIntersecting } = useIntersectionObserver({ threshold: 0.1 })
 
-  const getSourceVariant = (source) => {
-    const variants = {
-      Salary: 'default',
-      Freelance: 'secondary',
-      Investment: 'success',
-      Business: 'warning',
-      Gift: 'outline',
-      Bonus: 'default',
-      Rental: 'warning',
-      Other: 'outline'
+  useEffect(() => {
+    if (isIntersecting && pagination?.page < pagination?.pages && !loading) {
+      loadMore()
     }
-    return variants[source] || 'default'
-  }
+  }, [isIntersecting, pagination?.page, pagination?.pages, loading, loadMore])
 
-  if (loading) {
-    return (
-      <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
-        <SkeletonList rows={5} />
-      </div>
-    )
-  }
+
+
+  // removed the loading block to allow table to render the first page items alongside the loader at the bottom
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
@@ -204,8 +188,8 @@ const Income = () => {
                       <SelectValue placeholder="Select source" />
                     </SelectTrigger>
                     <SelectContent>
-                      {sources.map(src => (
-                        <SelectItem key={src} value={src}>{src}</SelectItem>
+                      {incomeCategories.map(cat => (
+                        <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -234,19 +218,6 @@ const Income = () => {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Add a note about this income"
                 />
-              </div>
-
-              <div className="flex items-center">
-                <label className="flex items-center cursor-pointer gap-3">
-                  <Checkbox
-                    checked={formData.isRecurring}
-                    onCheckedChange={(v) => setFormData({ ...formData, isRecurring: v === true })}
-                  />
-                  <div className="flex items-center gap-2">
-                    <Repeat className="w-5 h-5 text-muted-foreground" />
-                    <span className="text-sm font-medium text-foreground">Recurring Income</span>
-                  </div>
-                </label>
               </div>
 
               <Separator />
@@ -286,46 +257,36 @@ const Income = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Source</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="hidden sm:table-cell">Description</TableHead>
-                    <TableHead className="text-center hidden md:table-cell">Recurring</TableHead>
-                    <TableHead className="text-center">Actions</TableHead>
+                    <TableHead className="w-1/6 pl-6">Date</TableHead>
+                    <TableHead className="w-1/6">Source</TableHead>
+                    <TableHead className="w-1/3">Description</TableHead>
+                    <TableHead className="text-right w-1/6">Amount</TableHead>
+                    <TableHead className="text-center w-1/6 pr-6">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {income.map(incomeItem => (
                     <TableRow key={incomeItem._id}>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium whitespace-nowrap pl-6">
                         {format(new Date(incomeItem.date), 'MMM dd, yyyy')}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getSourceVariant(incomeItem.source)}>
+                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${getCategoryColor(incomeItem.source, 'income').bg} ${getCategoryColor(incomeItem.source, 'income').text}`}>
+                          <span>{getCategoryEmoji(incomeItem.source, 'income')}</span>
                           {incomeItem.source}
-                        </Badge>
+                        </div>
                       </TableCell>
-                      <TableCell className="text-right font-semibold text-success tabular-nums tracking-tight">
-                        ₹{incomeItem.amount.toFixed(2)}
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell text-muted-foreground">
+                      <TableCell className="text-muted-foreground">
                         {incomeItem.description || <span className="italic text-muted-foreground/60">No description</span>}
                       </TableCell>
-                      <TableCell className="text-center hidden md:table-cell">
-                        {incomeItem.isRecurring ? (
-                          <span className="inline-flex items-center gap-1 text-primary">
-                            <Repeat className="w-4 h-4" />
-                            <span className="text-sm font-medium">Yes</span>
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
+                      <TableCell className="text-right font-semibold text-success tabular-nums tracking-tight whitespace-nowrap">
+                        ₹{incomeItem.amount.toFixed(2)}
                       </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
+                      <TableCell className="text-center pr-6">
+                        <div className="flex items-center justify-center gap-2">
                           <Button
                             variant="ghost"
-                            size="icon"
+                            size="icon-sm"
                             onClick={() => handleEdit(incomeItem)}
                             title="Edit income"
                           >
@@ -333,7 +294,7 @@ const Income = () => {
                           </Button>
                           <Button
                             variant="ghost"
-                            size="icon"
+                            size="icon-sm"
                             onClick={() => setDeleteTarget(incomeItem._id)}
                             title="Delete income"
                             className="text-destructive hover:text-destructive"
@@ -347,33 +308,16 @@ const Income = () => {
                 </TableBody>
               </Table>
 
-              {pagination.pages > 1 && (
-                <div className="flex items-center justify-center gap-4 p-4 border-t border-border">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(pagination.page - 1)}
-                    disabled={pagination.page === 1}
-                  >
-                    Previous
-                  </Button>
-                  <span className="text-sm font-medium text-muted-foreground">
-                    Page {pagination.page} of {pagination.pages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(pagination.page + 1)}
-                    disabled={pagination.page === pagination.pages}
-                  >
-                    Next
-                  </Button>
-                </div>
-              )}
             </>
           )}
         </CardContent>
       </Card>
+
+      {(pagination?.page < pagination?.pages || loading) && (
+        <div ref={targetRef} className="py-6 flex justify-center">
+          {loading && <LoadingSpinner size="sm" text="Loading more income entries..." />}
+        </div>
+      )}
 
       <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Delete Income" size="sm">
         <p className="text-muted-foreground mb-6">Are you sure you want to delete this income entry?</p>
