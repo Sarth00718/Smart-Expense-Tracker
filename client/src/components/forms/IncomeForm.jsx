@@ -3,7 +3,7 @@ import { Plus, Repeat } from 'lucide-react'
 import { Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Checkbox } from '../ui'
 import { INCOME_SOURCES } from '../../constants/categories'
 
-const IncomeForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Income' }) => {
+const IncomeForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Income', loading }) => {
   const handleChange = (field, value) => {
     onChange({ ...formData, [field]: value })
   }
@@ -85,7 +85,7 @@ const IncomeForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Inco
         </label>
       </div>
 
-      <Button type="submit" variant="primary" fullWidth icon={Plus} size="lg">
+      <Button type="submit" variant="primary" fullWidth icon={Plus} size="lg" loading={loading} disabled={loading}>
         {submitLabel}
       </Button>
     </form>

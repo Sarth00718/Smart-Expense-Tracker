@@ -648,6 +648,7 @@ const Expenses = () => {
             formData={formData}
             onChange={setFormData}
             onSubmit={handleSubmit}
+            loading={submitting}
           />
         </DialogContent>
       </Dialog>

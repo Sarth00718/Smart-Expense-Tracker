@@ -3,6 +3,9 @@ const router = express.Router();
 import Expense from '../models/Expense.js';
 import Income from '../models/Income.js';
 import auth from '../middleware/auth.js';
+import { apiLimiter } from '../middleware/rateLimiter.js';
+
+router.use(apiLimiter);
 
 // @route   GET /api/budget-recommendations
 // @desc    Get AI-driven budget recommendations based on current and past months

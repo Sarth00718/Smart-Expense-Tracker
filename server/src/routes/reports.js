@@ -4,7 +4,10 @@ import PDFDocument from 'pdfkit';
 import Expense from '../models/Expense.js';
 import Income from '../models/Income.js';
 import auth from '../middleware/auth.js';
+import { apiLimiter } from '../middleware/rateLimiter.js';
 import { Parser } from 'json2csv';
+
+router.use(apiLimiter);
 
 // @route   GET /api/reports/pdf
 // @desc    Generate PDF financial report

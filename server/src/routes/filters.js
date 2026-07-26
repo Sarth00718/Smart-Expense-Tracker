@@ -1,8 +1,11 @@
 import express from 'express';
 const router = express.Router();
 import auth from '../middleware/auth.js';
+import { apiLimiter } from '../middleware/rateLimiter.js';
 import SavedFilter from '../models/SavedFilter.js';
 import Expense from '../models/Expense.js';
+
+router.use(apiLimiter);
 
 /**
  * GET /api/filters

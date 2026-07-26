@@ -2,7 +2,10 @@ import express from 'express';
 const router = express.Router();
 import User from '../models/User.js';
 import auth from '../middleware/auth.js';
+import { apiLimiter } from '../middleware/rateLimiter.js';
 import jwt from 'jsonwebtoken';
+
+router.use(apiLimiter);
 
 // @route   POST /api/biometric/register
 // @desc    Register biometric credential

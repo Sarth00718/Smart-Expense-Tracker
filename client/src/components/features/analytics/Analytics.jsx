@@ -49,12 +49,11 @@ const Analytics = () => {
   }, [location])
 
   const loadAnalytics = useCallback(async () => {
-    if (analyticsLoading) return
     try {
       setAnalyticsLoading(true)
       const [patternsRes, predictionsRes] = await Promise.all([
         analyticsService.getPatterns(),
-        analyticsService.getPredictions()
+        analyticsService.getPredictions(3)
       ])
       setPatterns(patternsRes.data.patterns || [])
       setPredictions(predictionsRes.data.predictions || [])
@@ -63,7 +62,7 @@ const Analytics = () => {
     } finally {
       setAnalyticsLoading(false)
     }
-  }, [analyticsLoading])
+  }, [])
 
   useEffect(() => {
     if (expenses.length > 0 && patterns.length === 0 && !analyticsLoading) {

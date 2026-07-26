@@ -68,7 +68,7 @@ const Budgets = () => {
 
       const monthStart = startOfMonth(selectedMonth)
       const monthEnd = endOfMonth(selectedMonth)
-      const expensesResponse = await expenseService.getExpenses({ limit: 10000 })
+      const expensesResponse = await expenseService.getExpenses({ limit: 500, startDate: monthStart.toISOString(), endDate: monthEnd.toISOString() })
       const allExpenses = expensesResponse.data?.data || []
 
       const monthExpenses = allExpenses.filter(exp => {

@@ -1,10 +1,13 @@
 import express from 'express';
 const router = express.Router();
 import auth from '../middleware/auth.js';
+import { apiLimiter } from '../middleware/rateLimiter.js';
 import User from '../models/User.js';
 import Expense from '../models/Expense.js';
 import Budget from '../models/Budget.js';
 import Goal from '../models/Goal.js';
+
+router.use(apiLimiter);
 
 /**
  * GET /api/users/profile/stats

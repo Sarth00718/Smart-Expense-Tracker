@@ -27,6 +27,14 @@ const EMPTY_STATS = {
   monthIncome: 0, monthExpenses: 0, monthNetBalance: 0,
 }
 
+const colorMap = {
+  green: { bg: 'bg-emerald-500/10', text: 'text-emerald-500' },
+  red: { bg: 'bg-red-500/10', text: 'text-red-500' },
+  blue: { bg: 'bg-blue-500/10', text: 'text-blue-500' },
+  purple: { bg: 'bg-purple-500/10', text: 'text-purple-500' },
+  orange: { bg: 'bg-orange-500/10', text: 'text-orange-500' },
+}
+
 const KPICard = ({ title, value, icon: Icon, color, delay, subtitle }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -36,8 +44,8 @@ const KPICard = ({ title, value, icon: Icon, color, delay, subtitle }) => (
   >
     <div className="flex items-start justify-between mb-3">
       <p className="text-sm font-medium text-muted-foreground">{title}</p>
-      <div className={`w-10 h-10 rounded-xl bg-${color}-500/10 flex items-center justify-center`}>
-        <Icon className={`w-5 h-5 text-${color}-500`} />
+      <div className={`w-10 h-10 rounded-xl ${colorMap[color]?.bg || 'bg-muted'} flex items-center justify-center`}>
+        <Icon className={`w-5 h-5 ${colorMap[color]?.text || 'text-muted-foreground'}`} />
       </div>
     </div>
     <p className="text-2xl font-bold text-foreground tabular-nums tracking-tight">{value}</p>
@@ -45,12 +53,19 @@ const KPICard = ({ title, value, icon: Icon, color, delay, subtitle }) => (
   </motion.div>
 )
 
+const gradientMap = {
+  blue: 'from-blue-500 to-blue-600',
+  emerald: 'from-emerald-500 to-teal-600',
+  violet: 'from-violet-500 to-purple-600',
+  pink: 'from-pink-500 to-rose-600',
+}
+
 const QuickActionButton = ({ icon: Icon, label, color, onClick }) => (
   <motion.button
     whileHover={{ scale: 1.03, y: -2 }}
     whileTap={{ scale: 0.98 }}
     onClick={onClick}
-    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all bg-gradient-to-r ${color} text-white shadow-md hover:shadow-lg`}
+    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all bg-gradient-to-r ${gradientMap[color] || 'from-primary to-primary/80'} text-white shadow-md hover:shadow-lg`}
   >
     <Icon className="w-4 h-4" />
     <span className="hidden sm:inline">{label}</span>
@@ -186,10 +201,10 @@ const DashboardHome = () => {
               Quick Actions
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <QuickActionButton icon={Plus} label="Add Expense" color="from-blue-500 to-blue-600" onClick={() => setShowAddExpense(true)} />
-              <QuickActionButton icon={DollarSign} label="Add Income" color="from-emerald-500 to-teal-600" onClick={() => setShowAddIncome(true)} />
-              <QuickActionButton icon={Mic} label="Voice" color="from-violet-500 to-purple-600" onClick={() => setShowVoiceInput(true)} />
-              <QuickActionButton icon={Camera} label="Scan" color="from-pink-500 to-rose-600" onClick={() => setShowReceiptScanner(true)} />
+              <QuickActionButton icon={Plus} label="Add Expense" color="blue" onClick={() => setShowAddExpense(true)} />
+              <QuickActionButton icon={DollarSign} label="Add Income" color="emerald" onClick={() => setShowAddIncome(true)} />
+              <QuickActionButton icon={Mic} label="Voice" color="violet" onClick={() => setShowVoiceInput(true)} />
+              <QuickActionButton icon={Camera} label="Scan" color="pink" onClick={() => setShowReceiptScanner(true)} />
             </div>
           </CardContent>
         </Card>
@@ -201,7 +216,7 @@ const DashboardHome = () => {
           { label: 'Budgets', icon: Wallet, path: '/dashboard/budgets', color: 'from-purple-500 to-purple-600' },
           { label: 'Goals', icon: Target, path: '/dashboard/goals', color: 'from-emerald-500 to-teal-600' },
           { label: 'Income', icon: DollarSign, path: '/dashboard/income', color: 'from-amber-500 to-orange-600' },
-          { label: 'Analytics', icon: BarChart3, path: '/dashboard/analytics?view=heatmap', color: 'from-rose-500 to-pink-600' },
+          { label: 'Heatmap', icon: BarChart3, path: '/dashboard/analytics?view=heatmap', color: 'from-rose-500 to-pink-600' },
         ].map(({ label, icon: Icon, path, color }) => (
           <motion.button
             key={label}

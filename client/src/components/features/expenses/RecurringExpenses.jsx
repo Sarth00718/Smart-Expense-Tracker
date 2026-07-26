@@ -21,9 +21,14 @@ const RecurringExpenses = ({ onClose }) => {
   }, [])
 
   const loadTemplates = () => {
-    const saved = localStorage.getItem('recurringExpenses')
-    if (saved) {
-      setTemplates(JSON.parse(saved))
+    try {
+      const saved = localStorage.getItem('recurringExpenses')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed)) setTemplates(parsed)
+      }
+    } catch {
+      setTemplates([])
     }
   }
 
@@ -32,14 +37,20 @@ const RecurringExpenses = ({ onClose }) => {
     setTemplates(newTemplates)
   }
 
+  const generateId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
+
   const handleSaveTemplate = () => {
     if (!formData.name || !formData.category || !formData.amount) {
       toast.error('Please fill all required fields')
       return
     }
+    if (parseFloat(formData.amount) <= 0) {
+      toast.error('Amount must be greater than 0')
+      return
+    }
 
     const newTemplate = {
-      id: editingTemplate?.id || Date.now(),
+      id: editingTemplate?.id || generateId(),
       ...formData
     }
 

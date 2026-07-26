@@ -28,9 +28,20 @@ const BiometricSettings = () => {
   const handleRegister = async () => {
     try {
       setLoading(true)
-      const user = JSON.parse(localStorage.getItem('user'))
+      let userEmail = ''
+      try {
+        const user = JSON.parse(localStorage.getItem('user'))
+        userEmail = user?.email || ''
+      } catch {
+        userEmail = ''
+      }
+      if (!userEmail) {
+        toast.error('User email not found. Please log in again.')
+        setLoading(false)
+        return
+      }
       
-      await biometricService.register(user.email)
+      await biometricService.register(userEmail)
       
       setIsRegistered(true)
       await loadCredentials()

@@ -137,17 +137,18 @@ const VoiceExpenseInput = ({ onExpenseCreated, onClose }) => {
   }
 
   const handleSubmit = async () => {
-    if (!editedData?.amount || editedData.amount <= 0) {
+    const amount = parseFloat(editedData?.amount)
+    if (!amount || isNaN(amount) || amount <= 0) {
       toast.error('Please enter a valid amount')
       return
     }
     setIsSubmitting(true)
     try {
       await api.post('/expenses', {
-        amount: editedData.amount,
+        amount,
         category: editedData.category,
-        description: editedData.description,
-        date: new Date()
+        description: editedData.description || '',
+        date: new Date().toISOString().split('T')[0]
       })
       setPhase('success')
       toast.success('Expense added successfully!')

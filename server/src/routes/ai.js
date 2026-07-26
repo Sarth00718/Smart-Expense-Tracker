@@ -6,10 +6,13 @@ import Budget from '../models/Budget.js';
 import Goal from '../models/Goal.js';
 import ChatHistory from '../models/ChatHistory.js';
 import auth from '../middleware/auth.js';
+import { aiLimiter } from '../middleware/rateLimiter.js';
 import { calculateSpendingScore } from '../utils/analytics.js';
 import { parseFinanceQuery, searchExpensesByDescription, extractDescriptionKeywords } from '../utils/nlp.js';
 import { callAIWithRetry } from '../utils/aiService.js';
 import crypto from 'crypto';
+
+router.use(aiLimiter);
 
 // @route   POST /api/ai/chat
 // @desc    Conversational AI Finance Bot with History

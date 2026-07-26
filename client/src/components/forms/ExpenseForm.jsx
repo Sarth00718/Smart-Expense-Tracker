@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react'
 import { Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui'
 import { EXPENSE_CATEGORIES } from '../../constants/categories'
 
-const ExpenseForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Expense' }) => {
+const ExpenseForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Expense', loading }) => {
   const handleChange = (field, value) => {
     onChange({ ...formData, [field]: value })
   }
@@ -72,7 +72,7 @@ const ExpenseForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Exp
         />
       </div>
 
-      <Button type="submit" variant="primary" fullWidth icon={Plus} size="lg">
+      <Button type="submit" variant="primary" fullWidth icon={Plus} size="lg" loading={loading} disabled={loading}>
         {submitLabel}
       </Button>
     </form>

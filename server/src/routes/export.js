@@ -7,6 +7,9 @@ import Income from '../models/Income.js';
 import Budget from '../models/Budget.js';
 import Goal from '../models/Goal.js';
 import auth from '../middleware/auth.js';
+import { apiLimiter } from '../middleware/rateLimiter.js';
+
+router.use(apiLimiter);
 
 // @route   GET /api/export/expenses
 // @desc    Export expenses to CSV/JSON

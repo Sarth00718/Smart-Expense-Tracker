@@ -23,6 +23,9 @@ import filtersRoutes from './routes/filters.js';
 import usersRoutes from './routes/users.js';
 import exportRoutes from './routes/export.js';
 
+// Middleware
+import { securityHeaders, sanitizeInput } from './middleware/security.js';
+
 // Validate required environment variables
 validateEnv();
 
@@ -49,6 +52,10 @@ app.use(
 // ── Body Parsing ──────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+
+// ── Security Middleware ────────────────────────────────────────────────────────
+app.use(securityHeaders);
+app.use(sanitizeInput);
 
 // ── Database Connection ───────────────────────────────────────────────────────
 await database.connect();

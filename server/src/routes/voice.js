@@ -1,7 +1,10 @@
 import express from 'express';
 const router = express.Router();
 import auth from '../middleware/auth.js';
+import { apiLimiter } from '../middleware/rateLimiter.js';
 import { parseVoiceCommand, validateExpenseData } from '../utils/voiceParser.js';
+
+router.use(apiLimiter);
 import Expense from '../models/Expense.js';
 
 /**

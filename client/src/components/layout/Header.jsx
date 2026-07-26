@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 import { useNavigate } from 'react-router-dom'
-import { Menu, LogOut, User, Settings, Sun, Moon, Search, Bell } from 'lucide-react'
+import { Menu, LogOut, User, Settings, Sun, Moon } from 'lucide-react'
 import toast from 'react-hot-toast'
 import CommonExport from '../common/CommonExport'
 import ProfileModal from '../ui/ProfileModal'
@@ -15,7 +15,6 @@ const Header = ({ toggleSidebar }) => {
   const navigate = useNavigate()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState(false)
-  const [showSearch, setShowSearch] = useState(false)
 
   const handleLogout = () => {
     setShowUserMenu(false)
@@ -44,14 +43,7 @@ const Header = ({ toggleSidebar }) => {
           <Menu className="w-5 h-5 text-muted-foreground" />
         </button>
 
-        <button
-          onClick={() => setShowSearch(!showSearch)}
-          className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 border border-border text-muted-foreground text-sm hover:bg-muted transition-colors w-full max-w-xs"
-        >
-          <Search className="w-4 h-4" />
-          <span>Search...</span>
-          <kbd className="ml-auto text-xs text-muted-foreground/60 bg-background px-1.5 py-0.5 rounded border border-border">⌘K</kbd>
-        </button>
+        {/* search removed (was hardcoded) */}
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
@@ -63,10 +55,7 @@ const Header = ({ toggleSidebar }) => {
           {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-muted-foreground" />}
         </button>
 
-        <button className="p-2 rounded-lg hover:bg-muted transition-all duration-200 relative">
-          <Bell className="w-4 h-4 text-muted-foreground" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary" />
-        </button>
+        {/* notifications removed (was hardcoded) */}
 
         <CommonExport />
 

@@ -1,9 +1,12 @@
 import express from 'express';
 const router = express.Router();
+import auth from '../middleware/auth.js';
+import { apiLimiter } from '../middleware/rateLimiter.js';
 import multer from 'multer';
 import Tesseract from 'tesseract.js';
-import auth from '../middleware/auth.js';
 import { parseReceiptText } from '../utils/ocr.js';
+
+router.use(apiLimiter);
 
 // Configure multer for memory storage
 const upload = multer({
