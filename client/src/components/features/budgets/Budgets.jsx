@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react'
 import { PieChart, Plus, Trash2, TrendingDown, TrendingUp, AlertCircle, Lightbulb, Target, Calendar, ChevronLeft, ChevronRight, Edit2, X, Wallet, BarChart3, AlertTriangle } from 'lucide-react'
 import { budgetService } from '../../../services/budgetService'
 import { expenseService } from '../../../services/expenseService'
-import BudgetRecommendations from './BudgetRecommendations'
+const LazyBudgetRecommendations = lazy(() => import('./BudgetRecommendations'))
 import toast from 'react-hot-toast'
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns'
 import {

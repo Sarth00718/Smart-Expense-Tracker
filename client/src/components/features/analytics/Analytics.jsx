@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react'
 import { useLocation } from 'react-router-dom'
 import {
   TrendingUp, BarChart3, BarChart2, PieChart, Activity,
@@ -9,8 +9,14 @@ import { useIncome } from '../../../context/IncomeContext'
 import { useChartTheme } from '../../../hooks/useChartTheme'
 import { analyticsService } from '../../../services/analyticsService'
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Badge, Tabs, TabsList, TabsTrigger, TabsContent, Separator, PageHeader } from '../../ui'
-import SpendingHeatmap from './SpendingHeatmap'
 import { SpendingTrendChart, CategoryPieChart, MonthlyComparisonChart, WeeklySpendingChart, CategoryRadarChart } from './charts'
+
+const LazySpendingHeatmap = lazy(() => import('./SpendingHeatmap'))
+const LazySpendingTrendChart = lazy(() => import('./charts').then((mod) => ({ default: mod.SpendingTrendChart })))
+const LazyCategoryPieChart = lazy(() => import('./charts').then((mod) => ({ default: mod.CategoryPieChart })))
+const LazyMonthlyComparisonChart = lazy(() => import('./charts').then((mod) => ({ default: mod.MonthlyComparisonChart })))
+const LazyWeeklySpendingChart = lazy(() => import('./charts').then((mod) => ({ default: mod.WeeklySpendingChart })))
+const LazyCategoryRadarChart = lazy(() => import('./charts').then((mod) => ({ default: mod.CategoryRadarChart })))
 import {
   BarChart, PieChart as RechartsPie,
   XAxis, YAxis, CartesianGrid,
@@ -25,6 +31,12 @@ const timeRanges = [
   { value: 'last3Months', label: '3 Months' },
   { value: 'last6Months', label: '6 Months' }
 ]
+
+const ChartPlaceholder = ({ label }) => (
+  <div className="flex h-full min-h-[220px] items-center justify-center rounded-xl border border-dashed border-border bg-muted/20 px-4 text-center text-sm text-muted-foreground">
+    {label}
+  </div>
+)
 
 const Analytics = () => {
   const { expenses } = useExpense()
@@ -223,7 +235,11 @@ const Analytics = () => {
             </CardHeader>
             <CardContent>
               <div className="w-full" style={{ minHeight: '256px', height: '320px' }}>
-                {filteredData.expenses.length > 0 ? <SpendingTrendChart data={spendingTrendData} /> : emptyMsg('No expense data available')}
+                {filteredData.expenses.length > 0 ? (
+                  <Suspense fallback={<ChartPlaceholder label="Loading trend chart..." />}>
+                    <LazySpendingTrendChart data={spendingTrendData} />
+                  </Suspense>
+                ) : emptyMsg('No expense data available')}
               </div>
             </CardContent>
           </Card>
@@ -241,7 +257,11 @@ const Analytics = () => {
             </CardHeader>
             <CardContent>
               <div className="w-full" style={{ minHeight: '256px', height: '320px' }}>
-                {categoryData.length > 0 ? <CategoryPieChart data={categoryData} /> : emptyMsg('No category data available')}
+                {categoryData.length > 0 ? (
+                  <Suspense fallback={<ChartPlaceholder label="Loading category chart..." />}>
+                    <LazyCategoryPieChart data={categoryData} />
+                  </Suspense>
+                ) : emptyMsg('No category data available')}
               </div>
             </CardContent>
           </Card>

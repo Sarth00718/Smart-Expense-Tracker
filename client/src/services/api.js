@@ -26,7 +26,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json'
   },
-  timeout: 8000, // 8s default — reduced from 10s for snappier error UX
+  timeout: 5000, // 5s default — fail fast and keep the UI responsive
   withCredentials: false
 })
 
