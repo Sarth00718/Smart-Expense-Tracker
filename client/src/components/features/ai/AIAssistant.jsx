@@ -8,7 +8,7 @@ import { useExpense } from '../../../context/ExpenseContext'
 import { useIncome } from '../../../context/IncomeContext'
 import {
   PageHeader, Button, Card, CardHeader, CardTitle, CardDescription,
-  CardContent, Badge, Separator, Input, Avatar, AvatarImage, AvatarFallback
+  CardContent, Badge, Separator, Input, Avatar, AvatarImage, AvatarFallback, CommonPageContainer
 } from '../../ui'
 import toast from 'react-hot-toast'
 import api from '../../../services/api'
@@ -596,7 +596,7 @@ export default function AIAssistant() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
+    <CommonPageContainer>
       <PageHeader
         icon={Brain}
         gradient="from-indigo-500 to-violet-600"
@@ -691,6 +691,6 @@ export default function AIAssistant() {
           <PersonalizedTips expenses={expenses} income={income} />
         </div>
       </div>
-    </div>
+    </CommonPageContainer>
   )
 }

@@ -17,7 +17,7 @@ import {
   Badge, Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
   Dialog, DialogHeader, DialogTitle, DialogContent, DialogFooter,
   Input, EmptyState, SkeletonList, Separator,
-  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem, CommonPageContainer
 } from '../../ui'
 import { PageHeader, LoadingSpinner } from '../../ui'
 
@@ -220,7 +220,7 @@ const Expenses = () => {
   // removed the loading block to allow table to render the first page items alongside the loader at the bottom
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
+    <CommonPageContainer>
       <PageHeader
         icon={Receipt}
         gradient="from-blue-500 to-indigo-600"
@@ -506,7 +506,7 @@ const Expenses = () => {
                       {expense.description || <span className="text-muted-foreground/50 italic">No description</span>}
                     </TableCell>
                     <TableCell className="text-right font-semibold text-foreground tabular-nums tracking-tight whitespace-nowrap">
-                      ₹{expense.amount.toFixed(2)}
+                      ₹{Number(expense.amount).toFixed(2)}
                     </TableCell>
                     <TableCell className="text-center pr-6">
                       <div className="flex items-center justify-center gap-2">
@@ -606,7 +606,7 @@ const Expenses = () => {
           <Button variant="destructive" onClick={handleClearAll}>Yes, Clear All</Button>
         </DialogFooter>
       </Dialog>
-    </div>
+    </CommonPageContainer>
   )
 }
 

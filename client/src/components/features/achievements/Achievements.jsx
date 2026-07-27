@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Trophy, Award, Star, CheckCircle2, Medal, Crown, Flame, Lock
 } from 'lucide-react'
+import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Badge, Tabs, TabsList, TabsTrigger, TabsContent, Separator, PageHeader, LoadingSpinner, CommonPageContainer, EmptyState } from '../../ui'
 import { analyticsService } from '../../../services/analyticsService'
-import { Card, CardContent, PageHeader, LoadingSpinner, EmptyState } from '../../ui'
 import { format } from 'date-fns'
 
 /* ─── Constants ────────────────────────────────────────────────── */
@@ -172,7 +172,7 @@ const Achievements = () => {
   const lockedCount = Math.max(0, 4 - (achievements.length % 4 === 0 ? 0 : 4 - (achievements.length % 4)))
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
+    <CommonPageContainer>
 
       {/* Header */}
       <PageHeader
@@ -338,7 +338,7 @@ const Achievements = () => {
           </div>
         </AnimatePresence>
       )}
-    </div>
+    </CommonPageContainer>
   )
 }
 

@@ -3,11 +3,14 @@ import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight,
   TrendingUp, Filter, Download, Info, X, BarChart3
 } from 'lucide-react'
+import {
+  Card, CardContent, CardHeader, CardTitle, CardDescription,
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem, CommonPageContainer, LoadingSpinner
+} from '../../ui'
 import { analyticsService } from '../../../services/analyticsService'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay } from 'date-fns'
 import toast from 'react-hot-toast'
 import { useExpense } from '../../../context/ExpenseContext'
-import { LoadingSpinner } from '../../ui'
 
 const SpendingHeatmap = () => {
   const { expenses } = useExpense()
@@ -201,7 +204,7 @@ const SpendingHeatmap = () => {
     .filter(day => day.day !== null).length
 
   return (
-    <div className="space-y-4 sm:space-y-6 font-sans">
+    <CommonPageContainer className="font-sans">
       <div className="card">
         {/* Header with Controls */}
         <div className="flex flex-col gap-4 mb-6">
@@ -454,7 +457,7 @@ const SpendingHeatmap = () => {
           </div>
         </div>
       )}
-    </div>
+    </CommonPageContainer>
   )
 }
 

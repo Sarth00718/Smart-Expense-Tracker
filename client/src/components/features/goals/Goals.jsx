@@ -4,7 +4,7 @@ import { goalService } from '../../../services/goalService'
 import {
   Button, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter,
   Badge, Dialog, DialogHeader, DialogTitle, DialogContent, DialogFooter,
-  Progress, Input, EmptyState, PageHeader, LoadingSpinner
+  Progress, Input, EmptyState, PageHeader, LoadingSpinner, CommonPageContainer
 } from '../../ui'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
@@ -38,6 +38,8 @@ const Goals = () => {
   })
   const [updateAmount, setUpdateAmount] = useState('')
   const [editData, setEditData] = useState({ name: '', targetAmount: '', deadline: '' })
+  const safeGoals = Array.isArray(goals) ? goals : []
+  const showInitialLoader = loading && safeGoals.length === 0
 
   useEffect(() => { loadGoals() }, [])
 
@@ -202,10 +204,8 @@ const Goals = () => {
     return 'bg-orange-500'
   }
 
-  const showInitialLoader = loading && goals.length === 0
-
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
+    <CommonPageContainer>
       <PageHeader
         icon={Target}
         gradient="from-violet-500 to-indigo-600"
@@ -272,16 +272,16 @@ const Goals = () => {
       <Card>
         <CardHeader>
           <CardTitle>Your Goals</CardTitle>
-          <CardDescription>{goals.length} active {goals.length === 1 ? 'goal' : 'goals'}</CardDescription>
+              <CardDescription>{safeGoals.length} active {safeGoals.length === 1 ? 'goal' : 'goals'}</CardDescription>
         </CardHeader>
         <CardContent>
-          {goals.length === 0 ? (
+          {safeGoals.length === 0 ? (
             <EmptyState icon={Target} title="No savings goals yet"
               description="Create your first goal to start tracking your progress" />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {goals.map((goal) => (
-                <Card hover key={goal._id} className="flex flex-col">
+              {safeGoals.map((goal, index) => (
+                <Card hover key={goal._id || `goal-${index}`} className="flex flex-col">
                   <CardHeader className="flex-row items-start justify-between space-y-0 pb-3">
                     <div className="flex-1 min-w-0">
                       <CardTitle className="text-xl mb-1">{goal.name}</CardTitle>
@@ -416,7 +416,7 @@ const Goals = () => {
         title="Delete Goal"
         message={`Are you sure you want to delete "${selectedGoal?.name}"? This cannot be undone.`}
       />
-    </div>
+    </CommonPageContainer>
   )
 }
 

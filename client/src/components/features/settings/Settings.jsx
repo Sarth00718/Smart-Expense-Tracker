@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { User, Lock, Edit2, Save, X, Camera, Eye, EyeOff, Monitor, Smartphone, Sun, Moon, Palette, Settings2, Tag } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { useTheme } from '../../../context/ThemeContext'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Input, Badge, Separator, Tabs, TabsList, TabsTrigger, TabsContent, PageHeader, Dialog, DialogHeader, DialogTitle, DialogContent, DialogFooter } from '../../ui'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Input, Badge, Separator, Tabs, TabsList, TabsTrigger, TabsContent, PageHeader, Dialog, DialogHeader, DialogTitle, DialogContent, DialogFooter, CommonPageContainer } from '../../ui'
 import BiometricSettings from './BiometricSettings'
 import CategorySettings from './CategorySettings'
 import { usersService } from '../../../services/usersService'
@@ -104,7 +104,7 @@ const Settings = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
+    <CommonPageContainer>
       <PageHeader icon={Settings2} gradient="from-slate-500 to-gray-600" title="Settings" subtitle="Manage your account and preferences" />
 
       <Tabs>
@@ -395,7 +395,7 @@ const Settings = () => {
           ))}
         </DialogContent>
       </Dialog>
-    </div>
+    </CommonPageContainer>
   )
 }
 

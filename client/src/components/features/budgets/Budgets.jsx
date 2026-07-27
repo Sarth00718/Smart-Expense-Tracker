@@ -10,7 +10,7 @@ import {
   Badge, Tabs, TabsList, TabsTrigger, TabsContent,
   Progress, Separator, Input,
   Dialog, DialogHeader, DialogTitle, DialogDescription, DialogContent, DialogFooter,
-  EmptyState, LiquidProgress, PageHeader, StatCard
+  EmptyState, LiquidProgress, PageHeader, StatCard, CommonPageContainer, LoadingSpinner
 } from '../../ui'
 import { useCategories } from '../../../context/CategoryContext'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
@@ -270,8 +270,10 @@ const Budgets = () => {
     return null
   }
 
+  const showInitialLoader = loading && budgets.length === 0
+
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8 max-w-[1600px] mx-auto">
+    <CommonPageContainer>
       {showInitialLoader && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <LoadingSpinner size="sm" text="" />
@@ -618,7 +620,9 @@ const Budgets = () => {
         </TabsContent>
 
         <TabsContent value="recommendations" activeTab={activeTab}>
-          <BudgetRecommendations />
+          <Suspense fallback={<div className="rounded-xl border border-dashed border-border bg-muted/20 p-6 text-sm text-muted-foreground">Loading recommendations…</div>}>
+            <LazyBudgetRecommendations />
+          </Suspense>
         </TabsContent>
       </Tabs>
 
@@ -710,7 +714,7 @@ const Budgets = () => {
           </DialogFooter>
         </form>
       </Dialog>
-    </div>
+    </CommonPageContainer>
   )
 }
 

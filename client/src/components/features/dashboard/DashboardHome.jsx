@@ -7,7 +7,7 @@ import {
 } from 'lucide-react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend as RechartsLegend, Tooltip as RechartsTooltip } from 'recharts'
 import toast from 'react-hot-toast'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Badge, SkeletonCard } from '../../ui'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Badge, SkeletonCard, CommonPageContainer } from '../../ui'
 import { format } from 'date-fns'
 import { useNavigate } from 'react-router-dom'
 import { useChartTheme } from '../../../hooks/useChartTheme'
@@ -177,7 +177,7 @@ const DashboardHome = () => {
   const pieRadius = lg ? 85 : 60
 
   return (
-    <div className="space-y-6">
+    <CommonPageContainer>
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
           <div>
@@ -270,7 +270,7 @@ const DashboardHome = () => {
                         </div>
                       </div>
                       <div className="text-right shrink-0 ml-3">
-                        <p className="font-semibold text-foreground tabular-nums">₹{expense.amount.toFixed(2)}</p>
+                        <p className="font-semibold text-foreground tabular-nums">₹{Number(expense.amount).toFixed(2)}</p>
                       </div>
                     </motion.div>
                   ))}
@@ -340,7 +340,7 @@ const DashboardHome = () => {
           <ReceiptScanner onSuccess={handleReceiptScanned} />
         </Suspense>
       </Modal>
-    </div>
+    </CommonPageContainer>
   )
 }
 

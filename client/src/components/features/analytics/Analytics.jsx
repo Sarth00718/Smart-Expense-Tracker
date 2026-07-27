@@ -8,7 +8,7 @@ import { useExpense } from '../../../context/ExpenseContext'
 import { useIncome } from '../../../context/IncomeContext'
 import { useChartTheme } from '../../../hooks/useChartTheme'
 import { analyticsService } from '../../../services/analyticsService'
-import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Badge, Tabs, TabsList, TabsTrigger, TabsContent, Separator, PageHeader } from '../../ui'
+import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Badge, Tabs, TabsList, TabsTrigger, TabsContent, Separator, PageHeader, CommonPageContainer } from '../../ui'
 import { SpendingTrendChart, CategoryPieChart, MonthlyComparisonChart, WeeklySpendingChart, CategoryRadarChart } from './charts'
 
 const LazySpendingHeatmap = lazy(() => import('./SpendingHeatmap'))
@@ -168,7 +168,7 @@ const Analytics = () => {
   ]
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
+    <CommonPageContainer>
 
       <PageHeader
         icon={BarChart2}
@@ -286,7 +286,9 @@ const Analytics = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <SpendingHeatmap />
+            <Suspense fallback={<ChartPlaceholder label="Loading heatmap..." />}>
+              <LazySpendingHeatmap />
+            </Suspense>
           </CardContent>
         </Card>
       </section>
@@ -310,7 +312,11 @@ const Analytics = () => {
           </CardHeader>
           <CardContent>
             <div className="w-full" style={{ minHeight: '256px', height: '320px' }}>
-              {monthlyComparisonData.length > 0 ? <MonthlyComparisonChart data={monthlyComparisonData} /> : emptyMsg('No data available')}
+              {monthlyComparisonData.length > 0 ? (
+                <Suspense fallback={<ChartPlaceholder label="Loading comparison chart..." />}>
+                  <LazyMonthlyComparisonChart data={monthlyComparisonData} />
+                </Suspense>
+              ) : emptyMsg('No data available')}
             </div>
           </CardContent>
         </Card>
@@ -336,7 +342,11 @@ const Analytics = () => {
             </CardHeader>
             <CardContent>
               <div className="w-full" style={{ minHeight: '256px', height: '280px' }}>
-                {weeklySpendingData.length > 0 ? <WeeklySpendingChart data={weeklySpendingData} /> : emptyMsg('No data')}
+                {weeklySpendingData.length > 0 ? (
+                  <Suspense fallback={<ChartPlaceholder label="Loading weekly chart..." />}>
+                    <LazyWeeklySpendingChart data={weeklySpendingData} />
+                  </Suspense>
+                ) : emptyMsg('No data')}
               </div>
             </CardContent>
           </Card>
@@ -354,7 +364,11 @@ const Analytics = () => {
             </CardHeader>
             <CardContent>
               <div className="w-full" style={{ minHeight: '256px', height: '280px' }}>
-                {categoryRadarData.length > 0 ? <CategoryRadarChart data={categoryRadarData} /> : emptyMsg('No data')}
+                {categoryRadarData.length > 0 ? (
+                  <Suspense fallback={<ChartPlaceholder label="Loading radar chart..." />}>
+                    <LazyCategoryRadarChart data={categoryRadarData} />
+                  </Suspense>
+                ) : emptyMsg('No data')}
               </div>
             </CardContent>
           </Card>
@@ -558,7 +572,7 @@ const Analytics = () => {
           </section>
         </>
       )}
-    </div>
+    </CommonPageContainer>
   )
 }
 

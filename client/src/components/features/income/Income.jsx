@@ -7,7 +7,7 @@ import {
   Button, Card, CardHeader, CardTitle, CardDescription, CardContent,
   Badge, Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
   Modal, Input, EmptyState, SkeletonList, Separator, StatCard, PageHeader, LoadingSpinner,
-  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem, CommonPageContainer
 } from '../../ui'
 import { useIntersectionObserver } from '../../../hooks/useIntersectionObserver'
 import toast from 'react-hot-toast'
@@ -112,7 +112,7 @@ const Income = () => {
   // removed the loading block to allow table to render the first page items alongside the loader at the bottom
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
+    <CommonPageContainer>
       <PageHeader
         icon={DollarSign}
         gradient="from-emerald-500 to-teal-600"
@@ -280,7 +280,7 @@ const Income = () => {
                         {incomeItem.description || <span className="italic text-muted-foreground/60">No description</span>}
                       </TableCell>
                       <TableCell className="text-right font-semibold text-success tabular-nums tracking-tight whitespace-nowrap">
-                        ₹{incomeItem.amount.toFixed(2)}
+                        ₹{Number(incomeItem.amount).toFixed(2)}
                       </TableCell>
                       <TableCell className="text-center pr-6">
                         <div className="flex items-center justify-center gap-2">
@@ -326,7 +326,7 @@ const Income = () => {
           <Button variant="destructive" className="flex-1" onClick={handleDelete}>Delete</Button>
         </div>
       </Modal>
-    </div>
+    </CommonPageContainer>
   )
 }
 

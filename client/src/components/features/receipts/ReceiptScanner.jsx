@@ -7,7 +7,7 @@ import {
 import toast from 'react-hot-toast'
 import { useExpense } from '../../../context/ExpenseContext'
 import { receiptService } from '../../../services/receiptService'
-import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Badge, Progress, Input, Separator } from '../../ui'
+import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Badge, Progress, Input, Separator, CommonPageContainer } from '../../ui'
 
 const ScanLine = () => (
   <div className="absolute inset-0 overflow-hidden rounded-xl pointer-events-none z-20">
@@ -163,7 +163,7 @@ const ReceiptScanner = ({ onSuccess }) => {
   const currentStep = { upload: 1, scanning: 1, review: 2, success: 3 }[phase]
 
   return (
-    <div className="space-y-6">
+    <CommonPageContainer>
       <div className="flex items-center gap-3">
         <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-md">
           <Camera className="w-5 h-5 text-primary-foreground" />
@@ -439,7 +439,7 @@ const ReceiptScanner = ({ onSuccess }) => {
           </div>
         </div>
       )}
-    </div>
+    </CommonPageContainer>
   )
 }
 

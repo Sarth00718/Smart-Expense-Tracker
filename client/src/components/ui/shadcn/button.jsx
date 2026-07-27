@@ -24,7 +24,7 @@ const sizes = {
 
 const Button = forwardRef(({
   className, variant = 'default', size = 'default',
-  loading, icon: Icon, children, disabled, asChild, ...props
+  loading, icon: Icon, fullWidth, children, disabled, asChild, ...props
 }, ref) => {
   const Comp = asChild ? motion.button : motion.button
   return (
@@ -36,6 +36,7 @@ const Button = forwardRef(({
         'inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
         variants[variant],
         sizes[size],
+        fullWidth && 'w-full',
         className
       )}
       disabled={disabled || loading}
