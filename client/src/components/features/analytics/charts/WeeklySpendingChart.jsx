@@ -6,7 +6,7 @@ const WeeklySpendingChart = memo(({ data }) => {
   const { gridColor, axisColor, tooltipStyle } = useChartTheme()
 
   return (
-    <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
+    <ResponsiveContainer width="99%" height="100%" minWidth={200} minHeight={256}>
       <BarChart data={data}>
         <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
         <XAxis dataKey="day" tick={{ fontSize: 11, fill: axisColor }} stroke={axisColor} />

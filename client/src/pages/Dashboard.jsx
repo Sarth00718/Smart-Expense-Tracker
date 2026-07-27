@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import AppLayout from '../components/layout/AppLayout'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
 import {
@@ -27,13 +27,16 @@ const Settings         = lazy(() => import('../components/features/settings/Sett
 const Loading = () => <LoadingSpinner size="lg" text="" />
 
 // Wrap a lazy page with its own error boundary + Suspense
-const Page = ({ boundary: Boundary = FeatureErrorBoundary, children }) => (
-  <Boundary>
-    <Suspense fallback={<Loading />}>
-      {children}
-    </Suspense>
-  </Boundary>
-)
+const Page = ({ boundary: Boundary = FeatureErrorBoundary, children }) => {
+  const location = useLocation()
+  return (
+    <Boundary key={location.pathname}>
+      <Suspense fallback={<Loading />}>
+        {children}
+      </Suspense>
+    </Boundary>
+  )
+}
 
 const preloadFeatureModules = () => {
   Promise.allSettled([

@@ -6,7 +6,7 @@ const SpendingTrendChart = memo(({ data }) => {
   const { gridColor, axisColor, tooltipStyle } = useChartTheme()
 
   return (
-    <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
+    <ResponsiveContainer width="99%" height="100%" minWidth={200} minHeight={256}>
       <AreaChart data={data}>
         <defs>
           <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">

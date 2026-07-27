@@ -17,9 +17,12 @@ import {
   Badge, Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
   Dialog, DialogHeader, DialogTitle, DialogContent, DialogFooter,
   Input, EmptyState, SkeletonList, Separator,
-  Select, SelectTrigger, SelectValue, SelectContent, SelectItem, CommonPageContainer
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem, CommonPageContainer,
+  StatCard
 } from '../../ui'
 import { PageHeader, LoadingSpinner } from '../../ui'
+import { TrendingDown, CalendarDays, Calculator, AlertCircle } from 'lucide-react'
+import { analyticsService } from '../../../services/analyticsService'
 
 const Expenses = () => {
   const { expenseCategories, getCategoryColor, getCategoryEmoji } = useCategories()
@@ -169,6 +172,18 @@ const Expenses = () => {
     }
   }, [isIntersecting, pagination?.page, pagination?.pages, loading, loadMore])
 
+  const [dashStats, setDashStats] = useState({ 
+    totalExpenses: 0, 
+    monthExpenses: 0, 
+    categoryBreakdown: {} 
+  })
+
+  useEffect(() => {
+    analyticsService.getDashboard().then(res => {
+      setDashStats(res.data)
+    }).catch(console.error)
+  }, [])
+
   const filteredAndSortedExpenses = useMemo(() => {
     let result = advancedSearchResults
       ? advancedSearchResults.expenses
@@ -217,6 +232,21 @@ const Expenses = () => {
     return result
   }, [expenses, nlResults, advancedSearchResults, filterPeriod, searchQuery, sortBy, sortOrder])
 
+  // Calculate Summary Stats from Global Analytics
+  const totalExpenses = dashStats.totalExpenses || 0
+  const monthlyExpenses = dashStats.monthExpenses || 0
+  
+  // Use pagination total (true count of expenses in db) to get average
+  const averageExpense = pagination?.total > 0 ? (totalExpenses / pagination.total) : 0
+
+  const highestCategory = useMemo(() => {
+    if (!dashStats.categoryBreakdown || Object.keys(dashStats.categoryBreakdown).length === 0) {
+      return { name: 'None', amount: 0 }
+    }
+    const top = Object.entries(dashStats.categoryBreakdown).sort((a, b) => b[1] - a[1])[0]
+    return { name: top[0], amount: top[1] }
+  }, [dashStats.categoryBreakdown])
+
   // removed the loading block to allow table to render the first page items alongside the loader at the bottom
 
   return (
@@ -252,6 +282,35 @@ const Expenses = () => {
           </>
         }
       />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          title="Total Expenses"
+          value={`₹${totalExpenses.toFixed(2)}`}
+          icon={TrendingDown}
+          color="red"
+        />
+        <StatCard
+          title="Monthly Spending"
+          value={`₹${monthlyExpenses.toFixed(2)}`}
+          icon={CalendarDays}
+          color="orange"
+        />
+        <StatCard
+          title="Average Expense"
+          value={`₹${averageExpense.toFixed(2)}`}
+          icon={Calculator}
+          color="blue"
+        />
+        <StatCard
+          title="Highest Category"
+          value={highestCategory.name}
+          trendValue={`₹${highestCategory.amount.toFixed(2)}`}
+          trend={true}
+          icon={AlertCircle}
+          color="purple"
+        />
+      </div>
 
       <Card>
         <CardContent className="space-y-4 pt-6">

@@ -51,4 +51,29 @@ export const SkeletonChart = () => (
   </motion.div>
 );
 
-export default { SkeletonCard, SkeletonList, SkeletonChart };
+export const SkeletonTable = ({ lines = 5 }) => (
+  <div className="bg-card rounded-xl border border-border p-4 space-y-4">
+    <div className="h-10 bg-muted rounded-md w-full mb-4"></div>
+    {[...Array(lines)].map((_, i) => (
+      <div key={i} className="flex gap-4">
+        <div className="h-6 bg-muted rounded w-1/4"></div>
+        <div className="h-6 bg-muted rounded w-1/4"></div>
+        <div className="h-6 bg-muted rounded w-1/4"></div>
+        <div className="h-6 bg-muted rounded w-1/4"></div>
+      </div>
+    ))}
+  </div>
+);
+
+const SkeletonLoader = ({ type = 'card', count = 5, lines = 5 }) => {
+  switch (type) {
+    case 'list': return <SkeletonList count={count} />;
+    case 'chart': return <SkeletonChart />;
+    case 'table': return <SkeletonTable lines={lines} />;
+    case 'card':
+    default:
+      return <SkeletonCard />;
+  }
+};
+
+export default SkeletonLoader;

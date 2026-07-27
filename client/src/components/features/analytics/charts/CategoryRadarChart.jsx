@@ -6,7 +6,7 @@ const CategoryRadarChart = memo(({ data }) => {
   const { gridColor, axisColor, tooltipStyle } = useChartTheme()
 
   return (
-    <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
+    <ResponsiveContainer width="99%" height="100%" minWidth={200} minHeight={256}>
       <RadarChart data={data}>
         <PolarGrid stroke={gridColor} />
         <PolarAngleAxis dataKey="category" tick={{ fontSize: 11, fill: axisColor }} />

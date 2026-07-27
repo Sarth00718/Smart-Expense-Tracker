@@ -21,11 +21,11 @@ export default function PageHeader({ icon: Icon, gradient, title, subtitle, acti
                     </div>
                 )}
                 <div>
-                    <h1 className="type-page-title">
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">
                         {title}
                     </h1>
                     {subtitle && (
-                        <p className="type-page-subtitle mt-0.5">
+                        <p className="text-muted-foreground mt-1">
                             {subtitle}
                         </p>
                     )}

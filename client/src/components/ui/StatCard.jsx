@@ -74,22 +74,12 @@ const StatCard = ({
           )}
         </div>
 
-        <p style={{
-          fontSize: '0.75rem', fontWeight: 500, letterSpacing: '0.06em',
-          textTransform: 'uppercase', lineHeight: 1.4,
-          color: 'rgba(255,255,255,0.75)', marginBottom: '0.25rem'
-        }}>
+        <p className="text-xs font-medium tracking-wide uppercase text-white/75 mb-1">
           {title}
         </p>
 
         <motion.p
-          style={{
-            fontSize: 'clamp(1.25rem, 2.5vw, 1.625rem)',
-            fontWeight: 700, lineHeight: 1.1,
-            letterSpacing: '-0.020em',
-            fontVariantNumeric: 'tabular-nums',
-          }}
-          className="truncate"
+          className="text-2xl sm:text-3xl font-bold leading-tight tracking-tight tabular-nums truncate"
           variants={counterVariants}
           initial="initial"
           animate="animate"

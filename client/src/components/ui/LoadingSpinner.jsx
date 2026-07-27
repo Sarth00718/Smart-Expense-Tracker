@@ -1,5 +1,4 @@
-import { Loader2, Wallet } from 'lucide-react'
-import AnimatedBackground from './AnimatedBackground'
+import React from 'react'
 
 const LoadingSpinner = ({ 
   size = 'md', 
@@ -11,51 +10,52 @@ const LoadingSpinner = ({
     sm: 'w-4 h-4',
     md: 'w-8 h-8',
     lg: 'w-12 h-12',
-    xl: 'w-16 h-16'
+    xl: 'w-16 h-16',
+    '2xl': 'w-20 h-20'
   }
 
   const textSizeClasses = {
     sm: 'text-xs',
     md: 'text-sm',
     lg: 'text-base',
-    xl: 'text-lg'
+    xl: 'text-lg',
+    '2xl': 'text-xl'
   }
+
+  const spinnerSize = fullScreen ? 'xl' : size
+
+  // Unique Premium Spinner Design
+  const UniqueSpinner = ({ sSize }) => (
+    <div className={`relative flex items-center justify-center ${sizeClasses[sSize]}`}>
+      {/* Outer track */}
+      <div className="absolute inset-0 rounded-full border-[3px] border-primary/10 dark:border-primary/20" />
+      
+      {/* Spinning bright ring with cubic-bezier for a smooth 'whiplash' effect */}
+      <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-primary border-r-primary/50 animate-[spin_1.2s_cubic-bezier(0.55,0.085,0.68,0.53)_infinite]" />
+      
+      {/* Secondary spinning ring in opposite direction */}
+      <div className="absolute inset-1 rounded-full border-[2px] border-transparent border-b-primary/60 border-l-primary/30 animate-[spin_2s_linear_infinite_reverse]" />
+      
+      {/* Core glowing pulse */}
+      <div className="w-2/5 h-2/5 bg-primary/30 dark:bg-primary/40 rounded-full animate-pulse shadow-[0_0_15px_rgba(var(--primary),0.5)]" />
+    </div>
+  )
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 bg-gradient-to-br from-purple-900 via-indigo-900 to-violet-900 flex items-center justify-center z-50">
-        <AnimatedBackground />
-        <div className="text-center relative z-10">
-          {variant === 'logo' ? (
-            <div className="relative">
-              {/* Animated rings */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-32 h-32 border-4 border-white/20 rounded-full animate-ping"></div>
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-24 h-24 border-4 border-white/30 rounded-full animate-pulse"></div>
-              </div>
-              
-              {/* Logo */}
-              <div className="relative w-20 h-20 mx-auto mb-6 bg-white/20 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/30 flex items-center justify-center animate-bounce">
-                <Wallet className="w-10 h-10 text-white" />
-              </div>
-            </div>
-          ) : (
-            <div className="relative mb-6">
-              <Loader2 className="w-16 h-16 text-white animate-spin mx-auto" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-white/30 rounded-full animate-pulse"></div>
+      <div className="fixed inset-0 bg-background/80 backdrop-blur-md flex flex-col items-center justify-center z-[100] animate-in fade-in duration-300">
+        <div className="flex flex-col items-center justify-center gap-6 p-8 rounded-3xl bg-card/50 shadow-2xl border border-border/50 backdrop-blur-xl">
+          <UniqueSpinner sSize="2xl" />
+          {text && (
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-foreground text-lg font-semibold tracking-tight">{text}</p>
+              <div className="flex gap-1.5 mt-1">
+                <div className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
           )}
-          
-          <p className="text-white text-lg font-semibold mb-2">{text}</p>
-          <div className="flex items-center justify-center gap-1">
-            <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-            <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-          </div>
         </div>
       </div>
     )
@@ -63,16 +63,9 @@ const LoadingSpinner = ({
 
   return (
     <div className="flex flex-col items-center justify-center gap-3 p-4">
-      <div className="relative">
-        <Loader2 className={`${sizeClasses[size]} text-primary-500 dark:text-primary-400 animate-spin`} />
-        {size === 'lg' || size === 'xl' ? (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className={`${sizeClasses[size === 'xl' ? 'lg' : 'md']} border-2 border-primary-200 dark:border-primary-800 rounded-full animate-pulse`}></div>
-          </div>
-        ) : null}
-      </div>
+      <UniqueSpinner sSize={size} />
       {text && (
-        <p className={`${textSizeClasses[size]} text-gray-600 dark:text-slate-400 font-medium`}>{text}</p>
+        <p className={`${textSizeClasses[size]} text-muted-foreground font-medium tracking-tight animate-pulse`}>{text}</p>
       )}
     </div>
   )

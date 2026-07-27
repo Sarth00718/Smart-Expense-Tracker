@@ -7,7 +7,7 @@ const CategoryPieChart = memo(({ data }) => {
   const { tooltipStyle } = useChartTheme()
 
   return (
-    <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
+    <ResponsiveContainer width="99%" height="100%" minWidth={200} minHeight={256}>
       <RechartsPie>
         <Pie
           data={data}

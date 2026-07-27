@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react'
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import {
   TrendingUp, BarChart3, BarChart2, PieChart, Activity,
@@ -47,6 +47,7 @@ const Analytics = () => {
   const [predictions, setPredictions] = useState([])
   const [timeRange, setTimeRange] = useState('thisMonth')
   const [analyticsLoading, setAnalyticsLoading] = useState(false)
+  const analyticsLoadedRef = useRef(false)
 
   useEffect(() => {
     const params = new URLSearchParams(location.search)
@@ -73,14 +74,15 @@ const Analytics = () => {
       console.error('Error loading analytics:', error)
     } finally {
       setAnalyticsLoading(false)
+      analyticsLoadedRef.current = true
     }
   }, [])
 
   useEffect(() => {
-    if (expenses.length > 0 && patterns.length === 0 && !analyticsLoading) {
+    if (expenses.length > 0 && !analyticsLoadedRef.current && !analyticsLoading) {
       loadAnalytics()
     }
-  }, [expenses.length, patterns.length, analyticsLoading, loadAnalytics])
+  }, [expenses.length, analyticsLoading, loadAnalytics])
 
   const filteredData = useMemo(() => {
     const now = new Date()
@@ -195,12 +197,14 @@ const Analytics = () => {
 
       <Separator />
 
-      {analyticsLoading && patterns.length === 0 && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-primary" />
-          <span>Refreshing insights…</span>
-        </div>
-      )}
+      <div className="h-6 mt-4 mb-2">
+        {analyticsLoading && patterns.length === 0 && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-primary" />
+            <span>Refreshing insights…</span>
+          </div>
+        )}
+      </div>
 
       {/* Stats Overview */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
@@ -395,7 +399,7 @@ const Analytics = () => {
             </CardHeader>
             <CardContent>
               <div className="w-full" style={{ minHeight: '256px', height: '320px' }}>
-                <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
+                <ResponsiveContainer width="99%" height="100%" minWidth={200} minHeight={256}>
                   <BarChart data={incomeVsExpenseData}>
                     <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
                     <XAxis dataKey="name" tick={{ fontSize: 11, fill: axisColor }} stroke={axisColor} />

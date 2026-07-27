@@ -6,7 +6,7 @@ const MonthlyComparisonChart = memo(({ data }) => {
   const { gridColor, axisColor, tooltipStyle } = useChartTheme()
 
   return (
-    <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={256}>
+    <ResponsiveContainer width="99%" height="100%" minWidth={200} minHeight={256}>
       <ComposedChart data={data}>
         <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
         <XAxis dataKey="month" tick={{ fontSize: 11, fill: axisColor }} stroke={axisColor} />

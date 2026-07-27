@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { Plus } from 'lucide-react'
-import { Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Input } from '../ui'
+import { Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Input, Label } from '../ui'
 import { useCategories } from '../../context/CategoryContext'
 
 const ExpenseForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Expense', loading }) => {
@@ -14,9 +14,9 @@ const ExpenseForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Exp
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
+          <Label className="mb-2 block">
             Date
-          </label>
+          </Label>
           <Input
             type="date"
             value={formData.date}
@@ -25,9 +25,9 @@ const ExpenseForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Exp
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
+          <Label className="mb-2 block">
             Category
-          </label>
+          </Label>
           <Select
             value={formData.category}
             onValueChange={(v) => handleChange('category', v)}
@@ -45,9 +45,9 @@ const ExpenseForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Exp
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
+        <Label className="mb-2 block">
           Amount (₹)
-        </label>
+        </Label>
         <Input
           type="number"
           step="0.01"
@@ -61,9 +61,9 @@ const ExpenseForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Exp
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2 tracking-tight">
+        <Label className="mb-2 block">
           Description (Optional)
-        </label>
+        </Label>
         <Input
           type="text"
           value={formData.description}
