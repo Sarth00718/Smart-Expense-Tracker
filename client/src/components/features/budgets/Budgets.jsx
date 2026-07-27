@@ -10,7 +10,7 @@ import {
   Badge, Tabs, TabsList, TabsTrigger, TabsContent,
   Progress, Separator, Input,
   Dialog, DialogHeader, DialogTitle, DialogDescription, DialogContent, DialogFooter,
-  EmptyState, LiquidProgress, PageHeader, StatCard, CommonPageContainer, LoadingSpinner
+  EmptyState, LiquidProgress, PageHeader, StatCard, CommonPageContainer
 } from '../../ui'
 import { useCategories } from '../../../context/CategoryContext'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
@@ -270,16 +270,8 @@ const Budgets = () => {
     return null
   }
 
-  const showInitialLoader = loading && budgets.length === 0
-
   return (
     <CommonPageContainer>
-      {showInitialLoader && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <LoadingSpinner size="sm" text="" />
-          <span>Loading your budgets…</span>
-        </div>
-      )}
 
       <PageHeader
         icon={Target}
