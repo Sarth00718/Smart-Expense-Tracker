@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { analyticsService } from '../../../services/analyticsService'
 import {
   TrendingUp, TrendingDown, Wallet, Plus, Receipt, Camera, Mic,
-  ArrowUpRight, DollarSign, Zap, BarChart3, Target, Inbox, RefreshCw
+  ArrowUpRight, DollarSign, Zap, BarChart3, Target, Inbox
 } from 'lucide-react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend as RechartsLegend, Tooltip as RechartsTooltip } from 'recharts'
 import toast from 'react-hot-toast'
@@ -184,7 +184,6 @@ const DashboardHome = () => {
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">Welcome back!</h1>
             <p className="text-muted-foreground text-sm sm:text-base mt-1">Here's your financial overview for today</p>
           </div>
-          <Button variant="outline" size="sm" onClick={refreshStats} icon={RefreshCw}>Refresh</Button>
         </div>
       </motion.div>
 
@@ -238,41 +237,42 @@ const DashboardHome = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           <Card>
-            <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
-              <div>
+            <CardHeader className="flex-row flex-wrap items-center justify-between gap-4 pb-3">
+              <div className="space-y-1 min-w-0">
                 <CardTitle>Recent Transactions</CardTitle>
                 <CardDescription>Your latest expenses</CardDescription>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/expenses')}>
+              <Button variant="ghost" size="sm" className="self-start sm:self-auto" onClick={() => navigate('/dashboard/expenses')}>
                 View All <ArrowUpRight className="w-3.5 h-3.5 ml-1" />
               </Button>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3">
               {recentExpenses.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {recentExpenses.map((expense) => (
-                    <motion.div
+                    <motion.button
+                      type="button"
                       key={expense._id}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="flex items-center justify-between p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-muted/30 transition-all cursor-pointer"
                       onClick={() => navigate('/dashboard/expenses')}
+                      className="w-full flex items-center justify-between gap-3 p-4 rounded-2xl border border-border/60 bg-card hover:shadow-lg transition-all duration-200 text-left"
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${getCategoryColor(expense.category).bg}`}>
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${getCategoryColor(expense.category).bg}`}>
                           <span className="text-lg">{getCategoryEmoji(expense.category)}</span>
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-sm text-foreground">{expense.category}</p>
-                          <p className="text-xs text-muted-foreground truncate">
+                          <p className="font-semibold text-sm text-foreground truncate">{expense.category}</p>
+                          <p className="text-sm text-muted-foreground truncate">
                             {expense.description || 'No description'} • {format(new Date(expense.date), 'MMM dd, yyyy')}
                           </p>
                         </div>
                       </div>
-                      <div className="text-right shrink-0 ml-3">
+                      <div className="shrink-0 text-right">
                         <p className="font-semibold text-foreground tabular-nums">₹{Number(expense.amount).toFixed(2)}</p>
                       </div>
-                    </motion.div>
+                    </motion.button>
                   ))}
                 </div>
               ) : (
@@ -302,7 +302,12 @@ const DashboardHome = () => {
                       <Pie data={chartData} cx="50%" cy="50%" labelLine={false} outerRadius={pieRadius} fill="#8884d8" dataKey="value">
                         {chartData.map((entry) => (<Cell key={`cell-${entry.name}`} fill={entry.color} />))}
                       </Pie>
-                      <RechartsTooltip formatter={(value) => `₹${value.toFixed(2)}`} contentStyle={tooltipStyle} />
+                      <RechartsTooltip
+                        formatter={(value) => `₹${value.toFixed(2)}`}
+                        contentStyle={tooltipStyle}
+                        labelStyle={{ color: tooltipStyle.color }}
+                        itemStyle={{ color: tooltipStyle.color }}
+                      />
                       <RechartsLegend verticalAlign="bottom" height={36} iconSize={10} wrapperStyle={{ fontSize: '11px' }} />
                     </PieChart>
                   </ResponsiveContainer>

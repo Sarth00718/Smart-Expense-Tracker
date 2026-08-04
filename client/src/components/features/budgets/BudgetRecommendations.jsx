@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { budgetRecommendationService } from '../../../services/budgetRecommendationService'
 import { budgetService } from '../../../services/budgetService'
 import toast from 'react-hot-toast'
-import { Lightbulb, TrendingUp, Calendar, Zap, Wallet, Activity, ArrowRight, ShieldCheck, Target } from 'lucide-react'
+import { Lightbulb, TrendingUp, Calendar, Wallet, Activity, ArrowRight, ShieldCheck, Target } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, Badge, Button, Separator } from '../../ui'
 
 const BudgetRecommendations = () => {
@@ -86,10 +86,7 @@ const BudgetRecommendations = () => {
     <div className="space-y-6">
       {/* Header Info */}
       <Card className="bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-transparent border-indigo-500/20 shadow-none overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-          <Zap className="w-32 h-32 text-indigo-600" />
-        </div>
-        <CardContent className="p-6 relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="w-12 h-12 bg-indigo-500/20 rounded-xl flex items-center justify-center shrink-0">
             <Lightbulb className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
           </div>
