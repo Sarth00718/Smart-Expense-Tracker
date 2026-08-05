@@ -1,6 +1,7 @@
 import { createContext, useState, useContext, useCallback, useMemo, useEffect } from 'react'
 import { expenseService } from '../services/expenseService'
 import { useAuth } from './AuthContext'
+import { eventBus, Events } from '../utils/eventBus'
 
 const ExpenseContext = createContext()
 
@@ -56,28 +57,47 @@ export const ExpenseProvider = ({ children }) => {
 
   const addExpense = async (expense) => {
     const tempId = `temp-${Date.now()}`
-    const optimisticExpense = { ...expense, _id: tempId, date: expense.date || new Date().toISOString() }
+    // Use dateISO if available (from date utilities), otherwise fall back to date or current time
+    const dateToUse = expense.dateISO || expense.date || new Date().toISOString()
+    const optimisticExpense = { ...expense, _id: tempId, date: dateToUse }
     setExpenses(prev => [optimisticExpense, ...prev])
     
     try {
-      const response = await expenseService.add(expense)
-      loadExpenses(null, { page: 1, limit: pagination.limit })
+      // Send dateISO if available, otherwise send date
+      const expenseData = { ...expense, date: dateToUse }
+      delete expenseData.dateISO // Remove helper field before sending
+      
+      const response = await expenseService.add(expenseData)
+      await loadExpenses(null, { page: 1, limit: pagination.limit })
+      
+      // Emit event for other components to react
+      eventBus.emit(Events.EXPENSE_CREATED, response.data)
+      
       return response.data
     } catch (error) {
-      loadExpenses(null, { page: 1, limit: pagination.limit })
+      await loadExpenses(null, { page: 1, limit: pagination.limit })
       throw error
     }
   }
 
   const updateExpense = async (id, expense) => {
-    setExpenses(prev => prev.map(e => e._id === id ? { ...e, ...expense } : e))
+    // Handle date conversion for updates too
+    const dateToUse = expense.dateISO || expense.date
+    const expenseData = { ...expense, date: dateToUse }
+    delete expenseData.dateISO
+    
+    setExpenses(prev => prev.map(e => e._id === id ? { ...e, ...expenseData } : e))
     
     try {
-      const response = await expenseService.update(id, expense)
-      loadExpenses(null, { page: 1, limit: pagination.limit })
+      const response = await expenseService.update(id, expenseData)
+      await loadExpenses(null, { page: 1, limit: pagination.limit })
+      
+      // Emit event for other components to react
+      eventBus.emit(Events.EXPENSE_UPDATED, { id, data: response.data })
+      
       return response.data
     } catch (error) {
-      loadExpenses(null, { page: 1, limit: pagination.limit })
+      await loadExpenses(null, { page: 1, limit: pagination.limit })
       throw error
     }
   }
@@ -87,9 +107,12 @@ export const ExpenseProvider = ({ children }) => {
     
     try {
       await expenseService.delete(id)
-      loadExpenses(null, { page: 1, limit: pagination.limit })
+      await loadExpenses(null, { page: 1, limit: pagination.limit })
+      
+      // Emit event for other components to react
+      eventBus.emit(Events.EXPENSE_DELETED, { id })
     } catch (error) {
-      loadExpenses(null, { page: 1, limit: pagination.limit })
+      await loadExpenses(null, { page: 1, limit: pagination.limit })
       throw error
     }
   }
@@ -113,6 +136,27 @@ export const ExpenseProvider = ({ children }) => {
     loadExpenses(controller.signal, { page: 1, limit: pagination.limit })
     return () => controller.abort()
   }, [user, loadExpenses, pagination.limit])
+
+  // Listen for external updates (e.g., from AI Assistant auto-categorization)
+  useEffect(() => {
+    const handleAICategorized = () => {
+      // Refresh expenses when AI categorizes an expense
+      loadExpenses(null, { page: 1, limit: pagination.limit })
+    }
+
+    const handleBulkUpdate = () => {
+      // Refresh expenses when bulk updates occur
+      loadExpenses(null, { page: 1, limit: pagination.limit })
+    }
+
+    const unsubscribeAI = eventBus.on(Events.AI_EXPENSE_CATEGORIZED, handleAICategorized)
+    const unsubscribeBulk = eventBus.on(Events.EXPENSES_BULK_UPDATE, handleBulkUpdate)
+
+    return () => {
+      unsubscribeAI()
+      unsubscribeBulk()
+    }
+  }, [loadExpenses, pagination.limit])
 
   const value = useMemo(() => ({
     expenses,

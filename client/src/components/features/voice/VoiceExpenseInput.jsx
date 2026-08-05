@@ -3,6 +3,8 @@ import { Mic, MicOff, X, Check, Edit3, Volume2, Sparkles, AlertCircle, RefreshCw
 import toast from 'react-hot-toast'
 import api from '../../../services/api'
 import { Input } from '../../ui'
+import { getTodayInputValue, toLocalISOString } from '../../../utils/dateUtils'
+import { eventBus, Events } from '../../../utils/eventBus'
 
 // ── Animated Waveform ────────────────────────────────────────────────────────
 const Waveform = ({ isActive }) => {
@@ -145,14 +147,19 @@ const VoiceExpenseInput = ({ onExpenseCreated, onClose }) => {
     }
     setIsSubmitting(true)
     try {
-      await api.post('/expenses', {
+      const todayDate = getTodayInputValue()
+      const response = await api.post('/expenses', {
         amount,
         category: editedData.category,
         description: editedData.description || '',
-        date: new Date().toISOString().split('T')[0]
+        date: toLocalISOString(todayDate)
       })
       setPhase('success')
       toast.success('Expense added successfully!')
+      
+      // Emit event to notify ExpenseContext
+      eventBus.emit(Events.EXPENSE_CREATED, response.data)
+      
       setTimeout(() => { if (onExpenseCreated) onExpenseCreated() }, 1200)
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to create expense')

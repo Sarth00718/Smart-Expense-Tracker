@@ -12,6 +12,8 @@ import { useFormState } from '../../../hooks/useFormState'
 import { useCategories } from '../../../context/CategoryContext'
 import { useIntersectionObserver } from '../../../hooks/useIntersectionObserver'
 import ExpenseForm from '../../forms/ExpenseForm'
+import { getTodayInputValue, toLocalDateInputValue, toLocalISOString } from '../../../utils/dateUtils'
+import { formatCurrency, roundToDecimals } from '../../../utils/mathUtils'
 import {
   Button, Card, CardHeader, CardTitle, CardDescription, CardContent,
   Badge, Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
@@ -46,7 +48,7 @@ const Expenses = () => {
   const [showClearConfirm, setShowClearConfirm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const { formData, setFormData, resetForm } = useFormState({
-    date: new Date().toISOString().split('T')[0],
+    date: getTodayInputValue(),
     category: '',
     amount: '',
     description: ''
@@ -136,7 +138,7 @@ const Expenses = () => {
   const startEdit = (expense) => {
     setEditingExpense(expense._id)
     setEditForm({
-      date: new Date(expense.date).toISOString().split('T')[0],
+      date: toLocalDateInputValue(expense.date),
       category: expense.category,
       amount: expense.amount.toString(),
       description: expense.description || ''
@@ -152,7 +154,12 @@ const Expenses = () => {
     e.preventDefault()
     setSubmitting(true)
     try {
-      await updateExpense(editingExpense, editForm)
+      // Convert date to ISO string before sending
+      const updateData = {
+        ...editForm,
+        dateISO: toLocalISOString(editForm.date)
+      }
+      await updateExpense(editingExpense, updateData)
       toast.success('Expense updated successfully')
       cancelEdit()
     } catch (error) {
@@ -178,10 +185,24 @@ const Expenses = () => {
     categoryBreakdown: {} 
   })
 
+  // FIX 1: Memory leak prevention with AbortController
   useEffect(() => {
-    analyticsService.getDashboard().then(res => {
-      setDashStats(res.data)
-    }).catch(console.error)
+    const controller = new AbortController()
+    
+    analyticsService.getDashboard()
+      .then(res => {
+        if (controller.signal.aborted) return
+        setDashStats(res.data)
+      })
+      .catch(err => {
+        if (!controller.signal.aborted) {
+          console.error('Failed to load dashboard stats:', err)
+        }
+      })
+    
+    return () => {
+      controller.abort()
+    }
   }, [])
 
   const filteredAndSortedExpenses = useMemo(() => {
@@ -232,19 +253,28 @@ const Expenses = () => {
     return result
   }, [expenses, nlResults, advancedSearchResults, filterPeriod, searchQuery, sortBy, sortOrder])
 
-  // Calculate Summary Stats from Global Analytics
-  const totalExpenses = dashStats.totalExpenses || 0
-  const monthlyExpenses = dashStats.monthExpenses || 0
+  // Calculate Summary Stats from Global Analytics with FIX 4: proper rounding
+  const totalExpenses = roundToDecimals(dashStats.totalExpenses || 0)
+  const monthlyExpenses = roundToDecimals(dashStats.monthExpenses || 0)
   
   // Use pagination total (true count of expenses in db) to get average
-  const averageExpense = pagination?.total > 0 ? (totalExpenses / pagination.total) : 0
+  const averageExpense = pagination?.total > 0 
+    ? roundToDecimals(totalExpenses / pagination.total) 
+    : 0
 
   const highestCategory = useMemo(() => {
-    if (!dashStats.categoryBreakdown || Object.keys(dashStats.categoryBreakdown).length === 0) {
+    // FIX 2: Defensive programming for categoryBreakdown
+    if (!dashStats.categoryBreakdown || 
+        typeof dashStats.categoryBreakdown !== 'object' ||
+        Object.keys(dashStats.categoryBreakdown).length === 0) {
       return { name: 'None', amount: 0 }
     }
-    const top = Object.entries(dashStats.categoryBreakdown).sort((a, b) => b[1] - a[1])[0]
-    return { name: top[0], amount: top[1] }
+    const entries = Object.entries(dashStats.categoryBreakdown)
+    if (!Array.isArray(entries) || entries.length === 0) {
+      return { name: 'None', amount: 0 }
+    }
+    const top = entries.sort((a, b) => b[1] - a[1])[0]
+    return { name: top[0], amount: roundToDecimals(top[1]) }
   }, [dashStats.categoryBreakdown])
 
   // removed the loading block to allow table to render the first page items alongside the loader at the bottom
@@ -286,26 +316,26 @@ const Expenses = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Expenses"
-          value={`₹${totalExpenses.toFixed(2)}`}
+          value={formatCurrency(totalExpenses)}
           icon={TrendingDown}
           color="red"
         />
         <StatCard
           title="Monthly Spending"
-          value={`₹${monthlyExpenses.toFixed(2)}`}
+          value={formatCurrency(monthlyExpenses)}
           icon={CalendarDays}
           color="orange"
         />
         <StatCard
           title="Average Expense"
-          value={`₹${averageExpense.toFixed(2)}`}
+          value={formatCurrency(averageExpense)}
           icon={Calculator}
           color="blue"
         />
         <StatCard
           title="Highest Category"
           value={highestCategory.name}
-          trendValue={`₹${highestCategory.amount.toFixed(2)}`}
+          trendValue={formatCurrency(highestCategory.amount)}
           trend={true}
           icon={AlertCircle}
           color="purple"
@@ -565,7 +595,7 @@ const Expenses = () => {
                       {expense.description || <span className="text-muted-foreground/50 italic">No description</span>}
                     </TableCell>
                     <TableCell className="text-right font-semibold text-foreground tabular-nums tracking-tight whitespace-nowrap">
-                      ₹{Number(expense.amount).toFixed(2)}
+                      {formatCurrency(expense.amount)}
                     </TableCell>
                     <TableCell className="text-center pr-6">
                       <div className="flex items-center justify-center gap-2">

@@ -12,6 +12,7 @@ import {
 } from '../../ui'
 import toast from 'react-hot-toast'
 import api from '../../../services/api'
+import { eventBus, Events } from '../../../utils/eventBus'
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -557,6 +558,21 @@ export default function AIAssistant() {
       setMessages(p => [...p, { role: 'assistant', content: r.data.response || r.data.message || 'Could not process request.', timestamp: new Date() }])
       if (r.data.conversationId && !conversationId) setConversationId(r.data.conversationId)
       loadConversations()
+      
+      // If the AI response indicates expense categorization or updates, emit event
+      // Check if response contains indicators of expense modifications
+      const response = r.data.response || r.data.message || ''
+      const hasCategorized = response.toLowerCase().includes('categorized') || 
+                            response.toLowerCase().includes('category') ||
+                            response.toLowerCase().includes('updated expense')
+      
+      if (hasCategorized || r.data.expensesModified) {
+        // Emit event to notify ExpenseContext to refresh
+        eventBus.emit(Events.AI_EXPENSE_CATEGORIZED, { 
+          conversationId: r.data.conversationId,
+          timestamp: new Date()
+        })
+      }
     } catch (e) {
       setMessages(p => [...p, { role: 'assistant', content: `❌ ${e.response?.data?.error || e.message || 'Something went wrong. Please try again.'}`, timestamp: new Date() }])
     } finally {

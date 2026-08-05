@@ -8,6 +8,7 @@ import {
 } from '../../ui'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
+import { toLocalDateInputValue } from '../../../utils/dateUtils'
 
 const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => (
   <Dialog open={isOpen} onClose={onClose} size="sm">
@@ -187,7 +188,8 @@ const Goals = () => {
     setEditData({
       name: goal.name,
       targetAmount: goal.target.toString(),
-      deadline: goal.deadline ? new Date(goal.deadline).toISOString().split('T')[0] : ''
+      // FIX: Use timezone-aware date conversion to prevent off-by-one errors
+      deadline: goal.deadline ? toLocalDateInputValue(goal.deadline) : ''
     })
     setShowEditModal(true)
   }

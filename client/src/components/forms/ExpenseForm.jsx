@@ -2,12 +2,18 @@ import { memo } from 'react'
 import { Plus } from 'lucide-react'
 import { Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Input, Label } from '../ui'
 import { useCategories } from '../../context/CategoryContext'
+import { toLocalISOString } from '../../utils/dateUtils'
 
 const ExpenseForm = memo(({ formData, onChange, onSubmit, submitLabel = 'Add Expense', loading }) => {
   const { expenseCategories } = useCategories()
   
   const handleChange = (field, value) => {
-    onChange({ ...formData, [field]: value })
+    // Convert date to local ISO string before updating form data
+    if (field === 'date') {
+      onChange({ ...formData, [field]: value, dateISO: toLocalISOString(value) })
+    } else {
+      onChange({ ...formData, [field]: value })
+    }
   }
 
   return (

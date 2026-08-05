@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense, useCallback, useMemo, useEffect } from 'react'
+  import { useState, lazy, Suspense, useCallback, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { analyticsService } from '../../../services/analyticsService'
 import {
@@ -19,6 +19,8 @@ import { incomeService } from '../../../services/incomeService'
 import ExpenseForm from '../../forms/ExpenseForm'
 import IncomeForm from '../../forms/IncomeForm'
 import Modal from '../../ui/Modal'
+import { getTodayInputValue } from '../../../utils/dateUtils'
+import { formatCurrency } from '../../../utils/mathUtils'
 
 const VoiceExpenseInput = lazy(() => import('../voice/VoiceExpenseInput'))
 const ReceiptScanner = lazy(() => import('../receipts/ReceiptScanner'))
@@ -84,8 +86,10 @@ const DashboardHome = () => {
   const [recentExpenses, setRecentExpenses] = useState([])
   const [chartData, setChartData] = useState([])
 
+  // FIX 1: Memory leak prevention with AbortController
   useEffect(() => {
-    let cancelled = false
+    const controller = new AbortController()
+    
     const load = async () => {
       try {
         setStatsLoading(true)
@@ -93,27 +97,56 @@ const DashboardHome = () => {
           analyticsService.getDashboard(),
           expenseService.getRecent(5),
         ])
-        if (cancelled) return
+        
+        // Don't update state if component unmounted
+        if (controller.signal.aborted) return
+        
         const d = dashRes.data
         setDashStats({
           totalIncome: d.totalIncome ?? 0, totalExpenses: d.totalExpenses ?? 0,
           netBalance: d.netBalance ?? 0, monthIncome: d.monthIncome ?? 0,
           monthExpenses: d.monthExpenses ?? 0, monthNetBalance: d.monthNetBalance ?? 0,
         })
-        const recent = Array.isArray(recentRes.data?.data) ? recentRes.data.data : Array.isArray(recentRes.data) ? recentRes.data : []
+        
+        // FIX 2: Defensive programming for array checks
+        const recent = Array.isArray(recentRes.data?.data) 
+          ? recentRes.data.data 
+          : Array.isArray(recentRes.data) 
+          ? recentRes.data 
+          : []
         setRecentExpenses(recent)
-        if (d.categoryBreakdown) {
-          const chart = Object.entries(d.categoryBreakdown).map(([name, value], i) => ({
-            name, value, color: CHART_COLORS[i % CHART_COLORS.length]
-          }))
+        
+        // FIX 2: Defensive programming for chart data
+        if (d.categoryBreakdown && typeof d.categoryBreakdown === 'object') {
+          const entries = Object.entries(d.categoryBreakdown)
+          const chart = Array.isArray(entries) && entries.length > 0
+            ? entries.map(([name, value], i) => ({
+                name, 
+                value: Number(value) || 0, 
+                color: CHART_COLORS[i % CHART_COLORS.length]
+              }))
+            : []
           setChartData(chart)
+        } else {
+          setChartData([])
         }
       } catch (err) {
-        if (!cancelled) console.error('Dashboard load error:', err)
-      } finally { if (!cancelled) setStatsLoading(false) }
+        if (!controller.signal.aborted) {
+          console.error('Dashboard load error:', err)
+        }
+      } finally { 
+        if (!controller.signal.aborted) {
+          setStatsLoading(false)
+        }
+      }
     }
+    
     load()
-    return () => { cancelled = true }
+    
+    // Cleanup: abort ongoing requests when component unmounts
+    return () => {
+      controller.abort()
+    }
   }, [])
 
   const [showVoiceInput, setShowVoiceInput] = useState(false)
@@ -122,24 +155,62 @@ const DashboardHome = () => {
   const [showAddIncome, setShowAddIncome] = useState(false)
 
   const [expenseFormData, setExpenseFormData] = useState({
-    date: new Date().toISOString().split('T')[0], category: '', amount: '', description: ''
+    date: getTodayInputValue(), category: '', amount: '', description: ''
   })
   const [incomeFormData, setIncomeFormData] = useState({
-    date: new Date().toISOString().split('T')[0], source: 'Salary', amount: '', description: '', isRecurring: false
+    date: getTodayInputValue(), source: 'Salary', amount: '', description: '', isRecurring: false
   })
 
-  const resetExpenseForm = () => setExpenseFormData({ date: new Date().toISOString().split('T')[0], category: '', amount: '', description: '' })
-  const resetIncomeForm = () => setIncomeFormData({ date: new Date().toISOString().split('T')[0], source: 'Salary', amount: '', description: '', isRecurring: false })
+  const resetExpenseForm = useCallback(() => {
+    setExpenseFormData({ date: getTodayInputValue(), category: '', amount: '', description: '' })
+  }, [])
+  
+  const resetIncomeForm = useCallback(() => {
+    setIncomeFormData({ date: getTodayInputValue(), source: 'Salary', amount: '', description: '', isRecurring: false })
+  }, [])
 
+  // FIX 3: Properly memoized refreshStats to prevent infinite re-renders
   const refreshStats = useCallback(async () => {
     try {
-      const [dashRes, recentRes] = await Promise.all([analyticsService.getDashboard(), expenseService.getRecent(5)])
+      const [dashRes, recentRes] = await Promise.all([
+        analyticsService.getDashboard(), 
+        expenseService.getRecent(5)
+      ])
+      
       const d = dashRes.data
-      setDashStats({ totalIncome: d.totalIncome ?? 0, totalExpenses: d.totalExpenses ?? 0, netBalance: d.netBalance ?? 0, monthIncome: d.monthIncome ?? 0, monthExpenses: d.monthExpenses ?? 0, monthNetBalance: d.monthNetBalance ?? 0 })
-      const recent = Array.isArray(recentRes.data?.data) ? recentRes.data.data : Array.isArray(recentRes.data) ? recentRes.data : []
+      setDashStats({ 
+        totalIncome: d.totalIncome ?? 0, 
+        totalExpenses: d.totalExpenses ?? 0, 
+        netBalance: d.netBalance ?? 0, 
+        monthIncome: d.monthIncome ?? 0, 
+        monthExpenses: d.monthExpenses ?? 0, 
+        monthNetBalance: d.monthNetBalance ?? 0 
+      })
+      
+      // FIX 2: Defensive array check
+      const recent = Array.isArray(recentRes.data?.data) 
+        ? recentRes.data.data 
+        : Array.isArray(recentRes.data) 
+        ? recentRes.data 
+        : []
       setRecentExpenses(recent)
-    } catch {}
-  }, [])
+      
+      // Update chart data if available
+      if (d.categoryBreakdown && typeof d.categoryBreakdown === 'object') {
+        const entries = Object.entries(d.categoryBreakdown)
+        const chart = Array.isArray(entries) && entries.length > 0
+          ? entries.map(([name, value], i) => ({
+              name, 
+              value: Number(value) || 0, 
+              color: CHART_COLORS[i % CHART_COLORS.length]
+            }))
+          : []
+        setChartData(chart)
+      }
+    } catch (err) {
+      console.error('Failed to refresh stats:', err)
+    }
+  }, []) // Empty deps - truly stable
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault()
@@ -188,10 +259,10 @@ const DashboardHome = () => {
       </motion.div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard title="Total Income" value={`₹${dashStats.totalIncome.toFixed(2)}`} icon={TrendingUp} color="green" delay={0.1} />
-        <KPICard title="Total Expenses" value={`₹${dashStats.totalExpenses.toFixed(2)}`} icon={TrendingDown} color="red" delay={0.15} />
-        <KPICard title="Net Balance" value={`₹${dashStats.netBalance.toFixed(2)}`} icon={Wallet} color={dashStats.netBalance >= 0 ? 'blue' : 'orange'} delay={0.2} subtitle={dashStats.netBalance >= 0 ? 'Positive balance' : 'Negative balance'} />
-        <KPICard title="This Month" value={`₹${dashStats.monthNetBalance.toFixed(2)}`} icon={BarChart3} color="purple" delay={0.25} />
+        <KPICard title="Total Income" value={formatCurrency(dashStats.totalIncome)} icon={TrendingUp} color="green" delay={0.1} />
+        <KPICard title="Total Expenses" value={formatCurrency(dashStats.totalExpenses)} icon={TrendingDown} color="red" delay={0.15} />
+        <KPICard title="Net Balance" value={formatCurrency(dashStats.netBalance)} icon={Wallet} color={dashStats.netBalance >= 0 ? 'blue' : 'orange'} delay={0.2} subtitle={dashStats.netBalance >= 0 ? 'Positive balance' : 'Negative balance'} />
+        <KPICard title="This Month" value={formatCurrency(dashStats.monthNetBalance)} icon={BarChart3} color="purple" delay={0.25} />
       </div>
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.4 }}>
@@ -240,7 +311,6 @@ const DashboardHome = () => {
             <CardHeader className="flex-row flex-wrap items-center justify-between gap-4 pb-3">
               <div className="space-y-1 min-w-0">
                 <CardTitle>Recent Transactions</CardTitle>
-                <CardDescription>Your latest expenses</CardDescription>
               </div>
               <Button variant="ghost" size="sm" className="self-start sm:self-auto" onClick={() => navigate('/dashboard/expenses')}>
                 View All <ArrowUpRight className="w-3.5 h-3.5 ml-1" />
@@ -270,7 +340,7 @@ const DashboardHome = () => {
                         </div>
                       </div>
                       <div className="shrink-0 text-right">
-                        <p className="font-semibold text-foreground tabular-nums">₹{Number(expense.amount).toFixed(2)}</p>
+                        <p className="font-semibold text-foreground tabular-nums">{formatCurrency(expense.amount)}</p>
                       </div>
                     </motion.button>
                   ))}
@@ -295,7 +365,8 @@ const DashboardHome = () => {
               <CardDescription>All time</CardDescription>
             </CardHeader>
             <CardContent>
-              {chartData.length > 0 ? (
+              {/* FIX 2: Defensive programming - check if chartData is valid array before rendering */}
+              {Array.isArray(chartData) && chartData.length > 0 ? (
                 <div className="w-full" style={{ height: '280px' }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -303,7 +374,7 @@ const DashboardHome = () => {
                         {chartData.map((entry) => (<Cell key={`cell-${entry.name}`} fill={entry.color} />))}
                       </Pie>
                       <RechartsTooltip
-                        formatter={(value) => `₹${value.toFixed(2)}`}
+                        formatter={(value) => formatCurrency(value)}
                         contentStyle={tooltipStyle}
                         labelStyle={{ color: tooltipStyle.color }}
                         itemStyle={{ color: tooltipStyle.color }}
